@@ -1,0 +1,304 @@
+import 'package:drift/drift.dart';
+
+class UserProfiles extends Table {
+  @override
+  String get tableName => 'user_profile';
+
+  TextColumn get id =>
+      text().customConstraint("NOT NULL CHECK (id = 'local_user')")();
+  TextColumn get displayName => text().named('display_name').nullable()();
+  IntColumn get birthYearOrAge =>
+      integer().named('birth_year_or_age').nullable()();
+  TextColumn get sexForFormula => text().named('sex_for_formula').nullable()();
+  RealColumn get heightCm => real().named('height_cm').nullable()();
+  RealColumn get weightKg => real().named('weight_kg').nullable()();
+  TextColumn get activityLevel => text().named('activity_level').nullable()();
+  TextColumn get goalType => text().named('goal_type').nullable()();
+  IntColumn get goalAdjustmentKcal =>
+      integer().named('goal_adjustment_kcal').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class AppSettings extends Table {
+  @override
+  String get tableName => 'app_settings';
+
+  IntColumn get id => integer().customConstraint('NOT NULL CHECK (id = 1)')();
+  BoolColumn get onboardingCompleted =>
+      boolean().named('onboarding_completed')();
+  TextColumn get weightUnit => text().named('weight_unit')();
+  TextColumn get heightUnit => text().named('height_unit')();
+  TextColumn get themeMode => text().named('theme_mode')();
+  TextColumn get locale => text()();
+  TextColumn get activeKeyId => text()
+      .named('active_key_id')
+      .nullable()
+      .references(ApiKeyMetadata, #id, onDelete: KeyAction.setNull)();
+  TextColumn get geminiModel => text().named('gemini_model')();
+  BoolColumn get previewBeforeSave => boolean().named('preview_before_save')();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(name: 'idx_daily_targets_effective', columns: {#effectiveFromDate})
+class DailyTargets extends Table {
+  @override
+  String get tableName => 'daily_targets';
+
+  TextColumn get id => text()();
+  TextColumn get effectiveFromDate => text().named('effective_from_date')();
+  IntColumn get calorieTarget => integer().named('calorie_target')();
+  RealColumn get proteinTargetG =>
+      real().named('protein_target_g').nullable()();
+  RealColumn get carbsTargetG => real().named('carbs_target_g').nullable()();
+  RealColumn get fatTargetG => real().named('fat_target_g').nullable()();
+  TextColumn get source => text()();
+  TextColumn get formulaSnapshotJson =>
+      text().named('formula_snapshot_json').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'idx_food_logs_local_date_deleted_status',
+  columns: {#localDate, #deletedAt, #status},
+)
+@TableIndex(name: 'idx_food_logs_consumed_at', columns: {#consumedAtUtc})
+class FoodLogs extends Table {
+  @override
+  String get tableName => 'food_logs';
+
+  TextColumn get id => text()();
+  TextColumn get localRequestId =>
+      text().named('local_request_id').nullable().unique()();
+  TextColumn get localDate => text().named('local_date')();
+  DateTimeColumn get consumedAtUtc => dateTime().named('consumed_at_utc')();
+  IntColumn get timezoneOffsetMinutes =>
+      integer().named('timezone_offset_minutes')();
+  TextColumn get mealType => text().named('meal_type')();
+  TextColumn get source => text()();
+  TextColumn get status => text()();
+  TextColumn get originalUserText =>
+      text().named('original_user_text').nullable()();
+  TextColumn get notes => text().nullable()();
+  RealColumn get totalCaloriesKcal => real().named('total_calories_kcal')();
+  RealColumn get totalProteinG => real().named('total_protein_g').nullable()();
+  RealColumn get totalCarbsG => real().named('total_carbs_g').nullable()();
+  RealColumn get totalFatG => real().named('total_fat_g').nullable()();
+  TextColumn get aiModel => text().named('ai_model').nullable()();
+  TextColumn get aiKeyMetadataId => text()
+      .named('ai_key_metadata_id')
+      .nullable()
+      .references(ApiKeyMetadata, #id, onDelete: KeyAction.setNull)();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+  DateTimeColumn get deletedAt => dateTime().named('deleted_at').nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(name: 'idx_food_items_log_sort', columns: {#foodLogId, #sortOrder})
+@TableIndex(name: 'idx_food_items_normalized_name', columns: {#normalizedName})
+class FoodItems extends Table {
+  @override
+  String get tableName => 'food_items';
+
+  TextColumn get id => text()();
+  TextColumn get foodLogId => text()
+      .named('food_log_id')
+      .references(FoodLogs, #id, onDelete: KeyAction.cascade)();
+  TextColumn get displayName => text().named('display_name')();
+  TextColumn get normalizedName => text().named('normalized_name').nullable()();
+  RealColumn get quantity => real().nullable()();
+  TextColumn get unit => text().nullable()();
+  TextColumn get portionText => text().named('portion_text').nullable()();
+  RealColumn get caloriesKcal => real().named('calories_kcal')();
+  RealColumn get proteinG => real().named('protein_g').nullable()();
+  RealColumn get carbsG => real().named('carbs_g').nullable()();
+  RealColumn get fatG => real().named('fat_g').nullable()();
+  RealColumn get fiberG => real().named('fiber_g').nullable()();
+  RealColumn get sodiumMg => real().named('sodium_mg').nullable()();
+  RealColumn get confidence => real().nullable()();
+  TextColumn get assumptionNote => text().named('assumption_note').nullable()();
+  IntColumn get sortOrder => integer().named('sort_order')();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(name: 'idx_chat_sessions_local_date', columns: {#localDate})
+class ChatSessions extends Table {
+  @override
+  String get tableName => 'chat_sessions';
+
+  TextColumn get id => text()();
+  TextColumn get localDate => text().named('local_date')();
+  TextColumn get title => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'idx_chat_messages_session_created',
+  columns: {#sessionId, #createdAt},
+)
+@TableIndex(name: 'idx_chat_messages_local_request', columns: {#localRequestId})
+class ChatMessages extends Table {
+  @override
+  String get tableName => 'chat_messages';
+
+  TextColumn get id => text()();
+  TextColumn get sessionId => text()
+      .named('session_id')
+      .references(ChatSessions, #id, onDelete: KeyAction.cascade)();
+  TextColumn get role => text()();
+  TextColumn get contentText => text().named('content_text')();
+  TextColumn get status => text()();
+  TextColumn get foodLogId => text()
+      .named('food_log_id')
+      .nullable()
+      .references(FoodLogs, #id, onDelete: KeyAction.setNull)();
+  TextColumn get localRequestId =>
+      text().named('local_request_id').nullable()();
+  TextColumn get errorCategory => text().named('error_category').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'idx_api_keys_selection',
+  columns: {#isEnabled, #priorityOrder, #healthStatus, #cooldownUntil},
+)
+class ApiKeyMetadata extends Table {
+  @override
+  String get tableName => 'api_key_metadata';
+
+  TextColumn get id => text()();
+  TextColumn get alias => text()();
+  TextColumn get secureRef => text().named('secure_ref').unique()();
+  TextColumn get maskedSuffix => text().named('masked_suffix')();
+  IntColumn get priorityOrder => integer().named('priority_order').unique()();
+  BoolColumn get isEnabled => boolean().named('is_enabled')();
+  TextColumn get healthStatus => text().named('health_status')();
+  DateTimeColumn get cooldownUntil =>
+      dateTime().named('cooldown_until').nullable()();
+  DateTimeColumn get lastSuccessAt =>
+      dateTime().named('last_success_at').nullable()();
+  DateTimeColumn get lastFailureAt =>
+      dateTime().named('last_failure_at').nullable()();
+  TextColumn get lastErrorCategory =>
+      text().named('last_error_category').nullable()();
+  IntColumn get successCount =>
+      integer().named('success_count').withDefault(const Constant(0))();
+  IntColumn get failureCount =>
+      integer().named('failure_count').withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'idx_api_usage_key_created',
+  columns: {#apiKeyMetadataId, #createdAt},
+)
+@TableIndex(name: 'idx_api_usage_request', columns: {#localRequestId})
+class ApiKeyUsageEvents extends Table {
+  @override
+  String get tableName => 'api_key_usage_events';
+
+  TextColumn get id => text()();
+  TextColumn get apiKeyMetadataId => text()
+      .named('api_key_metadata_id')
+      .references(ApiKeyMetadata, #id, onDelete: KeyAction.cascade)();
+  TextColumn get localRequestId => text().named('local_request_id')();
+  TextColumn get operation => text()();
+  TextColumn get outcome => text()();
+  TextColumn get errorCategory => text().named('error_category').nullable()();
+  IntColumn get httpStatus => integer().named('http_status').nullable()();
+  IntColumn get latencyMs => integer().named('latency_ms').nullable()();
+  IntColumn get promptTokens => integer().named('prompt_tokens').nullable()();
+  IntColumn get outputTokens => integer().named('output_tokens').nullable()();
+  TextColumn get modelId => text().named('model_id').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(name: 'idx_favorites_name', columns: {#name})
+class FavoriteTemplates extends Table {
+  @override
+  String get tableName => 'favorite_templates';
+
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get templateJson => text().named('template_json')();
+  IntColumn get useCount =>
+      integer().named('use_count').withDefault(const Constant(0))();
+  DateTimeColumn get lastUsedAt =>
+      dateTime().named('last_used_at').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class ReminderSettings extends Table {
+  @override
+  String get tableName => 'reminder_settings';
+
+  IntColumn get id => integer().customConstraint('NOT NULL CHECK (id = 1)')();
+  BoolColumn get isEnabled => boolean().named('is_enabled')();
+  TextColumn get reminderTimeLocal => text().named('reminder_time_local')();
+  IntColumn get thresholdPercent => integer().named('threshold_percent')();
+  IntColumn get activeWeekdaysMask => integer().named('active_weekdays_mask')();
+  TextColumn get quietHoursStart =>
+      text().named('quiet_hours_start').nullable()();
+  TextColumn get quietHoursEnd => text().named('quiet_hours_end').nullable()();
+  TextColumn get permissionStatus => text().named('permission_status')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'idx_notification_local_date_status',
+  columns: {#localDate, #status},
+)
+class NotificationEvents extends Table {
+  @override
+  String get tableName => 'notification_events';
+
+  TextColumn get id => text()();
+  TextColumn get localDate => text().named('local_date')();
+  IntColumn get platformNotificationId =>
+      integer().named('platform_notification_id').unique()();
+  DateTimeColumn get scheduledFor => dateTime().named('scheduled_for')();
+  TextColumn get status => text()();
+  DateTimeColumn get openedAt => dateTime().named('opened_at').nullable()();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

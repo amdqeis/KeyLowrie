@@ -1,0 +1,56 @@
+{
+  "inputs": [
+    "aku makan nasi goreng dan es teh manis",
+    "sarapan bubur ayam satu mangkuk",
+    "dua potong tempe goreng dan nasi putih",
+    "gado-gado tanpa lontong",
+    "sate ayam 10 tusuk pakai bumbu kacang",
+    "bakso urat satu mangkuk",
+    "pecel lele dengan nasi dan sambal",
+    "rendang dua potong kecil",
+    "ketoprak satu porsi",
+    "soto ayam dengan nasi setengah porsi",
+    "pisang goreng tiga buah",
+    "kopi susu gula aren ukuran sedang"
+  ],
+  "valid_response": {
+    "items": [
+      {
+        "name": "Nasi goreng",
+        "quantity": 1,
+        "unit": "porsi",
+        "portion_text": "1 porsi standar",
+        "calories_kcal": 520,
+        "protein_g": 14,
+        "carbs_g": 72,
+        "fat_g": 19,
+        "fiber_g": 4,
+        "sodium_mg": 900,
+        "confidence": 0.62,
+        "assumption_note": "Porsi warung standar."
+      },
+      {
+        "name": "Es teh manis",
+        "quantity": 1,
+        "unit": "gelas",
+        "portion_text": "1 gelas",
+        "calories_kcal": 120,
+        "protein_g": 0,
+        "carbs_g": 30,
+        "fat_g": 0,
+        "fiber_g": null,
+        "sodium_mg": 5,
+        "confidence": 0.70,
+        "assumption_note": "Gula diasumsikan 2–3 sendok teh."
+      }
+    ],
+    "summary": {
+      "total_calories_kcal": 650,
+      "total_protein_g": 14,
+      "total_carbs_g": 102,
+      "total_fat_g": 19,
+      "needs_user_review": true,
+      "general_note": "Nilai merupakan estimasi."
+    }
+  }
+}
