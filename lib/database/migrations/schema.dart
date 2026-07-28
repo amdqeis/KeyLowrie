@@ -1,3 +1,3 @@
 abstract final class DatabaseSchema {
-  static const currentVersion = 1;
+  static const currentVersion = 2;
 }

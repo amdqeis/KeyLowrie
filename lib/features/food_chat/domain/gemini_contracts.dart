@@ -1,6 +1,7 @@
 import 'package:keyspace/core/errors/gemini_failure.dart';
 import 'package:keyspace/core/network/request_cancellation.dart';
 import 'package:keyspace/features/food_chat/domain/food_parse_models.dart';
+import 'package:keyspace/features/food_chat/domain/unified_chat_models.dart';
 
 sealed class GeminiCallResult {
   const GeminiCallResult({required this.latency});
@@ -31,6 +32,14 @@ abstract interface class GeminiClient {
   Future<GeminiCallResult> parseFood({
     required String secret,
     required String input,
+    required bool repairAttempt,
+    CancellationSignal? cancellation,
+  });
+
+  Future<GeminiCallResult> parseChat({
+    required String secret,
+    required String input,
+    required ChatParseContext context,
     required bool repairAttempt,
     CancellationSignal? cancellation,
   });
@@ -135,4 +144,8 @@ abstract interface class PendingRequestRepository {
   });
   Future<void> markFailed(String requestId, GeminiFailureCategory category);
   Future<void> markPreviewReady(String requestId, ParsedFoodDraft draft);
+  Future<void> markUnifiedPreviewReady(
+    String requestId,
+    UnifiedChatDraft draft,
+  );
 }

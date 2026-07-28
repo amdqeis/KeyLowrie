@@ -1,9 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:keyspace/app/bootstrap.dart';
 import 'package:keyspace/core/network/connectivity_network_status.dart';
 import 'package:keyspace/database/app_database.dart';
+import 'package:keyspace/features/api_key_pool/application/api_key_test_service.dart';
 import 'package:keyspace/features/api_key_pool/data/api_key_admin_repository.dart';
 import 'package:keyspace/features/api_key_pool/data/drift_key_pool_repository.dart';
+import 'package:keyspace/features/finance/data/finance_repository.dart';
+import 'package:keyspace/features/food_chat/data/chat_draft_repository.dart';
 import 'package:keyspace/features/food_chat/data/drift_pending_request_repository.dart';
 import 'package:keyspace/features/food_chat/data/gemini_dio_client.dart';
 import 'package:keyspace/features/food_chat/domain/gemini_contracts.dart';
@@ -15,6 +19,8 @@ import 'package:keyspace/features/reminders/data/reminder_repository.dart';
 import 'package:keyspace/features/reminders/domain/reminder_scheduler.dart';
 import 'package:keyspace/features/settings/data/settings_repository.dart';
 import 'package:keyspace/features/targets/data/target_repository.dart';
+import 'package:keyspace/features/voice_input/data/plugin_speech_recognition_service.dart';
+import 'package:keyspace/features/voice_input/domain/speech_recognition_service.dart';
 import 'package:keyspace/shared/providers/security_providers.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -45,10 +51,41 @@ final foodLogRepositoryProvider = Provider<FoodLogRepository>(
   (ref) => FoodLogRepository(ref.watch(databaseProvider)),
 );
 
+final financeRepositoryProvider = Provider<FinanceRepository>(
+  (ref) => FinanceRepository(ref.watch(databaseProvider)),
+);
+
+final chatDraftRepositoryProvider = Provider<ChatDraftRepository>(
+  (ref) => ChatDraftRepository(ref.watch(databaseProvider)),
+);
+
+final localTimezoneProvider = FutureProvider<String>((ref) async {
+  try {
+    return (await FlutterTimezone.getLocalTimezone()).identifier;
+  } on Object {
+    return DateTime.now().timeZoneName;
+  }
+});
+
+final speechRecognitionServiceProvider = Provider<SpeechRecognitionService>((
+  ref,
+) {
+  final service = PluginSpeechRecognitionService();
+  ref.onDispose(service.dispose);
+  return service;
+});
+
 final apiKeyAdminRepositoryProvider = Provider<ApiKeyAdminRepository>(
   (ref) => ApiKeyAdminRepository(
     ref.watch(databaseProvider),
     ref.watch(secretStoreProvider),
+  ),
+);
+
+final apiKeyTestServiceProvider = Provider<ApiKeyTestService>(
+  (ref) => ApiKeyTestService(
+    repository: ref.watch(apiKeyAdminRepositoryProvider),
+    client: ref.watch(geminiClientProvider),
   ),
 );
 

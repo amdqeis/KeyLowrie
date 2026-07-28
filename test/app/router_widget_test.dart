@@ -22,16 +22,20 @@ void main() {
     final cases = <String, String>{
       '/onboarding': 'CATAT MAKANAN\nCUKUP LEWAT CHAT',
       '/home': 'HARI INI',
-      '/chat': 'CHAT MAKANAN',
+      '/chat': 'CHAT TERPADU',
       '/history': 'RIWAYAT HARIAN',
       '/history/2026-07-21': 'RIWAYAT 2026-07-21',
       '/food-log/log-1/edit': 'EDIT FOOD LOG',
       '/insights': 'INSIGHT',
+      '/finance': 'KEUANGAN',
+      '/finance/history': 'RIWAYAT KEUANGAN',
+      '/finance/transaction/missing': 'DETAIL TRANSAKSI',
       '/settings': 'PENGATURAN',
       '/settings/api-keys': 'API KEY POOL',
       '/settings/reminders': 'REMINDER DASAR',
       '/settings/profile': 'TARGET & PROFIL',
       '/settings/data': 'PRIVASI & DATA',
+      '/settings/finance': 'PENGATURAN KEUANGAN',
     };
 
     for (final entry in cases.entries) {

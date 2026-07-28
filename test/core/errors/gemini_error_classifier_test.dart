@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keyspace/core/errors/gemini_failure.dart';
-import 'package:keyspace/core/security/secret_store.dart';
 
 void main() {
   const classifier = GeminiErrorClassifier();
@@ -11,6 +10,7 @@ void main() {
       400: GeminiFailureCategory.requestInvalid,
       401: GeminiFailureCategory.invalidKey,
       403: GeminiFailureCategory.permission,
+      404: GeminiFailureCategory.modelNotFound,
       429: GeminiFailureCategory.rateLimit,
       500: GeminiFailureCategory.transientServer,
       502: GeminiFailureCategory.transientServer,
@@ -61,17 +61,11 @@ void main() {
       );
     });
 
-    test('maps schema and secure-store failures to sanitized categories', () {
+    test('preserves an already classified failure', () {
       const schema = GeminiFailure(
         category: GeminiFailureCategory.schemaMismatch,
       );
       expect(classifier.classify(schema), same(schema));
-      expect(
-        classifier
-            .classify(const SecretStoreException(SecretStoreError.unavailable))
-            .category,
-        GeminiFailureCategory.secretUnavailable,
-      );
     });
   });
 }

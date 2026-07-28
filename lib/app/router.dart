@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:keyspace/app/theme/keyspace_theme.dart';
 import 'package:keyspace/features/api_key_pool/presentation/api_key_pool_screen.dart';
 import 'package:keyspace/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:keyspace/features/finance/presentation/finance_dashboard_screen.dart';
+import 'package:keyspace/features/finance/presentation/finance_history_screen.dart';
+import 'package:keyspace/features/finance/presentation/finance_settings_screen.dart';
+import 'package:keyspace/features/finance/presentation/finance_transaction_screen.dart';
 import 'package:keyspace/features/food_chat/presentation/chat_screen.dart';
 import 'package:keyspace/features/food_log/presentation/food_log_editor_screen.dart';
 import 'package:keyspace/features/history/presentation/history_screens.dart';
@@ -18,11 +23,17 @@ abstract final class AppRoutes {
   static const historyDate = '/history/:date';
   static const foodLogEdit = '/food-log/:id/edit';
   static const insights = '/insights';
+  static const finance = '/finance';
+  static const financeHistory = '/finance/history';
+  static const financeTransaction = '/finance/transaction/:id';
   static const settings = '/settings';
   static const apiKeys = '/settings/api-keys';
   static const reminders = '/settings/reminders';
   static const profile = '/settings/profile';
   static const data = '/settings/data';
+  static const financeSettings = '/settings/finance';
+
+  static String financeTransactionPath(String id) => '/finance/transaction/$id';
 
   static const all = <String>[
     onboarding,
@@ -32,11 +43,15 @@ abstract final class AppRoutes {
     historyDate,
     foodLogEdit,
     insights,
+    finance,
+    financeHistory,
+    financeTransaction,
     settings,
     apiKeys,
     reminders,
     profile,
     data,
+    financeSettings,
   ];
 }
 
@@ -94,6 +109,26 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.onboarding}) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppRoutes.finance,
+                builder: (context, state) => const FinanceDashboardScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'history',
+                    builder: (context, state) => const FinanceHistoryScreen(),
+                  ),
+                  GoRoute(
+                    path: 'transaction/:id',
+                    builder: (context, state) => FinanceTransactionScreen(
+                      id: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppRoutes.settings,
                 builder: (context, state) => const SettingsScreen(),
                 routes: [
@@ -116,6 +151,10 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.onboarding}) {
                   GoRoute(
                     path: 'data',
                     builder: (context, state) => const PrivacyDataScreen(),
+                  ),
+                  GoRoute(
+                    path: 'finance',
+                    builder: (context, state) => const FinanceSettingsScreen(),
                   ),
                 ],
               ),
@@ -143,32 +182,84 @@ class _MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ink = Theme.of(context).colorScheme.onSurface;
+    final paper = Theme.of(context).scaffoldBackgroundColor;
+
+    final destinations = [
+      (Icons.today_outlined, Icons.today, 'HARI INI'),
+      (Icons.chat_bubble_outline, Icons.chat_bubble, 'CHAT'),
+      (Icons.history, Icons.history, 'RIWAYAT'),
+      (Icons.bar_chart_outlined, Icons.bar_chart, 'INSIGHT'),
+      (Icons.account_balance_wallet_outlined, Icons.account_balance_wallet, 'KEUANGAN'),
+      (Icons.settings_outlined, Icons.settings, 'PENGATURAN'),
+    ];
+
     return Scaffold(
       body: shell,
       bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: KeySpaceColors.ink, width: 3)),
+        decoration: BoxDecoration(
+          color: paper,
+          border: Border(top: BorderSide(color: ink, width: 3)),
         ),
-        child: NavigationBar(
-          selectedIndex: shell.currentIndex,
-          indicatorColor: KeySpaceColors.signalYellow,
-          onDestinationSelected: (index) => shell.goBranch(
-            index,
-            initialLocation: index == shell.currentIndex,
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              children: destinations.asMap().entries.map((entry) {
+                final i = entry.key;
+                final (outIcon, activeIcon, label) = entry.value;
+                final isActive = shell.currentIndex == i;
+                return Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => shell.goBranch(
+                      i,
+                      initialLocation: i == shell.currentIndex,
+                    ),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOut,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 3,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isActive ? KeySpaceColors.signalYellow : Colors.transparent,
+                        border: Border.all(
+                          color: isActive ? ink : Colors.transparent,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            isActive ? activeIcon : outIcon,
+                            size: 20,
+                            color: ink,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            label,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
+                              color: ink,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-          destinations: const [
-            NavigationDestination(icon: Icon(Icons.today), label: 'Hari Ini'),
-            NavigationDestination(icon: Icon(Icons.chat), label: 'Chat'),
-            NavigationDestination(icon: Icon(Icons.history), label: 'Riwayat'),
-            NavigationDestination(
-              icon: Icon(Icons.bar_chart),
-              label: 'Insight',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.settings),
-              label: 'Pengaturan',
-            ),
-          ],
         ),
       ),
     );

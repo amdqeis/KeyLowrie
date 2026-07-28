@@ -1,12 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
+import 'package:drift_dev/api/migrations_native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keyspace/database/app_database.dart';
 
+import 'migration_schema/schema.dart';
+
 void main() {
   late AppDatabase database;
+
+  setUpAll(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  });
 
   setUp(() {
     database = AppDatabase(NativeDatabase.memory());
@@ -16,23 +24,31 @@ void main() {
     await database.close();
   });
 
-  group('AppDatabase schema v1', () {
-    test('committed schema snapshot contains all 12 tables', () {
-      final snapshot =
+  group('AppDatabase schema v2', () {
+    test('committed snapshots preserve v1 and describe v2', () {
+      final v1Snapshot =
           jsonDecode(
                 File('drift_schemas/drift_schema_v1.json').readAsStringSync(),
               )
               as Map<String, dynamic>;
-      final entities = snapshot['entities'] as List<dynamic>;
-      final tables = entities.cast<Map<String, dynamic>>().where(
-        (entity) => entity['type'] == 'table',
-      );
-      expect(tables, hasLength(12));
-      expect(database.schemaVersion, 1);
+      final v2Snapshot =
+          jsonDecode(
+                File('drift_schemas/drift_schema_v2.json').readAsStringSync(),
+              )
+              as Map<String, dynamic>;
+      final v1Tables = (v1Snapshot['entities'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .where((entity) => entity['type'] == 'table');
+      final v2Tables = (v2Snapshot['entities'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .where((entity) => entity['type'] == 'table');
+      expect(v1Tables, hasLength(12));
+      expect(v2Tables, hasLength(17));
+      expect(database.schemaVersion, 2);
     });
 
     test(
-      'creates exactly 12 domain tables with required indices and FK',
+      'creates exactly 17 domain tables with required indices and FK',
       () async {
         final tables = await database
             .customSelect(
@@ -53,6 +69,11 @@ void main() {
           'notification_events',
           'reminder_settings',
           'user_profile',
+          'financial_categories',
+          'financial_periods',
+          'financial_transactions',
+          'finance_settings',
+          'chat_drafts',
         });
         final indices = await database
             .customSelect("SELECT name FROM sqlite_master WHERE type = 'index'")
@@ -70,6 +91,12 @@ void main() {
             'idx_api_usage_key_created',
             'idx_daily_targets_effective',
             'idx_notification_local_date_status',
+            'idx_financial_categories_type_active',
+            'idx_financial_periods_dates',
+            'idx_financial_transactions_period_type_date',
+            'idx_financial_transactions_category',
+            'idx_financial_transactions_period_reimburse',
+            'idx_chat_drafts_updated',
           }),
         );
         final foreignKeys = await database
@@ -78,6 +105,64 @@ void main() {
         expect(foreignKeys.read<int>('foreign_keys'), 1);
       },
     );
+
+    test('finance defaults and category seeds are idempotent', () async {
+      await database.close();
+      final temp = await Directory.systemTemp.createTemp('keyspace-seed-test-');
+      final file = File('${temp.path}/keyspace.sqlite');
+      try {
+        final first = AppDatabase(NativeDatabase(file));
+        expect(await _count(first, 'finance_settings'), 1);
+        expect(await _count(first, 'financial_categories'), 23);
+        await first.close();
+
+        final reopened = AppDatabase(NativeDatabase(file));
+        expect(await _count(reopened, 'finance_settings'), 1);
+        expect(await _count(reopened, 'financial_categories'), 23);
+        expect(
+          await reopened
+              .customSelect(
+                "SELECT name FROM financial_categories "
+                "WHERE id = 'income-reimbursement'",
+              )
+              .getSingle()
+              .then((row) => row.read<String>('name')),
+          'Penggantian Biaya (Reimbursement)',
+        );
+        await reopened.close();
+      } finally {
+        await temp.delete(recursive: true);
+        database = AppDatabase(NativeDatabase.memory());
+      }
+    });
+
+    test('migrates v1 to v2 without losing nutrition data', () async {
+      final verifier = SchemaVerifier(GeneratedHelper());
+      final schema = await verifier.schemaAt(1);
+      schema.rawDatabase.execute(
+        "INSERT INTO food_logs "
+        "(id, local_date, consumed_at_utc, timezone_offset_minutes, meal_type, "
+        "source, status, total_calories_kcal, created_at, updated_at) "
+        "VALUES ('legacy-log', '2026-07-21', 1, 420, 'lunch', 'manual', "
+        "'confirmed', 450, 1, 1)",
+      );
+      final migrated = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(migrated, 2);
+
+      expect(await _count(migrated, 'food_logs'), 1);
+      expect(await _count(migrated, 'financial_categories'), 23);
+      expect(await _count(migrated, 'finance_settings'), 1);
+      final columns = await migrated
+          .customSelect("SELECT name FROM pragma_table_info('app_settings')")
+          .get();
+      expect(
+        columns.map((row) => row.read<String>('name')),
+        contains('voice_disclosure_acknowledged'),
+      );
+
+      await migrated.close();
+      schema.close();
+    });
 
     test(
       'database schema contains references but no secret value column',

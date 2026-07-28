@@ -116,6 +116,17 @@ class SettingsRepository {
     );
   }
 
+  Future<void> acknowledgeVoiceDisclosure() {
+    return (database.update(
+      database.appSettings,
+    )..where((row) => row.id.equals(1))).write(
+      AppSettingsCompanion(
+        voiceDisclosureAcknowledged: const Value(true),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+  }
+
   String? _cleanOptional(String? value) {
     final cleaned = value?.trim();
     return cleaned == null || cleaned.isEmpty ? null : cleaned;

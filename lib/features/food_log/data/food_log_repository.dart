@@ -201,6 +201,9 @@ class FoodLogRepository {
           updatedAt: Value(now),
         ),
       );
+      await (database.update(database.chatMessages)
+            ..where((row) => row.localRequestId.equals(requestId)))
+          .write(ChatMessagesCompanion(foodLogId: Value(log.id)));
     });
   }
 

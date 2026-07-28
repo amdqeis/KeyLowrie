@@ -3,6 +3,7 @@ import 'package:keyspace/core/errors/gemini_failure.dart';
 import 'package:keyspace/database/app_database.dart';
 import 'package:keyspace/features/food_chat/domain/food_parse_models.dart';
 import 'package:keyspace/features/food_chat/domain/gemini_contracts.dart';
+import 'package:keyspace/features/food_chat/domain/unified_chat_models.dart';
 
 class DriftPendingRequestRepository implements PendingRequestRepository {
   const DriftPendingRequestRepository(this._database);
@@ -58,6 +59,51 @@ class DriftPendingRequestRepository implements PendingRequestRepository {
               mode: InsertMode.insertOrReplace,
             );
       }
+    });
+  }
+
+  @override
+  Future<void> markUnifiedPreviewReady(
+    String requestId,
+    UnifiedChatDraft draft,
+  ) {
+    return _database.transaction(() async {
+      final message = await (_database.select(
+        _database.chatMessages,
+      )..where((row) => row.localRequestId.equals(requestId))).getSingle();
+      await (_database.update(
+        _database.chatMessages,
+      )..where((row) => row.id.equals(message.id))).write(
+        const ChatMessagesCompanion(
+          status: Value('complete'),
+          errorCategory: Value(null),
+        ),
+      );
+      final summary = draft.requiresClarification
+          ? draft.clarificationQuestion ?? 'Input perlu diperjelas.'
+          : switch (draft.detectedDomain) {
+              ChatDomain.nutrition =>
+                '${draft.nutrition?.items.length ?? 0} item nutrisi terdeteksi. Tinjau sebelum disimpan.',
+              ChatDomain.expense =>
+                '${draft.financialItems.length} pengeluaran terdeteksi. Tinjau sebelum disimpan.',
+              ChatDomain.income =>
+                '${draft.financialItems.length} pemasukan terdeteksi. Tinjau sebelum disimpan.',
+              ChatDomain.unknown => 'Jenis input belum dikenali.',
+            };
+      await _database
+          .into(_database.chatMessages)
+          .insert(
+            ChatMessagesCompanion.insert(
+              id: 'assistant-$requestId',
+              sessionId: message.sessionId,
+              role: 'assistant',
+              contentText: summary,
+              status: 'complete',
+              localRequestId: Value(requestId),
+              createdAt: DateTime.now().toUtc(),
+            ),
+            mode: InsertMode.insertOrReplace,
+          );
     });
   }
 

@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>KeySpace menggunakan mikrofon untuk mengubah ucapan menjadi draft teks.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>KeySpace menggunakan pengenalan suara perangkat untuk membuat draft teks yang dapat Anda tinjau.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

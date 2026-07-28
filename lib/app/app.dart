@@ -12,36 +12,29 @@ class KeySpaceApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bootstrap = ref.watch(bootstrapProvider);
-    if (bootstrap.isLoading) {
-      return _material(
-        themeMode: ThemeMode.system,
-        home: const _BootstrapScreen(),
-      );
+    final settings = bootstrap.hasValue
+        ? ref.watch(settingsStreamProvider)
+        : null;
+
+    final themeMode = settings?.hasValue ?? false
+        ? _themeMode(settings!.requireValue.themeMode)
+        : ThemeMode.system;
+
+    if (settings?.hasValue ?? false) {
+      final value = settings!.requireValue;
+      final location = appRouter.routeInformationProvider.value.uri.path;
+      if (!value.onboardingCompleted && location != AppRoutes.onboarding) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          appRouter.go(AppRoutes.onboarding);
+        });
+      } else if (value.onboardingCompleted &&
+          location == AppRoutes.onboarding) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          appRouter.go(AppRoutes.home);
+        });
+      }
     }
-    if (bootstrap.hasError) {
-      return _material(
-        themeMode: ThemeMode.system,
-        home: _RecoveryScreen(onRetry: () => ref.invalidate(bootstrapProvider)),
-      );
-    }
-    final settings = ref.watch(settingsStreamProvider);
-    if (!settings.hasValue) {
-      return _material(
-        themeMode: ThemeMode.system,
-        home: const _BootstrapScreen(),
-      );
-    }
-    final value = settings.requireValue;
-    final location = appRouter.routeInformationProvider.value.uri.path;
-    if (!value.onboardingCompleted && location != AppRoutes.onboarding) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        appRouter.go(AppRoutes.onboarding);
-      });
-    } else if (value.onboardingCompleted && location == AppRoutes.onboarding) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        appRouter.go(AppRoutes.home);
-      });
-    }
+
     return MaterialApp.router(
       title: 'KeySpace',
       debugShowCheckedModeBanner: false,
@@ -54,8 +47,20 @@ class KeySpaceApp extends ConsumerWidget {
       ],
       theme: KeySpaceTheme.light,
       darkTheme: KeySpaceTheme.dark,
-      themeMode: _themeMode(value.themeMode),
+      themeMode: themeMode,
       routerConfig: appRouter,
+      builder: (context, routedChild) {
+        if (bootstrap.isLoading) return const _BootstrapScreen();
+        if (bootstrap.hasError) {
+          return _RecoveryScreen(
+            onRetry: () => ref.invalidate(bootstrapProvider),
+          );
+        }
+        if (!(settings?.hasValue ?? false)) {
+          return const _BootstrapScreen();
+        }
+        return routedChild ?? const _BootstrapScreen();
+      },
     );
   }
 
@@ -64,24 +69,6 @@ class KeySpaceApp extends ConsumerWidget {
     'dark' => ThemeMode.dark,
     _ => ThemeMode.system,
   };
-
-  MaterialApp _material({required ThemeMode themeMode, required Widget home}) {
-    return MaterialApp(
-      title: 'KeySpace',
-      debugShowCheckedModeBanner: false,
-      locale: const Locale('id'),
-      supportedLocales: const [Locale('id')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: KeySpaceTheme.light,
-      darkTheme: KeySpaceTheme.dark,
-      themeMode: themeMode,
-      home: home,
-    );
-  }
 }
 
 class _BootstrapScreen extends StatelessWidget {

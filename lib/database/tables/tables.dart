@@ -40,6 +40,9 @@ class AppSettings extends Table {
       .references(ApiKeyMetadata, #id, onDelete: KeyAction.setNull)();
   TextColumn get geminiModel => text().named('gemini_model')();
   BoolColumn get previewBeforeSave => boolean().named('preview_before_save')();
+  BoolColumn get voiceDisclosureAcknowledged => boolean()
+      .named('voice_disclosure_acknowledged')
+      .withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().named('created_at')();
   DateTimeColumn get updatedAt => dateTime().named('updated_at')();
 
@@ -301,4 +304,160 @@ class NotificationEvents extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'idx_financial_categories_type_active',
+  columns: {#type, #isActive},
+)
+class FinancialCategories extends Table {
+  @override
+  String get tableName => 'financial_categories';
+
+  TextColumn get id => text()();
+  TextColumn get name => text().withLength(min: 1, max: 100)();
+  TextColumn get type => text()();
+  TextColumn get iconKey => text().named('icon_key').nullable()();
+  BoolColumn get isSystem =>
+      boolean().named('is_system').withDefault(const Constant(false))();
+  BoolColumn get isActive =>
+      boolean().named('is_active').withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {type, name},
+  ];
+
+  @override
+  List<String> get customConstraints => [
+    "CHECK (type IN ('expense', 'income'))",
+  ];
+}
+
+@TableIndex(
+  name: 'idx_financial_periods_dates',
+  columns: {#startDate, #endDate},
+)
+class FinancialPeriods extends Table {
+  @override
+  String get tableName => 'financial_periods';
+
+  TextColumn get id => text()();
+  TextColumn get name => text().withLength(min: 1, max: 100)();
+  DateTimeColumn get startDate => dateTime().named('start_date')();
+  DateTimeColumn get endDate => dateTime().named('end_date')();
+  IntColumn get cycleStartDay => integer().named('cycle_start_day')();
+  IntColumn get budgetAmount =>
+      integer().named('budget_amount').withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {startDate, endDate},
+  ];
+
+  @override
+  List<String> get customConstraints => [
+    'CHECK (cycle_start_day BETWEEN 1 AND 28)',
+    'CHECK (budget_amount >= 0)',
+    'CHECK (end_date >= start_date)',
+  ];
+}
+
+@TableIndex(
+  name: 'idx_financial_transactions_period_type_date',
+  columns: {#financialPeriodId, #type, #transactionDate},
+)
+@TableIndex(name: 'idx_financial_transactions_category', columns: {#categoryId})
+@TableIndex(
+  name: 'idx_financial_transactions_period_reimburse',
+  columns: {#financialPeriodId, #isReimburse},
+)
+class FinancialTransactions extends Table {
+  @override
+  String get tableName => 'financial_transactions';
+
+  TextColumn get id => text()();
+  TextColumn get type => text()();
+  TextColumn get name => text().withLength(min: 1, max: 200)();
+  IntColumn get amount => integer()();
+  TextColumn get currencyCode =>
+      text().named('currency_code').withDefault(const Constant('IDR'))();
+  DateTimeColumn get transactionDate => dateTime().named('transaction_date')();
+  TextColumn get categoryId => text()
+      .named('category_id')
+      .references(FinancialCategories, #id, onDelete: KeyAction.restrict)();
+  TextColumn get notes => text().nullable()();
+  BoolColumn get isReimburse =>
+      boolean().named('is_reimburse').withDefault(const Constant(false))();
+  TextColumn get financialPeriodId => text()
+      .named('financial_period_id')
+      .references(FinancialPeriods, #id, onDelete: KeyAction.restrict)();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    "CHECK (type IN ('expense', 'income'))",
+    'CHECK (amount > 0)',
+    "CHECK (currency_code = 'IDR')",
+    "CHECK (type = 'expense' OR is_reimburse = 0)",
+  ];
+}
+
+class FinanceSettings extends Table {
+  @override
+  String get tableName => 'finance_settings';
+
+  IntColumn get id => integer().customConstraint('NOT NULL CHECK (id = 1)')();
+  IntColumn get cycleStartDay =>
+      integer().named('cycle_start_day').withDefault(const Constant(25))();
+  IntColumn get defaultBudgetAmount =>
+      integer().named('default_budget_amount').withDefault(const Constant(0))();
+  TextColumn get currencyCode =>
+      text().named('currency_code').withDefault(const Constant('IDR'))();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    'CHECK (cycle_start_day BETWEEN 1 AND 28)',
+    'CHECK (default_budget_amount >= 0)',
+    "CHECK (currency_code = 'IDR')",
+  ];
+}
+
+@TableIndex(name: 'idx_chat_drafts_updated', columns: {#updatedAt})
+class ChatDrafts extends Table {
+  @override
+  String get tableName => 'chat_drafts';
+
+  TextColumn get id => text()();
+  TextColumn get draftText =>
+      text().named('text').withLength(min: 1, max: 4000)();
+  TextColumn get selectedMode => text().named('selected_mode')();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    "CHECK (selected_mode IN ('automatic', 'nutrition', 'expense', 'income'))",
+  ];
 }

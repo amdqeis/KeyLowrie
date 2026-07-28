@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:keyspace/core/security/secret_store.dart';
 
 enum GeminiFailureCategory {
   invalidKey,
@@ -9,6 +8,7 @@ enum GeminiFailureCategory {
   timeout,
   offline,
   requestInvalid,
+  modelNotFound,
   safetyBlock,
   schemaMismatch,
   secretUnavailable,
@@ -33,11 +33,6 @@ class GeminiErrorClassifier {
 
   GeminiFailure classify(Object error) {
     if (error is GeminiFailure) return error;
-    if (error is SecretStoreException) {
-      return const GeminiFailure(
-        category: GeminiFailureCategory.secretUnavailable,
-      );
-    }
     if (error is DioException) return _classifyDio(error);
     return const GeminiFailure(category: GeminiFailureCategory.unknown);
   }
@@ -95,7 +90,13 @@ class GeminiErrorClassifier {
         httpStatus: status,
       );
     }
-    if (status == 400 || status == 404 || status == 422) {
+    if (status == 404) {
+      return GeminiFailure(
+        category: GeminiFailureCategory.modelNotFound,
+        httpStatus: status,
+      );
+    }
+    if (status == 400 || status == 422) {
       return GeminiFailure(
         category: GeminiFailureCategory.requestInvalid,
         httpStatus: status,

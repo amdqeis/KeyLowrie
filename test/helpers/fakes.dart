@@ -3,6 +3,9 @@ import 'package:keyspace/core/network/request_cancellation.dart';
 import 'package:keyspace/core/time/clock.dart';
 import 'package:keyspace/features/food_chat/domain/food_parse_models.dart';
 import 'package:keyspace/features/food_chat/domain/gemini_contracts.dart';
+import 'package:keyspace/features/food_chat/domain/unified_chat_models.dart';
+import 'package:keyspace/features/voice_input/domain/speech_recognition_service.dart';
+import 'package:keyspace/features/voice_input/domain/voice_input_models.dart';
 
 class FixedClock implements Clock {
   FixedClock(this.value);
@@ -18,11 +21,13 @@ class ClientCall {
     required this.secret,
     required this.input,
     required this.repairAttempt,
+    this.context,
   });
 
   final String secret;
   final String input;
   final bool repairAttempt;
+  final ChatParseContext? context;
 }
 
 class FakeGeminiClient implements GeminiClient {
@@ -41,6 +46,26 @@ class FakeGeminiClient implements GeminiClient {
   }) async {
     calls.add(
       ClientCall(secret: secret, input: input, repairAttempt: repairAttempt),
+    );
+    if (_results.isEmpty) throw StateError('Fake result queue is empty');
+    return _results.removeAt(0);
+  }
+
+  @override
+  Future<GeminiCallResult> parseChat({
+    required String secret,
+    required String input,
+    required ChatParseContext context,
+    required bool repairAttempt,
+    CancellationSignal? cancellation,
+  }) async {
+    calls.add(
+      ClientCall(
+        secret: secret,
+        input: input,
+        repairAttempt: repairAttempt,
+        context: context,
+      ),
     );
     if (_results.isEmpty) throw StateError('Fake result queue is empty');
     return _results.removeAt(0);
@@ -120,6 +145,7 @@ class FakePendingRequestRepository implements PendingRequestRepository {
   final List<PendingRecord> pending = [];
   final Map<String, GeminiFailureCategory> failures = {};
   final Map<String, ParsedFoodDraft> previews = {};
+  final Map<String, UnifiedChatDraft> unifiedPreviews = {};
 
   @override
   Future<void> markFailed(
@@ -132,6 +158,14 @@ class FakePendingRequestRepository implements PendingRequestRepository {
   @override
   Future<void> markPreviewReady(String requestId, ParsedFoodDraft draft) async {
     previews[requestId] = draft;
+  }
+
+  @override
+  Future<void> markUnifiedPreviewReady(
+    String requestId,
+    UnifiedChatDraft draft,
+  ) async {
+    unifiedPreviews[requestId] = draft;
   }
 
   @override
@@ -172,3 +206,79 @@ Map<String, dynamic> validFoodResponse({double calories = 640}) => {
     'general_note': 'Nilai merupakan estimasi.',
   },
 };
+
+class FakeSpeechRecognitionService implements SpeechRecognitionService {
+  VoicePermissionState permission = VoicePermissionState.granted;
+  VoicePermissionState requestedPermission = VoicePermissionState.granted;
+  bool available = true;
+  int permissionChecks = 0;
+  int permissionRequests = 0;
+  int startCalls = 0;
+  int stopCalls = 0;
+  int cancelCalls = 0;
+  int settingsCalls = 0;
+  int disposeCalls = 0;
+  VoiceResultCallback? onResult;
+  VoiceErrorCallback? onError;
+  VoiceStatusCallback? onStatus;
+
+  @override
+  Future<bool> isAvailable() async => available;
+
+  @override
+  Future<VoicePermissionState> permissionStatus() async {
+    permissionChecks++;
+    return permission;
+  }
+
+  @override
+  Future<VoicePermissionState> requestPermission() async {
+    permissionRequests++;
+    permission = requestedPermission;
+    return permission;
+  }
+
+  @override
+  Future<void> start({
+    required VoiceResultCallback onResult,
+    required VoiceErrorCallback onError,
+    required VoiceStatusCallback onStatus,
+  }) async {
+    startCalls++;
+    this.onResult = onResult;
+    this.onError = onError;
+    this.onStatus = onStatus;
+  }
+
+  @override
+  Future<void> stop() async {
+    stopCalls++;
+  }
+
+  @override
+  Future<void> cancel() async {
+    cancelCalls++;
+  }
+
+  @override
+  Future<void> openSettings() async {
+    settingsCalls++;
+  }
+
+  @override
+  Future<void> dispose() async {
+    disposeCalls++;
+  }
+
+  void emitResult(String value, {bool isFinal = false}) {
+    onResult?.call(value, isFinal);
+  }
+
+  void emitError(VoiceRecognitionFailure failure) {
+    onError?.call(VoiceRecognitionError(failure));
+  }
+
+  void emitStatus(String value) {
+    onStatus?.call(value);
+  }
+}

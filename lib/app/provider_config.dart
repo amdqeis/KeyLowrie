@@ -3,10 +3,11 @@ class ProviderConfig {
 
   static const apiVersion = 'v1beta';
   static const endpoint = 'https://generativelanguage.googleapis.com';
-  static const model = 'gemini-2.5-flash';
-  static const responseSchemaVersion = 1;
+  static const model = 'gemini-flash-latest';
+  static const responseSchemaVersion = 2;
   static const connectTimeout = Duration(seconds: 10);
   static const receiveTimeout = Duration(seconds: 30);
+  static const apiKeyTestTimeout = Duration(seconds: 35);
   static const transientRetryCount = 1;
   static const transientRetryBackoff = Duration(milliseconds: 500);
   static const rateLimitCooldown = Duration(seconds: 60);

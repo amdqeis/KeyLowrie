@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:keyspace/app/provider_config.dart';
 import 'package:keyspace/app/router.dart';
-import 'package:keyspace/features/food_chat/domain/gemini_contracts.dart';
+import 'package:keyspace/app/theme/keyspace_theme.dart';
 import 'package:keyspace/features/targets/domain/target_calculator.dart';
 import 'package:keyspace/shared/providers/infrastructure_providers.dart';
 import 'package:keyspace/shared/widgets/brutal_widgets.dart';
@@ -56,6 +57,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ink = Theme.of(context).colorScheme.onSurface;
     return Scaffold(
       appBar: _step == 0
           ? null
@@ -66,12 +68,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onPressed: _busy ? null : () => setState(() => _step--),
                 icon: const Icon(Icons.arrow_back),
               ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(12),
+                child: _StepBar(currentStep: _step, totalSteps: 5, ink: ink),
+              ),
             ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
+            duration: const Duration(milliseconds: 240),
+            transitionBuilder: (child, animation) {
+              final slide = Tween<Offset>(
+                begin: const Offset(0.04, 0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ));
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(position: slide, child: child),
+              );
+            },
             child: Column(
               key: ValueKey(_step),
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -79,10 +98,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 _content(),
                 if (_error != null) ...[
                   const SizedBox(height: 16),
-                  StatusBadge(
-                    label: _error!,
-                    icon: Icons.error_outline,
-                    color: Theme.of(context).colorScheme.errorContainer,
+                  BrutalCard(
+                    animate: false,
+                    color: KeySpaceColors.error.withValues(alpha: 0.12),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: KeySpaceColors.error, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: GoogleFonts.spaceGrotesk(
+                              color: KeySpaceColors.error,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ],
@@ -106,40 +140,63 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 48),
-        Text(
-          'CATAT MAKANAN\nCUKUP LEWAT CHAT',
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-            fontWeight: FontWeight.w900,
-            height: 0.95,
-          ),
+        const SizedBox(height: 52),
+        // Brand mark
+        Row(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              color: KeySpaceColors.signalYellow,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'KEYSPACE',
+              style: GoogleFonts.ibmPlexMono(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2.0,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 28),
-        const BrutalCard(
-          color: Color(0xFFFFD60A),
+        const SizedBox(height: 20),
+        // Staggered headline
+        _StaggeredHeadline(
+          lines: const ['CATAT MAKANAN', 'CUKUP LEWAT CHAT'],
+        ),
+        const SizedBox(height: 32),
+        // Value prop card
+        BrutalCard(
+          color: KeySpaceColors.signalYellow,
+          delay: const Duration(milliseconds: 400),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _Value(
                 icon: Icons.phone_android,
                 text: 'DATA TERSIMPAN DI PERANGKAT',
+                delay: const Duration(milliseconds: 450),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 14),
               _Value(
                 icon: Icons.person_off_outlined,
                 text: 'TANPA LOGIN ATAU AKUN',
+                delay: const Duration(milliseconds: 520),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 14),
               _Value(
                 icon: Icons.lock_outline,
                 text: 'API KEY DI SECURE STORAGE',
+                delay: const Duration(milliseconds: 590),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 28),
         BrutalButton(
-          label: 'MULAI',
+          label: 'MULAI SETUP',
           icon: Icons.arrow_forward,
           onPressed: () => setState(() => _step = 1),
         ),
@@ -352,11 +409,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _section(
       title: 'KEYSPACE SIAP',
       subtitle:
-          'Tekan Catat Makanan untuk mulai. Semua fitur lokal tetap bekerja tanpa API key.',
+          'Tekan Buka Hari Ini untuk mulai. Semua fitur lokal tetap bekerja tanpa API key.',
       children: [
-        const BrutalCard(
-          color: Color(0xFFFFD60A),
-          child: Icon(Icons.check, size: 72),
+        BrutalCard(
+          color: KeySpaceColors.signalYellow,
+          child: Column(
+            children: [
+              const Icon(Icons.check_circle_outline, size: 64),
+              const SizedBox(height: 8),
+              Text(
+                'SETUP SELESAI',
+                style: GoogleFonts.spaceGrotesk(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 24),
         BrutalButton(
@@ -376,15 +446,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const SizedBox(height: 8),
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900),
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 30,
+            fontWeight: FontWeight.w900,
+            color: Theme.of(context).colorScheme.onSurface,
+            height: 1.1,
+          ),
         ),
         const SizedBox(height: 8),
-        Text(subtitle),
-        const SizedBox(height: 22),
+        Text(
+          subtitle,
+          style: GoogleFonts.spaceGrotesk(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+        const SizedBox(height: 24),
         ...children,
       ],
     );
@@ -446,6 +527,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             heightUnit: _heightUnit,
             themeMode: _themeMode,
           );
+      if (!mounted) return;
       setState(() => _step = 2);
     });
   }
@@ -464,6 +546,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             !await _confirmExtreme(value)) {
           return;
         }
+        if (!mounted) return;
         await ref
             .read(targetRepositoryProvider)
             .saveManual(value, DateTime.now());
@@ -495,41 +578,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _saveKey() async {
+    final repository = ref.read(apiKeyAdminRepositoryProvider);
+    final tester = ref.read(apiKeyTestServiceProvider);
     await _run(() async {
       final secret = _secret.text.trim();
       if (secret.isEmpty) throw const FormatException('API key wajib diisi');
-      final id = await ref
-          .read(apiKeyAdminRepositoryProvider)
-          .add(alias: _alias.text, secret: secret);
+      final id = await repository.add(alias: _alias.text, secret: secret);
+      if (!mounted) return;
       if (_testKey) {
-        final result = await ref
-            .read(geminiClientProvider)
-            .parseFood(
-              secret: secret,
-              input: '1 telur rebus',
-              repairAttempt: false,
-            );
-        final health = result is GeminiCallSuccess
-            ? ApiKeyHealth.healthy
-            : _healthFromFailure(
-                (result as GeminiCallFailure).failure.category,
-              );
-        await ref.read(apiKeyAdminRepositoryProvider).updateHealth(id, health);
+        await tester.test(id);
       }
+      if (!mounted) return;
       _secret.clear();
-      if (mounted) setState(() => _step = 4);
+      setState(() => _step = 4);
     });
-  }
-
-  ApiKeyHealth _healthFromFailure(dynamic category) {
-    final name = category.toString();
-    if (name.contains('invalidKey')) return ApiKeyHealth.invalid;
-    if (name.contains('permission')) return ApiKeyHealth.blocked;
-    if (name.contains('rateLimit')) return ApiKeyHealth.limited;
-    if (name.contains('transient') || name.contains('timeout')) {
-      return ApiKeyHealth.transientError;
-    }
-    return ApiKeyHealth.untested;
   }
 
   Future<void> _saveReminder() async {
@@ -556,6 +618,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _run(Future<void> Function() action) async {
+    if (_busy) return;
     setState(() {
       _busy = true;
       _error = null;
@@ -601,7 +664,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       context: context,
       initialTime: _reminderTime,
     );
-    if (value != null) setState(() => _reminderTime = value);
+    if (mounted && value != null) setState(() => _reminderTime = value);
   }
 
   void _showPrivacy() {
@@ -623,25 +686,209 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-class _Value extends StatelessWidget {
-  const _Value({required this.icon, required this.text});
+class _Value extends StatefulWidget {
+  const _Value({
+    required this.icon,
+    required this.text,
+    this.delay = Duration.zero,
+  });
 
   final IconData icon;
   final String text;
+  final Duration delay;
+
+  @override
+  State<_Value> createState() => _ValueState();
+}
+
+class _ValueState extends State<_Value> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(-0.08, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    Future.delayed(widget.delay, () {
+      if (mounted) _ctrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontWeight: FontWeight.w900),
-          ),
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(
+        position: _slide,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: KeySpaceColors.ink.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(widget.icon, size: 18, color: KeySpaceColors.ink),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                widget.text,
+                style: GoogleFonts.spaceGrotesk(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                  color: KeySpaceColors.ink,
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// _StaggeredHeadline
+// ─────────────────────────────────────────────────────────────
+
+class _StaggeredHeadline extends StatefulWidget {
+  const _StaggeredHeadline({required this.lines});
+  final List<String> lines;
+
+  @override
+  State<_StaggeredHeadline> createState() => _StaggeredHeadlineState();
+}
+
+class _StaggeredHeadlineState extends State<_StaggeredHeadline>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final List<Animation<double>> _opacities;
+  late final List<Animation<Offset>> _slides;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 200 + widget.lines.length * 160),
+    );
+    final count = widget.lines.length;
+    _opacities = List.generate(count, (i) {
+      final start = i / (count + 1);
+      final end = (i + 1) / (count + 1);
+      return CurvedAnimation(
+        parent: _ctrl,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      );
+    });
+    _slides = List.generate(count, (i) {
+      final start = i / (count + 1);
+      final end = (i + 1) / (count + 1);
+      return Tween<Offset>(
+        begin: const Offset(0, 0.3),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(
+        parent: _ctrl,
+        curve: Interval(start, end, curve: Curves.easeOutCubic),
+      ));
+    });
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: widget.lines.asMap().entries.map((e) {
+            return FadeTransition(
+              opacity: _opacities[e.key],
+              child: SlideTransition(
+                position: _slides[e.key],
+                child: Text(
+                  e.value,
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 38,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// _StepBar — brutalist step progress indicator
+// ─────────────────────────────────────────────────────────────
+
+class _StepBar extends StatelessWidget {
+  const _StepBar({
+    required this.currentStep,
+    required this.totalSteps,
+    required this.ink,
+  });
+  final int currentStep;
+  final int totalSteps;
+  final Color ink;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: Row(
+        children: List.generate(totalSteps, (i) {
+          final isActive = i < currentStep;
+          final isCurrent = i == currentStep - 1;
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: i < totalSteps - 1 ? 4 : 0),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: isActive || isCurrent
+                      ? KeySpaceColors.signalYellow
+                      : ink.withValues(alpha: 0.12),
+                  border: Border.all(color: ink, width: 1.5),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
     );
   }
 }

@@ -73,6 +73,12 @@ class SettingsScreen extends ConsumerWidget {
               route: AppRoutes.reminders,
             ),
             _SettingsTile(
+              icon: Icons.account_balance_wallet,
+              title: 'Keuangan',
+              subtitle: 'Siklus, budget IDR, dan kategori',
+              route: AppRoutes.financeSettings,
+            ),
+            _SettingsTile(
               icon: Icons.privacy_tip,
               title: 'Privasi & Data',
               subtitle: 'Cara KeySpace menyimpan dan mengirim data',
@@ -390,7 +396,7 @@ class PrivacyDataScreen extends StatelessWidget {
           SizedBox(height: 14),
           BrutalCard(
             child: Text(
-              'Food Log, profil, target, chat, dan settings disimpan di SQLite pada perangkat.',
+              'Food Log, transaksi keuangan, profil, target, chat, dan settings disimpan di SQLite pada perangkat.',
             ),
           ),
           SizedBox(height: 14),
@@ -402,7 +408,7 @@ class PrivacyDataScreen extends StatelessWidget {
           SizedBox(height: 14),
           BrutalCard(
             child: Text(
-              'Saat Anda menekan Kirim di Chat, hanya teks makanan dan konteks minimum parsing yang dikirim langsung ke Gemini. Profil BMR/TDEE tidak dikirim.',
+              'Saat Anda menekan Kirim di Chat, hanya teks input dan konteks minimum parsing yang dikirim langsung ke Gemini. Histori transaksi, profil BMR/TDEE, dan nominal budget tidak dikirim.',
             ),
           ),
           SizedBox(height: 14),

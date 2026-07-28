@@ -142,6 +142,7 @@ void main() {
     test('invalid request dan safety block tidak merotasi pool', () async {
       for (final category in [
         GeminiFailureCategory.requestInvalid,
+        GeminiFailureCategory.modelNotFound,
         GeminiFailureCategory.safetyBlock,
       ]) {
         final client = FakeGeminiClient([_failure(category)]);
@@ -159,7 +160,8 @@ void main() {
         final result = await service.parseFood('input');
 
         expect(client.calls, hasLength(1));
-        if (category == GeminiFailureCategory.requestInvalid) {
+        if (category == GeminiFailureCategory.requestInvalid ||
+            category == GeminiFailureCategory.modelNotFound) {
           expect(result, isA<RequestFailure>());
         } else {
           expect(result, isA<ContentNeedsRevision>());
