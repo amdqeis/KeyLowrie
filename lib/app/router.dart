@@ -12,8 +12,9 @@ import 'package:keyspace/features/food_chat/presentation/chat_screen.dart';
 import 'package:keyspace/features/food_log/presentation/food_log_editor_screen.dart';
 import 'package:keyspace/features/history/presentation/history_screens.dart';
 import 'package:keyspace/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:keyspace/features/scheduler/domain/schedule_models.dart';
+import 'package:keyspace/features/scheduler/presentation/scheduler_screens.dart';
 import 'package:keyspace/features/settings/presentation/settings_screens.dart';
-import 'package:keyspace/shared/widgets/placeholder_screen.dart';
 
 abstract final class AppRoutes {
   static const onboarding = '/onboarding';
@@ -23,6 +24,10 @@ abstract final class AppRoutes {
   static const historyDate = '/history/:date';
   static const foodLogEdit = '/food-log/:id/edit';
   static const insights = '/insights';
+  static const scheduler = '/scheduler';
+  static const schedulerNew = '/scheduler/new';
+  static const schedulerDetail = '/scheduler/:id';
+  static const schedulerEdit = '/scheduler/:id/edit';
   static const finance = '/finance';
   static const financeHistory = '/finance/history';
   static const financeTransaction = '/finance/transaction/:id';
@@ -34,6 +39,8 @@ abstract final class AppRoutes {
   static const financeSettings = '/settings/finance';
 
   static String financeTransactionPath(String id) => '/finance/transaction/$id';
+  static String schedulerDetailPath(String id) => '/scheduler/$id';
+  static String schedulerEditPath(String id) => '/scheduler/$id/edit';
 
   static const all = <String>[
     onboarding,
@@ -43,6 +50,10 @@ abstract final class AppRoutes {
     historyDate,
     foodLogEdit,
     insights,
+    scheduler,
+    schedulerNew,
+    schedulerDetail,
+    schedulerEdit,
     finance,
     financeHistory,
     financeTransaction,
@@ -100,9 +111,31 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.onboarding}) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppRoutes.insights,
-                builder: (context, state) =>
-                    const PlaceholderScreen(title: 'INSIGHT'),
+                path: AppRoutes.scheduler,
+                builder: (context, state) => const SchedulerScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) => ScheduleEditorScreen(
+                      initialDraft: state.extra is ScheduleDraft
+                          ? state.extra! as ScheduleDraft
+                          : null,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) =>
+                        ScheduleDetailScreen(id: state.pathParameters['id']!),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        builder: (context, state) => ScheduleEditorScreen(
+                          id: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -169,6 +202,10 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.onboarding}) {
           initialDate: state.uri.queryParameters['date'],
         ),
       ),
+      GoRoute(
+        path: AppRoutes.insights,
+        redirect: (context, state) => AppRoutes.scheduler,
+      ),
     ],
   );
 }
@@ -189,8 +226,12 @@ class _MainShell extends StatelessWidget {
       (Icons.today_outlined, Icons.today, 'HARI INI'),
       (Icons.chat_bubble_outline, Icons.chat_bubble, 'CHAT'),
       (Icons.history, Icons.history, 'RIWAYAT'),
-      (Icons.bar_chart_outlined, Icons.bar_chart, 'INSIGHT'),
-      (Icons.account_balance_wallet_outlined, Icons.account_balance_wallet, 'KEUANGAN'),
+      (Icons.calendar_month_outlined, Icons.calendar_month, 'JADWAL'),
+      (
+        Icons.account_balance_wallet_outlined,
+        Icons.account_balance_wallet,
+        'KEUANGAN',
+      ),
       (Icons.settings_outlined, Icons.settings, 'PENGATURAN'),
     ];
 
@@ -225,7 +266,9 @@ class _MainShell extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: isActive ? KeySpaceColors.signalYellow : Colors.transparent,
+                        color: isActive
+                            ? KeySpaceColors.signalYellow
+                            : Colors.transparent,
                         border: Border.all(
                           color: isActive ? ink : Colors.transparent,
                           width: 2,

@@ -1,9 +1,9 @@
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:keyspace/features/report_export/domain/report_models.dart';
 
 void main() {
   group('CalorieReportData', () {
-    DailyCalorieSummary _day({
+    DailyCalorieSummary daySummary({
       required DateTime date,
       required double calories,
       int? target,
@@ -25,8 +25,8 @@ void main() {
         rangeEnd: DateTime.utc(2025, 1, 3),
         generatedAt: DateTime.utc(2025, 1, 4),
         dailySummaries: [
-          _day(date: DateTime.utc(2025, 1, 1), calories: 2000),
-          _day(date: DateTime.utc(2025, 1, 2), calories: 1500),
+          daySummary(date: DateTime.utc(2025, 1, 1), calories: 2000),
+          daySummary(date: DateTime.utc(2025, 1, 2), calories: 1500),
         ],
         foodItems: [],
         defaultTargetCalories: 2000,
@@ -59,7 +59,7 @@ void main() {
         rangeEnd: DateTime.utc(2025, 1, 2),
         generatedAt: DateTime.utc(2025, 1, 3),
         dailySummaries: [
-          _day(date: DateTime.utc(2025, 1, 1), calories: 1800),
+          daySummary(date: DateTime.utc(2025, 1, 1), calories: 1800),
           // protein null
         ],
         foodItems: [],
@@ -79,17 +79,17 @@ void main() {
         rangeEnd: DateTime.utc(2025, 1, 3),
         generatedAt: DateTime.utc(2025, 1, 4),
         dailySummaries: [
-          _day(
+          daySummary(
             date: DateTime.utc(2025, 1, 1),
             calories: 1200,
             target: 2000,
           ), // bawah
-          _day(
+          daySummary(
             date: DateTime.utc(2025, 1, 2),
             calories: 2000,
             target: 2000,
           ), // pas (within 50)
-          _day(
+          daySummary(
             date: DateTime.utc(2025, 1, 3),
             calories: 2500,
             target: 2000,

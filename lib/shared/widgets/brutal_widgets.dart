@@ -160,12 +160,8 @@ class _BrutalButtonState extends State<BrutalButton>
         : widget.secondary
         ? Theme.of(context).colorScheme.surface
         : KeySpaceColors.signalYellow;
-    final fgColor = isDisabled
-        ? ink.withValues(alpha: 0.35)
-        : ink;
-    final borderColor = isDisabled
-        ? ink.withValues(alpha: 0.25)
-        : ink;
+    final fgColor = isDisabled ? ink.withValues(alpha: 0.35) : ink;
+    final borderColor = isDisabled ? ink.withValues(alpha: 0.25) : ink;
 
     return Semantics(
       button: true,
@@ -179,10 +175,7 @@ class _BrutalButtonState extends State<BrutalButton>
               bottom: 4 * _shadow.value,
             ),
             child: Transform.translate(
-              offset: Offset(
-                _offset.value.dx,
-                _offset.value.dy,
-              ),
+              offset: Offset(_offset.value.dx, _offset.value.dy),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   boxShadow: [
@@ -213,8 +206,9 @@ class _BrutalButtonState extends State<BrutalButton>
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
-              mainAxisSize:
-                  widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisSize: widget.fullWidth
+                  ? MainAxisSize.max
+                  : MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (widget.icon != null) ...[
@@ -399,9 +393,7 @@ class _CalorieProgressBarState extends State<CalorieProgressBar>
     final ratio = target == null || target <= 0
         ? 0.0
         : widget.consumed / target;
-    final fromRatio = target == null || target <= 0
-        ? 0.0
-        : from / target;
+    final fromRatio = target == null || target <= 0 ? 0.0 : from / target;
 
     _progress = Tween<double>(
       begin: fromRatio.clamp(0.0, 1.0),
@@ -577,18 +569,24 @@ class _EmptyStateState extends State<EmptyState>
     );
     _scale = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0.4, end: 1.1)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 0.4,
+          end: 1.1,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 60,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.1, end: 0.95)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween(
+          begin: 1.1,
+          end: 0.95,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 20,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 0.95, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 0.95,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 20,
       ),
     ]).animate(_ctrl);
@@ -624,7 +622,10 @@ class _EmptyStateState extends State<EmptyState>
           ),
           const SizedBox(height: 6),
           Text(widget.message, textAlign: TextAlign.center),
-          if (widget.action != null) ...[const SizedBox(height: 16), widget.action!],
+          if (widget.action != null) ...[
+            const SizedBox(height: 16),
+            widget.action!,
+          ],
         ],
       ),
     );
@@ -758,10 +759,7 @@ class _BrutalProgressIndicatorState extends State<BrutalProgressIndicator>
         animation: _ctrl,
         builder: (context, _) {
           return CustomPaint(
-            painter: _SquareSpinnerPainter(
-              progress: _ctrl.value,
-              color: ink,
-            ),
+            painter: _SquareSpinnerPainter(progress: _ctrl.value, color: ink),
           );
         },
       ),

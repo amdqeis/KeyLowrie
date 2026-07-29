@@ -23,10 +23,12 @@ void main() {
     final fixture = await _Fixture.create(_ImmediateClient(_success()));
     addTearDown(fixture.close);
     await tester.pumpWidget(fixture.widget);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     await tester.tap(find.text('TES'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('API key siap digunakan.'), findsOneWidget);
     expect((await fixture.repository.keys()).single.healthStatus, 'healthy');
@@ -42,10 +44,12 @@ void main() {
     );
     addTearDown(fixture.close);
     await tester.pumpWidget(fixture.widget);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     await tester.tap(find.text('TES'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(
       find.text('API key tidak valid. Periksa kembali key yang dimasukkan.'),
@@ -63,7 +67,8 @@ void main() {
     final fixture = await _Fixture.create(client);
     addTearDown(fixture.close);
     await tester.pumpWidget(fixture.widget);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     final testButton = find.text('TES');
     await tester.tap(testButton);

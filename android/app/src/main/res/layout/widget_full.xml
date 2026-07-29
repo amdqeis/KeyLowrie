@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- KeySpace Full Widget (4×3) — semua info + shortcut chat -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="14dp"
+    android:id="@+id/widget_full_root">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="KeySpace" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="KEYSPACE"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#111111"
+            android:layout_marginStart="6dp"
+            android:letterSpacing="0.1"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/widget_full_updated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--:--"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="#77111111"
+            android:fontFamily="monospace" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#111111"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Row 1: Kalori & Budget -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <!-- Kalori -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_card_yellow"
+            android:padding="10dp"
+            android:id="@+id/widget_full_calorie_card">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="KALORI HARI INI"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#88111111"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/widget_full_calories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-- kkal"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:layout_marginTop="2dp"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="6dp"
+            android:layout_height="match_parent" />
+
+        <!-- Budget -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_card_green"
+            android:padding="10dp"
+            android:id="@+id/widget_full_budget_card">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SISA BUDGET"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#88111111"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/widget_full_budget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rp --"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="6dp" />
+
+    <!-- Row 2: Jadwal terdekat -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/widget_card_blue"
+        android:padding="10dp"
+        android:id="@+id/widget_full_schedule_card">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:minWidth="48dp">
+
+            <TextView
+                android:id="@+id/widget_full_next_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--:--"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/widget_full_next_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#77111111" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="3dp"
+            android:layout_height="match_parent"
+            android:background="#33111111"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="JADWAL TERDEKAT"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#88111111"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/widget_full_next_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tidak ada jadwal"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginTop="2dp"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="6dp" />
+
+    <!-- Row 3: Chat shortcut — tombol prominent -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@drawable/widget_card_ink"
+        android:padding="10dp"
+        android:id="@+id/widget_full_chat_card">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="[ CHAT AI ]"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#F5F3EE"
+            android:letterSpacing="0.1"
+            android:fontFamily="sans-serif-medium" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

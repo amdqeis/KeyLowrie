@@ -4,7 +4,7 @@ KeySpace adalah aplikasi Flutter pencatat nutrisi lokal, offline-first, dan chat
 
 ## Fase saat ini
 
-Ekspansi Voice Input dan Personal Finance telah menyelesaikan Gate Tahap 7. Aplikasi tetap offline-first dengan SQLite/Drift sebagai source of truth, Riverpod, `go_router`, secure storage untuk API key, dan Gemini key-pool/failover. Nutrisi lama tetap tersedia bersama composer terpadu dan tab keenam Keuangan.
+Smart Scheduler telah ditambahkan di atas ekspansi Voice Input dan Personal Finance. Aplikasi tetap offline-first dengan SQLite/Drift sebagai source of truth, Riverpod, `go_router`, secure storage untuk API key, dan Gemini key-pool/failover.
 
 ## Fitur ekspansi
 
@@ -12,6 +12,17 @@ Ekspansi Voice Input dan Personal Finance telah menyelesaikan Gate Tahap 7. Apli
 - Voice-to-text memakai recognizer OS. Partial/final transcript hanya mengubah draft yang dapat diedit; Gemini baru dipanggil setelah tombol Kirim ditekan.
 - Review finance mendukung multiple item, edit seluruh field, konversi tipe, hapus item, reimbursement khusus expense, dan penyimpanan batch atomik.
 - Tab Keuangan menyediakan dashboard reaktif, riwayat/filter/pencarian, detail edit/hapus, periode lama, cycle day 1–28, budget, dan kategori. Mata uang v1 dikunci ke IDR.
+- Tab Jadwal menggantikan placeholder Insight dan menyediakan hourly, daily, weekly, task list, detail, serta editor manual.
+- Chat memiliki mode Jadwal dan mode Otomatis dapat menerima structured schedule dari Gemini. Hasil selalu menjadi review draft sebelum disimpan.
+- Event/task, kategori, recurrence daily/weekly/monthly, conflict warning, dan reminder disimpan lokal pada Drift schema v3.
+- Reminder scheduler memakai occurrence virtual dengan rolling horizon 30 hari, reconciliation saat bootstrap, snooze 10 menit, complete task, serta deep-link edit.
+
+Kontrak waktu scheduler:
+
+- Event berwaktu disimpan sebagai UTC bersama IANA timezone asal.
+- All-day event dan due date tanpa jam mempertahankan tanggal lokal.
+- Recurrence memakai weekday ISO 1–7 dan edit/hapus berlaku untuk seluruh series.
+- Registrasi notification OS bukan bagian dari transaksi SQLite; database menjadi source of truth dan status gagal akan direkonsiliasi.
 
 Formula finance:
 
@@ -52,14 +63,14 @@ Dokumen sumber kebenaran: `srs.md`, `prd.md`, `userflow.md`, dan `design.md`. Ke
 
 ## Status validasi terakhir
 
-- `dart format .`: 93 file, tidak ada perubahan.
-- Drift build runner selesai; dump schema v2 baru identik dengan snapshot dan helper migrasi dapat diregenerasi.
+- `dart format --output=none --set-exit-if-changed .`: 115 file, tidak ada perubahan.
+- Drift build runner selesai; snapshot schema v3 dan helper migration v1/v2/v3 berhasil diregenerasi.
 - `flutter analyze`: tidak ada issue.
-- `flutter test`: 124 test lulus, seluruh Gemini automated test memakai fake/fixture lokal.
+- `flutter test --concurrency=1`: 148 test lulus, seluruh Gemini automated test memakai fake/fixture lokal.
 - `git diff --check`, audit pola credential, dan audit file sensitif: bersih.
-- APK debug terbentuk dan lolos pemeriksaan integritas ZIP, tetapi wrapper Flutter tertahan saat finalisasi Gradle dan tidak menghasilkan completion message. Karena itu build Android belum diklaim lulus bersih.
+- Build APK tidak dijalankan pada ekspansi scheduler ini. Artifact lama tidak dipakai sebagai bukti build atau kesiapan release.
 
-Belum divalidasi pada perangkat fisik: voice recognizer/permission OS, secure storage platform, instalasi APK, lifecycle Android/iOS, kualitas transkripsi, dan live Gemini end-to-end.
+Belum divalidasi pada perangkat fisik: notification app-closed/reboot/action, fallback exact/inexact Android, batas pending iOS, perubahan timezone, voice recognizer/permission OS, secure storage, instalasi APK, lifecycle Android/iOS, dan live Gemini end-to-end.
 
 ## Checklist uji manual perangkat
 
@@ -68,4 +79,6 @@ Belum divalidasi pada perangkat fisik: voice recognizer/permission OS, secure st
 3. Uji mode Otomatis/Kalori/Pengeluaran/Pemasukan, clarification, retry seluruh-key-gagal, serta Catat Manual.
 4. Simpan multiple transaksi, konversi expense/income, reimbursement, edit tanggal lintas periode, dan rollback input invalid.
 5. Verifikasi dashboard langsung berubah setelah create/edit/delete, over-budget state, filter/search, periode lama, cycle day bridge, budget, dan kategori nonaktif.
-6. Restart aplikasi untuk memeriksa draft, database, settings, secure storage, reminder reconciliation, dan lifecycle background/foreground.
+6. Buat event/task manual dan melalui chat, periksa warning bentrok, recurrence, completion, edit seluruh series, dan hapus.
+7. Uji reminder 15 menit/1 jam, app ditutup, snooze, complete, reschedule, reboot Android, perubahan timezone, dan fallback inexact.
+8. Restart aplikasi untuk memeriksa draft, database, settings, secure storage, reminder reconciliation, dan lifecycle background/foreground.

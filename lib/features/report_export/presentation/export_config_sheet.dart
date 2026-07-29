@@ -269,19 +269,22 @@ class _ExportConfigSheetState extends ConsumerState<_ExportConfigSheet> {
               contentPadding: EdgeInsets.zero,
               leading: Radio<String>(
                 value: period.id,
+                // TODO: migrate to RadioGroup when the minimum Flutter SDK
+                // exposes a stable group API.
+                // ignore: deprecated_member_use
                 groupValue: _selectedPeriod?.id,
+                // ignore: deprecated_member_use
                 onChanged: _isLoading
                     ? null
                     : (_) => setState(() {
-                          _selectedPeriod = period;
-                          _errorMessage = null;
-                        }),
+                        _selectedPeriod = period;
+                        _errorMessage = null;
+                      }),
               ),
               title: Text(
                 period.name,
                 style: TextStyle(
-                  fontWeight:
-                      isSelected ? FontWeight.w800 : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.normal,
                 ),
               ),
               subtitle: Text(
@@ -291,9 +294,9 @@ class _ExportConfigSheetState extends ConsumerState<_ExportConfigSheet> {
               onTap: _isLoading
                   ? null
                   : () => setState(() {
-                        _selectedPeriod = period;
-                        _errorMessage = null;
-                      }),
+                      _selectedPeriod = period;
+                      _errorMessage = null;
+                    }),
             );
           }),
         ],

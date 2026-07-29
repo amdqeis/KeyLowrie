@@ -28,6 +28,9 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="es.antonborri.home_widget.action.LAUNCH" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -47,6 +50,48 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+
+        <!-- ── KeySpace Home Screen Widgets ──────────────────────────────── -->
+
+        <!-- Widget Cepat (2×1): shortcut Chat AI -->
+        <receiver
+            android:name=".QuickWidgetProvider"
+            android:exported="true"
+            android:label="KeySpace — Chat AI">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quick_info" />
+        </receiver>
+
+        <!-- Widget Harian (4×2): kalori + keuangan + jadwal -->
+        <receiver
+            android:name=".DailyWidgetProvider"
+            android:exported="true"
+            android:label="KeySpace — Ringkasan Harian">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_daily_info" />
+        </receiver>
+
+        <!-- Widget Penuh (4×3): semua info + shortcut chat -->
+        <receiver
+            android:name=".FullWidgetProvider"
+            android:exported="true"
+            android:label="KeySpace — Widget Lengkap">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_full_info" />
+        </receiver>
+
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

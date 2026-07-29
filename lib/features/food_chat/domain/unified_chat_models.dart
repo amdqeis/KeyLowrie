@@ -1,8 +1,9 @@
 import 'package:keyspace/core/errors/gemini_failure.dart';
 import 'package:keyspace/features/food_chat/domain/chat_input_models.dart';
 import 'package:keyspace/features/food_chat/domain/food_parse_models.dart';
+import 'package:keyspace/features/scheduler/domain/schedule_models.dart';
 
-enum ChatDomain { nutrition, expense, income, unknown }
+enum ChatDomain { nutrition, expense, income, schedule, unknown }
 
 class GeminiCategoryContext {
   const GeminiCategoryContext({
@@ -23,6 +24,10 @@ class ChatParseContext {
     required this.timezone,
     required this.currencyCode,
     required this.activeCategories,
+    this.scheduleCategories = const [],
+    this.currentDateTime,
+    this.weekStartsOn = 'monday',
+    this.defaultEventDurationMinutes = 60,
   });
 
   final ChatInputMode mode;
@@ -30,6 +35,10 @@ class ChatParseContext {
   final String timezone;
   final String currencyCode;
   final List<GeminiCategoryContext> activeCategories;
+  final List<String> scheduleCategories;
+  final DateTime? currentDateTime;
+  final String weekStartsOn;
+  final int defaultEventDurationMinutes;
 }
 
 class ParsedFinancialItem {
@@ -58,6 +67,7 @@ class UnifiedChatDraft {
     required this.financialItems,
     this.clarificationQuestion,
     this.nutrition,
+    this.schedule,
   });
 
   final ChatDomain detectedDomain;
@@ -66,6 +76,7 @@ class UnifiedChatDraft {
   final String? clarificationQuestion;
   final List<ParsedFinancialItem> financialItems;
   final ParsedFoodDraft? nutrition;
+  final ScheduleDraft? schedule;
 }
 
 sealed class ParseChatResult {

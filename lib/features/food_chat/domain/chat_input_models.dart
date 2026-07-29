@@ -1,4 +1,4 @@
-enum ChatInputMode { automatic, nutrition, expense, income }
+enum ChatInputMode { automatic, nutrition, expense, income, schedule }
 
 enum ChatParseStatus { draft, parsing, needsReview, saved, failed }
 

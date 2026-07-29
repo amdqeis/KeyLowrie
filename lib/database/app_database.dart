@@ -29,6 +29,11 @@ part 'app_database.g.dart';
     FinancialTransactions,
     FinanceSettings,
     ChatDrafts,
+    ScheduleCategories,
+    ScheduleItems,
+    ScheduleReminders,
+    ScheduleNotificationOccurrences,
+    SchedulerSettings,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -60,10 +65,26 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createIndex(idxFinancialTransactionsPeriodReimburse);
         await migrator.createIndex(idxChatDraftsUpdated);
       }
+      if (from < 3) {
+        await migrator.alterTable(TableMigration(chatDrafts));
+        await migrator.createTable(scheduleCategories);
+        await migrator.createTable(scheduleItems);
+        await migrator.createTable(scheduleReminders);
+        await migrator.createTable(scheduleNotificationOccurrences);
+        await migrator.createTable(schedulerSettings);
+        await migrator.createIndex(idxScheduleCategoriesActive);
+        await migrator.createIndex(idxScheduleItemsTimeStatus);
+        await migrator.createIndex(idxScheduleItemsDueStatus);
+        await migrator.createIndex(idxScheduleItemsCategory);
+        await migrator.createIndex(idxScheduleRemindersItemEnabled);
+        await migrator.createIndex(idxScheduleOccurrencesItemTime);
+        await migrator.createIndex(idxScheduleOccurrencesSync);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
       await _seedFinanceDefaults();
+      await _seedSchedulerDefaults();
     },
   );
 
@@ -85,6 +106,42 @@ class AppDatabase extends _$AppDatabase {
               iconKey: Value(seed.iconKey),
               isSystem: const Value(true),
               isActive: const Value(true),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+      });
+    });
+  }
+
+  Future<void> _seedSchedulerDefaults() async {
+    final now = DateTime.now().toUtc();
+    const names = <String>[
+      'Pekerjaan',
+      'Kuliah',
+      'Pribadi',
+      'Kesehatan',
+      'Keuangan',
+      'Sosial',
+      'Deadline',
+      'Lainnya',
+    ];
+    await transaction(() async {
+      await into(schedulerSettings).insert(
+        SchedulerSettingsCompanion.insert(id: const Value(1), updatedAt: now),
+        mode: InsertMode.insertOrIgnore,
+      );
+      await batch((batch) {
+        batch.insertAll(
+          scheduleCategories,
+          names.map(
+            (name) => ScheduleCategoriesCompanion.insert(
+              id: 'schedule-${name.toLowerCase()}',
+              name: name,
+              isSystem: true,
+              isActive: true,
               createdAt: now,
               updatedAt: now,
             ),

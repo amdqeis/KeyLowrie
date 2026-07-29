@@ -86,6 +86,10 @@ void main() {
       'timezone',
       'currency',
       'active_categories',
+      'current_datetime',
+      'week_starts_on',
+      'default_event_duration_minutes',
+      'active_schedule_categories',
     });
     expect(payload['local_date'], '2026-07-22');
     expect(payload['timezone'], 'Asia/Jakarta');

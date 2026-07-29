@@ -24,25 +24,23 @@ abstract final class KeySpaceFonts {
     Color? color,
     double? letterSpacing,
     double? height,
-  }) =>
-      GoogleFonts.spaceGrotesk(
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        color: color,
-        letterSpacing: letterSpacing,
-        height: height,
-      );
+  }) => GoogleFonts.spaceGrotesk(
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    color: color,
+    letterSpacing: letterSpacing,
+    height: height,
+  );
 
   static TextStyle mono({
     double? fontSize,
     FontWeight? fontWeight,
     Color? color,
-  }) =>
-      GoogleFonts.ibmPlexMono(
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        color: color,
-      );
+  }) => GoogleFonts.ibmPlexMono(
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    color: color,
+  );
 }
 
 abstract final class KeySpaceTheme {
@@ -83,28 +81,36 @@ abstract final class KeySpaceTheme {
     return base.copyWith(
       textTheme: baseTextTheme.copyWith(
         displayLarge: baseTextTheme.displayLarge?.copyWith(
-          color: ink, fontWeight: FontWeight.w900,
+          color: ink,
+          fontWeight: FontWeight.w900,
         ),
         displayMedium: baseTextTheme.displayMedium?.copyWith(
-          color: ink, fontWeight: FontWeight.w900,
+          color: ink,
+          fontWeight: FontWeight.w900,
         ),
         displaySmall: baseTextTheme.displaySmall?.copyWith(
-          color: ink, fontWeight: FontWeight.w900,
+          color: ink,
+          fontWeight: FontWeight.w900,
         ),
         headlineLarge: baseTextTheme.headlineLarge?.copyWith(
-          color: ink, fontWeight: FontWeight.w800,
+          color: ink,
+          fontWeight: FontWeight.w800,
         ),
         headlineMedium: baseTextTheme.headlineMedium?.copyWith(
-          color: ink, fontWeight: FontWeight.w800,
+          color: ink,
+          fontWeight: FontWeight.w800,
         ),
         headlineSmall: baseTextTheme.headlineSmall?.copyWith(
-          color: ink, fontWeight: FontWeight.w800,
+          color: ink,
+          fontWeight: FontWeight.w800,
         ),
         titleLarge: baseTextTheme.titleLarge?.copyWith(
-          color: ink, fontWeight: FontWeight.w900,
+          color: ink,
+          fontWeight: FontWeight.w900,
         ),
         titleMedium: baseTextTheme.titleMedium?.copyWith(
-          color: ink, fontWeight: FontWeight.w700,
+          color: ink,
+          fontWeight: FontWeight.w700,
         ),
         bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: ink),
         bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: ink),
@@ -190,7 +196,10 @@ abstract final class KeySpaceTheme {
             width: 3,
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -219,9 +228,7 @@ abstract final class KeySpaceTheme {
             letterSpacing: 0.5,
           ),
           side: BorderSide(color: ink, width: 3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(

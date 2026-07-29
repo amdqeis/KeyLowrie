@@ -115,3 +115,22 @@
 - README serta architecture notes diperbarui dengan fitur, formula budget/reimburse, voice flow, kontrak Gemini offline, hasil command aktual, risiko, dan checklist manual.
 - Belum tervalidasi: physical-device Android/iOS, recognizer dan permission OS, secure storage platform, live Gemini end-to-end, release signing/build, serta distribusi store.
 - Gate Tahap 7 selesai secara konservatif berdasarkan quality gate aktual; tidak ada tahap lanjutan otomatis.
+
+## 2026-07-28 — AI-Powered Smart Scheduler
+
+- Implementasi diminta sekaligus end-to-end dan migration Drift v2→v3 disetujui secara eksplisit.
+- Schema v3 bersifat additive: `schedule_categories`, `schedule_items`, `schedule_reminders`, `schedule_notification_occurrences`, dan `scheduler_settings`. Seluruh 17 tabel nutrition/finance lama dipertahankan.
+- Kategori scheduler disemai idempotent. Event berwaktu memakai UTC + IANA timezone; all-day/due date tanpa jam memakai tanggal lokal.
+- Recurrence disimpan sebagai series virtual dengan daily/weekly/monthly sederhana, weekday ISO 1–7, rolling reminder horizon 30 hari, dan edit/hapus seluruh series.
+- Unified chat bertambah mode/domain `schedule`. Gemini menerima current datetime, timezone, week start, default duration, dan kategori aktif; parser lokal tetap menjadi validator final dan hasil wajib direview.
+- Placeholder Insight diganti tab Jadwal dengan route `/scheduler`, `/scheduler/new`, `/scheduler/:id`, dan `/scheduler/:id/edit`.
+- Notification scheduler mendukung multi-ID deterministik, reconciliation, snooze 10 menit, complete task, reschedule menuju editor, dan fallback Android inexact. SQLite tetap source of truth ketika registrasi OS gagal.
+- Automated Gemini tetap fixture/fake-based. Physical Android/iOS reminder, app-closed action, reboot, timezone change, exact-alarm behavior, live Gemini, voice, dan secure storage tetap memerlukan device test terpisah.
+- Quality gate akhir: format 115 file tanpa perubahan, `flutter analyze` bersih, 148 test lulus secara serial, migration v1→v3 dan v2→v3 tervalidasi, serta `git diff --check` bersih. Build APK dan device test tidak dijalankan.
+
+## 2026-07-28 — Perbaikan retry chatbot
+
+- Akar pesan `Terjadi kesalahan tak terduga` adalah lookup pesan pending berdasarkan `local_request_id`. Setelah respons pertama, pesan user dan asisten memakai nilai yang sama sehingga retry membuat `getSingle()` menemukan dua baris dan melempar exception.
+- `DriftPendingRequestRepository` sekarang menargetkan pesan user melalui primary key `id == requestId` saat menandai preview atau kegagalan. Pesan asisten tidak lagi ikut berubah menjadi failed.
+- Regression test mencakup retry setelah pesan asisten terbentuk dan isolasi status failure antara pesan user/asisten.
+- Validasi: focused repository test 2/2 lulus dan `flutter analyze` bersih. Live Gemini dan physical-device flow tidak dijalankan.

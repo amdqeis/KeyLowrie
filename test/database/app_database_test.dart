@@ -24,8 +24,8 @@ void main() {
     await database.close();
   });
 
-  group('AppDatabase schema v2', () {
-    test('committed snapshots preserve v1 and describe v2', () {
+  group('AppDatabase schema v3', () {
+    test('committed snapshots preserve v1/v2 and describe v3', () {
       final v1Snapshot =
           jsonDecode(
                 File('drift_schemas/drift_schema_v1.json').readAsStringSync(),
@@ -42,13 +42,22 @@ void main() {
       final v2Tables = (v2Snapshot['entities'] as List<dynamic>)
           .cast<Map<String, dynamic>>()
           .where((entity) => entity['type'] == 'table');
+      final v3Snapshot =
+          jsonDecode(
+                File('drift_schemas/drift_schema_v3.json').readAsStringSync(),
+              )
+              as Map<String, dynamic>;
+      final v3Tables = (v3Snapshot['entities'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .where((entity) => entity['type'] == 'table');
       expect(v1Tables, hasLength(12));
       expect(v2Tables, hasLength(17));
-      expect(database.schemaVersion, 2);
+      expect(v3Tables, hasLength(22));
+      expect(database.schemaVersion, 3);
     });
 
     test(
-      'creates exactly 17 domain tables with required indices and FK',
+      'creates exactly 22 domain tables with required indices and FK',
       () async {
         final tables = await database
             .customSelect(
@@ -74,6 +83,11 @@ void main() {
           'financial_transactions',
           'finance_settings',
           'chat_drafts',
+          'schedule_categories',
+          'schedule_items',
+          'schedule_reminders',
+          'schedule_notification_occurrences',
+          'scheduler_settings',
         });
         final indices = await database
             .customSelect("SELECT name FROM sqlite_master WHERE type = 'index'")
@@ -97,6 +111,13 @@ void main() {
             'idx_financial_transactions_category',
             'idx_financial_transactions_period_reimburse',
             'idx_chat_drafts_updated',
+            'idx_schedule_categories_active',
+            'idx_schedule_items_time_status',
+            'idx_schedule_items_due_status',
+            'idx_schedule_items_category',
+            'idx_schedule_reminders_item_enabled',
+            'idx_schedule_occurrences_item_time',
+            'idx_schedule_occurrences_sync',
           }),
         );
         final foreignKeys = await database
@@ -106,7 +127,7 @@ void main() {
       },
     );
 
-    test('finance defaults and category seeds are idempotent', () async {
+    test('finance and scheduler defaults are idempotent', () async {
       await database.close();
       final temp = await Directory.systemTemp.createTemp('keyspace-seed-test-');
       final file = File('${temp.path}/keyspace.sqlite');
@@ -114,11 +135,15 @@ void main() {
         final first = AppDatabase(NativeDatabase(file));
         expect(await _count(first, 'finance_settings'), 1);
         expect(await _count(first, 'financial_categories'), 23);
+        expect(await _count(first, 'scheduler_settings'), 1);
+        expect(await _count(first, 'schedule_categories'), 8);
         await first.close();
 
         final reopened = AppDatabase(NativeDatabase(file));
         expect(await _count(reopened, 'finance_settings'), 1);
         expect(await _count(reopened, 'financial_categories'), 23);
+        expect(await _count(reopened, 'scheduler_settings'), 1);
+        expect(await _count(reopened, 'schedule_categories'), 8);
         expect(
           await reopened
               .customSelect(
@@ -136,7 +161,7 @@ void main() {
       }
     });
 
-    test('migrates v1 to v2 without losing nutrition data', () async {
+    test('migrates v1 to v3 without losing nutrition data', () async {
       final verifier = SchemaVerifier(GeneratedHelper());
       final schema = await verifier.schemaAt(1);
       schema.rawDatabase.execute(
@@ -147,11 +172,13 @@ void main() {
         "'confirmed', 450, 1, 1)",
       );
       final migrated = AppDatabase(schema.newConnection());
-      await verifier.migrateAndValidate(migrated, 2);
+      await verifier.migrateAndValidate(migrated, 3);
 
       expect(await _count(migrated, 'food_logs'), 1);
       expect(await _count(migrated, 'financial_categories'), 23);
       expect(await _count(migrated, 'finance_settings'), 1);
+      expect(await _count(migrated, 'scheduler_settings'), 1);
+      expect(await _count(migrated, 'schedule_categories'), 8);
       final columns = await migrated
           .customSelect("SELECT name FROM pragma_table_info('app_settings')")
           .get();
@@ -159,6 +186,25 @@ void main() {
         columns.map((row) => row.read<String>('name')),
         contains('voice_disclosure_acknowledged'),
       );
+
+      await migrated.close();
+      schema.close();
+    });
+
+    test('migrates v2 to v3 without losing finance data', () async {
+      final verifier = SchemaVerifier(GeneratedHelper());
+      final schema = await verifier.schemaAt(2);
+      schema.rawDatabase.execute(
+        "INSERT INTO financial_categories "
+        "(id, name, type, is_system, is_active, created_at, updated_at) "
+        "VALUES ('legacy-category', 'Lama', 'expense', 0, 1, 1, 1)",
+      );
+      final migrated = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(migrated, 3);
+
+      expect(await _count(migrated, 'financial_categories'), 24);
+      expect(await _count(migrated, 'schedule_categories'), 8);
+      expect(await _count(migrated, 'scheduler_settings'), 1);
 
       await migrated.close();
       schema.close();

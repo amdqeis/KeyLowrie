@@ -17,6 +17,7 @@ import 'package:keyspace/features/food_chat/domain/chat_input_models.dart';
 import 'package:keyspace/features/food_chat/domain/financial_review_models.dart';
 import 'package:keyspace/features/food_chat/domain/food_parse_models.dart';
 import 'package:keyspace/features/food_chat/domain/unified_chat_models.dart';
+import 'package:keyspace/features/scheduler/domain/schedule_models.dart';
 import 'package:keyspace/features/voice_input/application/voice_input_controller.dart';
 import 'package:keyspace/features/voice_input/domain/voice_input_models.dart';
 import 'package:keyspace/shared/providers/infrastructure_providers.dart';
@@ -57,11 +58,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String? _chatDraftId;
   ParsedFoodDraft? _preview;
   List<FinancialReviewItem>? _financialPreview;
+  ScheduleDraft? _schedulePreview;
   double? _financialConfidence;
   List<FinancialReviewCategory> _reviewCategories = const [];
   ChatInputMode _selectedMode = ChatInputMode.automatic;
   bool _defaultReimburse = false;
   String? _status;
+
   /// Jenis status terakhir untuk pewarnaan banner.
   /// null = normal/info, ambiguousInput = oranye, technicalError = merah.
   ParseChatFailureKind? _statusKind;
@@ -254,6 +257,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ...values.map(_bubble),
                   if (_preview != null) _previewCard(),
                   if (_financialPreview != null) _financialReviewCard(),
+                  if (_schedulePreview != null) _scheduleReviewCard(),
                 ],
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -305,9 +309,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
         decoration: BoxDecoration(
           color: bannerColor,
-          border: Border(
-            top: BorderSide(color: borderColor, width: 3),
-          ),
+          border: Border(top: BorderSide(color: borderColor, width: 3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -713,6 +715,69 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
+  Widget _scheduleReviewCard() {
+    final draft = _schedulePreview!;
+    final when = draft.allDay
+        ? draft.localStartDate ?? draft.dueDateLocal ?? 'Tanpa tanggal'
+        : (draft.startAtUtc ?? draft.dueAtUtc)?.toLocal().toString() ??
+              'Tanpa waktu';
+    return BrutalCard(
+      color: const Color(0xFFCDEAC0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'REVIEW JADWAL — TINJAU DULU',
+            style: TextStyle(fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            draft.title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+          ),
+          Text('${draft.itemType.name.toUpperCase()} · $when'),
+          Text('${draft.categoryName} · ${draft.priority.name.toUpperCase()}'),
+          if (draft.assumptions.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text('ASUMSI\n${draft.assumptions.join('\n')}'),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: BrutalButton(
+                  label: 'BATAL',
+                  icon: Icons.close,
+                  secondary: true,
+                  onPressed: () => setState(() {
+                    _schedulePreview = null;
+                    _status = 'Review dibatalkan — draft tetap tersimpan';
+                  }),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: BrutalButton(
+                  label: 'EDIT',
+                  icon: Icons.edit,
+                  secondary: true,
+                  onPressed: () =>
+                      context.push(AppRoutes.schedulerNew, extra: draft),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          BrutalButton(
+            label: 'SIMPAN',
+            icon: Icons.save,
+            onPressed: _requesting ? null : _saveSchedulePreview,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _composerArea() {
     // ── Mode Baca: composer diciutkan ────────────────────────────────────────
     if (_viewportMode == ChatViewportMode.reading) {
@@ -798,21 +863,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
           Align(
             alignment: Alignment.centerLeft,
-            child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: ChatInputMode.values
-                  .map(
-                    (mode) => ChoiceChip(
-                      key: ValueKey('chat-mode-${mode.name}'),
-                      label: Text(_modeLabel(mode)),
-                      selected: _selectedMode == mode,
-                      onSelected: _requesting || _voice.isActive
-                          ? null
-                          : (_) => _selectMode(mode),
-                    ),
-                  )
-                  .toList(growable: false),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: ChatInputMode.values
+                    .map(
+                      (mode) => Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          key: ValueKey('chat-mode-${mode.name}'),
+                          label: Text(_modeLabel(mode)),
+                          selected: _selectedMode == mode,
+                          onSelected: _requesting || _voice.isActive
+                              ? null
+                              : (_) => _selectMode(mode),
+                        ),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
             ),
           ),
           if (_selectedMode == ChatInputMode.expense)
@@ -1035,6 +1104,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _preview = null;
       _financialPreview = null;
       _financialConfidence = null;
+      _schedulePreview = null;
     });
     _AllKeysFailedAction? failureAction;
     try {
@@ -1042,6 +1112,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       await _persistChatDraftNow();
       final categories = await finance.getCategories();
       final financeSettings = await finance.getSettings();
+      final scheduleCategories = await ref
+          .read(schedulerRepositoryProvider)
+          .activeCategories();
       final timezone = await ref.read(localTimezoneProvider.future);
       if (!mounted) return;
       final reviewCategories = categories
@@ -1069,6 +1142,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
             )
             .toList(growable: false),
+        scheduleCategories: scheduleCategories
+            .map((category) => category.name)
+            .toList(growable: false),
+        currentDateTime: DateTime.now(),
       );
       final result = await failover.parseChat(
         input,
@@ -1109,6 +1186,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             _status = 'Preview nutrisi siap — tinjau sebelum simpan';
             _statusKind = null;
           });
+        } else if (draft.detectedDomain == ChatDomain.schedule &&
+            draft.schedule != null) {
+          setState(() {
+            _schedulePreview = draft.schedule;
+            _status = 'Jadwal siap — tinjau sebelum simpan';
+            _statusKind = null;
+          });
         } else {
           final type = draft.detectedDomain == ChatDomain.expense
               ? FinancialTransactionType.expense
@@ -1136,7 +1220,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       } else if (result is ParseChatAllKeysFailed) {
         setState(() {
-          _status = 'Semua API key belum dapat digunakan — input tetap tersimpan';
+          _status =
+              'Semua API key belum dapat digunakan — input tetap tersimpan';
           _statusKind = ParseChatFailureKind.technicalError;
         });
         failureAction = await _showAllKeysFailed();
@@ -1190,8 +1275,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return switch (result.category) {
         GeminiFailureCategory.schemaMismatch =>
           'Input tidak dikenali: pastikan nama item jelas, '
-          'dan sertakan jumlah atau nominal.\n'
-          'Contoh: "Nasi goreng 1 porsi" atau "Kopi 20 ribu".',
+              'dan sertakan jumlah atau nominal.\n'
+              'Contoh: "Nasi goreng 1 porsi" atau "Kopi 20 ribu".',
         _ =>
           'Input tidak dapat diproses — coba perjelas atau gunakan catat manual.',
       };
@@ -1220,8 +1305,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         'Input diblokir filter keamanan — coba ubah kalimat.',
       GeminiFailureCategory.secretUnavailable =>
         'API key tidak dapat dibaca dari penyimpanan aman perangkat.',
-      GeminiFailureCategory.unknown ||
-      GeminiFailureCategory.cancelled =>
+      GeminiFailureCategory.unknown || GeminiFailureCategory.cancelled =>
         'Terjadi kesalahan — input tetap tersimpan, coba lagi.',
     };
   }
@@ -1366,10 +1450,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  Future<void> _saveSchedulePreview() async {
+    final draft = _schedulePreview;
+    if (_requesting || draft == null) return;
+    setState(() {
+      _requesting = true;
+      _status = 'Menyimpan jadwal dan menyiapkan reminder…';
+    });
+    try {
+      final id = await ref
+          .read(schedulerRepositoryProvider)
+          .saveDraft(
+            draft,
+            source: 'gemini',
+            originalUserText: _composer.text.trim(),
+          );
+      await ref.read(schedulerReminderCoordinatorProvider).reconcileItem(id);
+      if (!mounted) return;
+      await _clearCompletedInput('Jadwal tersimpan');
+    } on Object catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _status = 'Jadwal belum tersimpan (${error.runtimeType})';
+        _statusKind = ParseChatFailureKind.technicalError;
+      });
+    } finally {
+      if (mounted) setState(() => _requesting = false);
+    }
+  }
+
   void _cancelFinancialReview() {
     setState(() {
       _financialPreview = null;
       _financialConfidence = null;
+      _schedulePreview = null;
       _status = 'Review dibatalkan — draft tetap tersimpan';
     });
   }
@@ -1474,6 +1588,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Navigator.pop(dialogContext, ChatInputMode.income),
               child: const Text('PEMASUKAN'),
             ),
+            SimpleDialogOption(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, ChatInputMode.schedule),
+              child: const Text('JADWAL'),
+            ),
           ],
         ),
       );
@@ -1524,6 +1643,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _status = 'Isi transaksi manual lalu simpan';
       });
       _scheduleDraftSave();
+      return;
+    }
+    if (mode == ChatInputMode.schedule) {
+      if (!mounted) return;
+      unawaited(context.push(AppRoutes.schedulerNew));
       return;
     }
     if (_foodDraftId != null) {
@@ -1623,6 +1747,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     ChatInputMode.nutrition => 'Kalori',
     ChatInputMode.expense => 'Pengeluaran',
     ChatInputMode.income => 'Pemasukan',
+    ChatInputMode.schedule => 'Jadwal',
   };
 
   String get _composerHint => switch (_selectedMode) {
@@ -1630,6 +1755,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     ChatInputMode.nutrition => 'Contoh: nasi goreng dan es teh',
     ChatInputMode.expense => 'Contoh: beli bensin 100 ribu kemarin',
     ChatInputMode.income => 'Contoh: menerima bonus 2 juta hari ini',
+    ChatInputMode.schedule => 'Contoh: besok jam 11 meeting marketing',
   };
 }
 

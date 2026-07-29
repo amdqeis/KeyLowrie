@@ -79,13 +79,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 240),
             transitionBuilder: (child, animation) {
-              final slide = Tween<Offset>(
-                begin: const Offset(0.04, 0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              ));
+              final slide =
+                  Tween<Offset>(
+                    begin: const Offset(0.04, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  );
               return FadeTransition(
                 opacity: animation,
                 child: SlideTransition(position: slide, child: child),
@@ -103,7 +106,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     color: KeySpaceColors.error.withValues(alpha: 0.12),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: KeySpaceColors.error, size: 18),
+                        Icon(
+                          Icons.error_outline,
+                          color: KeySpaceColors.error,
+                          size: 18,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -156,16 +163,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2.0,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ],
         ),
         const SizedBox(height: 20),
         // Staggered headline
-        _StaggeredHeadline(
-          lines: const ['CATAT MAKANAN', 'CUKUP LEWAT CHAT'],
-        ),
+        _StaggeredHeadline(lines: const ['CATAT MAKANAN', 'CUKUP LEWAT CHAT']),
         const SizedBox(height: 32),
         // Value prop card
         BrutalCard(
@@ -462,7 +469,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           style: GoogleFonts.spaceGrotesk(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 24),
@@ -803,10 +812,12 @@ class _StaggeredHeadlineState extends State<_StaggeredHeadline>
       return Tween<Offset>(
         begin: const Offset(0, 0.3),
         end: Offset.zero,
-      ).animate(CurvedAnimation(
-        parent: _ctrl,
-        curve: Interval(start, end, curve: Curves.easeOutCubic),
-      ));
+      ).animate(
+        CurvedAnimation(
+          parent: _ctrl,
+          curve: Interval(start, end, curve: Curves.easeOutCubic),
+        ),
+      );
     });
     _ctrl.forward();
   }

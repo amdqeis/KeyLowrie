@@ -14,7 +14,7 @@ class DriftPendingRequestRepository implements PendingRequestRepository {
   Future<void> markFailed(String requestId, GeminiFailureCategory category) {
     return (_database.update(
       _database.chatMessages,
-    )..where((message) => message.localRequestId.equals(requestId))).write(
+    )..where((message) => message.id.equals(requestId))).write(
       ChatMessagesCompanion(
         status: const Value('failed'),
         errorCategory: Value(category.name),
@@ -31,7 +31,7 @@ class DriftPendingRequestRepository implements PendingRequestRepository {
               .getSingleOrNull();
       final message = await (_database.select(
         _database.chatMessages,
-      )..where((row) => row.localRequestId.equals(requestId))).getSingle();
+      )..where((row) => row.id.equals(requestId))).getSingle();
       await (_database.update(
         _database.chatMessages,
       )..where((row) => row.id.equals(message.id))).write(
@@ -70,7 +70,7 @@ class DriftPendingRequestRepository implements PendingRequestRepository {
     return _database.transaction(() async {
       final message = await (_database.select(
         _database.chatMessages,
-      )..where((row) => row.localRequestId.equals(requestId))).getSingle();
+      )..where((row) => row.id.equals(requestId))).getSingle();
       await (_database.update(
         _database.chatMessages,
       )..where((row) => row.id.equals(message.id))).write(
@@ -88,6 +88,8 @@ class DriftPendingRequestRepository implements PendingRequestRepository {
                 '${draft.financialItems.length} pengeluaran terdeteksi. Tinjau sebelum disimpan.',
               ChatDomain.income =>
                 '${draft.financialItems.length} pemasukan terdeteksi. Tinjau sebelum disimpan.',
+              ChatDomain.schedule =>
+                '${draft.schedule?.itemType.name ?? 'Jadwal'} terdeteksi. Tinjau sebelum disimpan.',
               ChatDomain.unknown => 'Jenis input belum dikenali.',
             };
       await _database

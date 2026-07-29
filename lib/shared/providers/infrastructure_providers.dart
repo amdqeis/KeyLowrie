@@ -17,6 +17,9 @@ import 'package:keyspace/features/reminders/application/reminder_coordinator.dar
 import 'package:keyspace/features/reminders/data/local_notification_scheduler.dart';
 import 'package:keyspace/features/reminders/data/reminder_repository.dart';
 import 'package:keyspace/features/reminders/domain/reminder_scheduler.dart';
+import 'package:keyspace/features/scheduler/application/scheduler_reminder_coordinator.dart';
+import 'package:keyspace/features/scheduler/data/schedule_notification_service.dart';
+import 'package:keyspace/features/scheduler/data/scheduler_repository.dart';
 import 'package:keyspace/features/settings/data/settings_repository.dart';
 import 'package:keyspace/features/targets/data/target_repository.dart';
 import 'package:keyspace/features/voice_input/data/plugin_speech_recognition_service.dart';
@@ -58,6 +61,36 @@ final financeRepositoryProvider = Provider<FinanceRepository>(
 final chatDraftRepositoryProvider = Provider<ChatDraftRepository>(
   (ref) => ChatDraftRepository(ref.watch(databaseProvider)),
 );
+
+final schedulerRepositoryProvider = Provider<SchedulerRepository>(
+  (ref) => SchedulerRepository(ref.watch(databaseProvider)),
+);
+
+final scheduleItemsProvider = StreamProvider(
+  (ref) => ref.watch(schedulerRepositoryProvider).watchItems(),
+);
+
+final scheduleCategoriesProvider = StreamProvider(
+  (ref) => ref.watch(schedulerRepositoryProvider).watchCategories(),
+);
+
+final scheduleNotificationServiceProvider =
+    Provider<ScheduleNotificationService>(
+      (ref) => LocalScheduleNotificationService(),
+    );
+
+final scheduleNotificationActionsProvider = StreamProvider(
+  (ref) => ref.watch(scheduleNotificationServiceProvider).actions,
+);
+
+final schedulerReminderCoordinatorProvider =
+    Provider<SchedulerReminderCoordinator>(
+      (ref) => SchedulerReminderCoordinator(
+        database: ref.watch(databaseProvider),
+        repository: ref.watch(schedulerRepositoryProvider),
+        notifications: ref.watch(scheduleNotificationServiceProvider),
+      ),
+    );
 
 final localTimezoneProvider = FutureProvider<String>((ref) async {
   try {
@@ -113,6 +146,7 @@ final bootstrapProvider = FutureProvider<void>((ref) async {
       .purgeExpiredDeletes(DateTime.now());
   await ref.watch(reminderSchedulerProvider).initialize();
   await ref.watch(reminderCoordinatorProvider).reconcileToday();
+  await ref.watch(schedulerReminderCoordinatorProvider).reconcileAll();
 });
 
 final settingsStreamProvider = StreamProvider(

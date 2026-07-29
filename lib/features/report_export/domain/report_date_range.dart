@@ -25,7 +25,6 @@ extension ReportRangePresetLabel on ReportRangePreset {
 /// Rentang tanggal yang digunakan untuk query laporan.
 /// [start] dan [end] bersifat inklusif, sudah dinormalisasi ke waktu lokal.
 class ReportDateRange {
-
   factory ReportDateRange.today() {
     final now = FinancialPeriodResolver.normalize(DateTime.now());
     return ReportDateRange(

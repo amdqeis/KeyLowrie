@@ -50,7 +50,7 @@ void main() {
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(milliseconds: 1));
   });
 }

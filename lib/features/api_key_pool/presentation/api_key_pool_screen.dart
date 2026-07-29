@@ -46,7 +46,9 @@ class _ApiKeyPoolScreenState extends ConsumerState<ApiKeyPoolScreen> {
                   color: KeySpaceColors.signalYellow,
                   border: Border.all(color: ink, width: 3),
                   borderRadius: BorderRadius.circular(8),
-                  boxShadow: [BoxShadow(color: ink, offset: const Offset(4, 4))],
+                  boxShadow: [
+                    BoxShadow(color: ink, offset: const Offset(4, 4)),
+                  ],
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -570,7 +572,9 @@ class _StatChip extends StatelessWidget {
           style: GoogleFonts.spaceGrotesk(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
       ],

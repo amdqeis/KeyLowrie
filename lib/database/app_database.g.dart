@@ -10827,6 +10827,3534 @@ class ChatDraftsCompanion extends UpdateCompanion<ChatDraft> {
   }
 }
 
+class $ScheduleCategoriesTable extends ScheduleCategories
+    with TableInfo<$ScheduleCategoriesTable, ScheduleCategory> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ScheduleCategoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconKeyMeta = const VerificationMeta(
+    'iconKey',
+  );
+  @override
+  late final GeneratedColumn<String> iconKey = GeneratedColumn<String>(
+    'icon_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isSystemMeta = const VerificationMeta(
+    'isSystem',
+  );
+  @override
+  late final GeneratedColumn<bool> isSystem = GeneratedColumn<bool>(
+    'is_system',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_system" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    iconKey,
+    isSystem,
+    isActive,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'schedule_categories';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ScheduleCategory> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon_key')) {
+      context.handle(
+        _iconKeyMeta,
+        iconKey.isAcceptableOrUnknown(data['icon_key']!, _iconKeyMeta),
+      );
+    }
+    if (data.containsKey('is_system')) {
+      context.handle(
+        _isSystemMeta,
+        isSystem.isAcceptableOrUnknown(data['is_system']!, _isSystemMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_isSystemMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_isActiveMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ScheduleCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ScheduleCategory(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      iconKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_key'],
+      ),
+      isSystem: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_system'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ScheduleCategoriesTable createAlias(String alias) {
+    return $ScheduleCategoriesTable(attachedDatabase, alias);
+  }
+}
+
+class ScheduleCategory extends DataClass
+    implements Insertable<ScheduleCategory> {
+  final String id;
+  final String name;
+  final String? iconKey;
+  final bool isSystem;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ScheduleCategory({
+    required this.id,
+    required this.name,
+    this.iconKey,
+    required this.isSystem,
+    required this.isActive,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || iconKey != null) {
+      map['icon_key'] = Variable<String>(iconKey);
+    }
+    map['is_system'] = Variable<bool>(isSystem);
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ScheduleCategoriesCompanion toCompanion(bool nullToAbsent) {
+    return ScheduleCategoriesCompanion(
+      id: Value(id),
+      name: Value(name),
+      iconKey: iconKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(iconKey),
+      isSystem: Value(isSystem),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ScheduleCategory.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ScheduleCategory(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      iconKey: serializer.fromJson<String?>(json['iconKey']),
+      isSystem: serializer.fromJson<bool>(json['isSystem']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'iconKey': serializer.toJson<String?>(iconKey),
+      'isSystem': serializer.toJson<bool>(isSystem),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ScheduleCategory copyWith({
+    String? id,
+    String? name,
+    Value<String?> iconKey = const Value.absent(),
+    bool? isSystem,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ScheduleCategory(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    iconKey: iconKey.present ? iconKey.value : this.iconKey,
+    isSystem: isSystem ?? this.isSystem,
+    isActive: isActive ?? this.isActive,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ScheduleCategory copyWithCompanion(ScheduleCategoriesCompanion data) {
+    return ScheduleCategory(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      iconKey: data.iconKey.present ? data.iconKey.value : this.iconKey,
+      isSystem: data.isSystem.present ? data.isSystem.value : this.isSystem,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScheduleCategory(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('iconKey: $iconKey, ')
+          ..write('isSystem: $isSystem, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, iconKey, isSystem, isActive, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ScheduleCategory &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.iconKey == this.iconKey &&
+          other.isSystem == this.isSystem &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ScheduleCategoriesCompanion extends UpdateCompanion<ScheduleCategory> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String?> iconKey;
+  final Value<bool> isSystem;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ScheduleCategoriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.iconKey = const Value.absent(),
+    this.isSystem = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ScheduleCategoriesCompanion.insert({
+    required String id,
+    required String name,
+    this.iconKey = const Value.absent(),
+    required bool isSystem,
+    required bool isActive,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       isSystem = Value(isSystem),
+       isActive = Value(isActive),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ScheduleCategory> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? iconKey,
+    Expression<bool>? isSystem,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (iconKey != null) 'icon_key': iconKey,
+      if (isSystem != null) 'is_system': isSystem,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ScheduleCategoriesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String?>? iconKey,
+    Value<bool>? isSystem,
+    Value<bool>? isActive,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ScheduleCategoriesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      iconKey: iconKey ?? this.iconKey,
+      isSystem: isSystem ?? this.isSystem,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (iconKey.present) {
+      map['icon_key'] = Variable<String>(iconKey.value);
+    }
+    if (isSystem.present) {
+      map['is_system'] = Variable<bool>(isSystem.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScheduleCategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('iconKey: $iconKey, ')
+          ..write('isSystem: $isSystem, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ScheduleItemsTable extends ScheduleItems
+    with TableInfo<$ScheduleItemsTable, ScheduleItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ScheduleItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _itemTypeMeta = const VerificationMeta(
+    'itemType',
+  );
+  @override
+  late final GeneratedColumn<String> itemType = GeneratedColumn<String>(
+    'item_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startAtUtcMeta = const VerificationMeta(
+    'startAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startAtUtc = GeneratedColumn<DateTime>(
+    'start_at_utc',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _endAtUtcMeta = const VerificationMeta(
+    'endAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endAtUtc = GeneratedColumn<DateTime>(
+    'end_at_utc',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dueAtUtcMeta = const VerificationMeta(
+    'dueAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dueAtUtc = GeneratedColumn<DateTime>(
+    'due_at_utc',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localStartDateMeta = const VerificationMeta(
+    'localStartDate',
+  );
+  @override
+  late final GeneratedColumn<String> localStartDate = GeneratedColumn<String>(
+    'local_start_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localStartTimeMeta = const VerificationMeta(
+    'localStartTime',
+  );
+  @override
+  late final GeneratedColumn<String> localStartTime = GeneratedColumn<String>(
+    'local_start_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localEndTimeMeta = const VerificationMeta(
+    'localEndTime',
+  );
+  @override
+  late final GeneratedColumn<String> localEndTime = GeneratedColumn<String>(
+    'local_end_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dueDateLocalMeta = const VerificationMeta(
+    'dueDateLocal',
+  );
+  @override
+  late final GeneratedColumn<String> dueDateLocal = GeneratedColumn<String>(
+    'due_date_local',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _allDayMeta = const VerificationMeta('allDay');
+  @override
+  late final GeneratedColumn<bool> allDay = GeneratedColumn<bool>(
+    'all_day',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("all_day" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES schedule_categories (id) ON DELETE RESTRICT',
+    ),
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<String> priority = GeneratedColumn<String>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _timezoneMeta = const VerificationMeta(
+    'timezone',
+  );
+  @override
+  late final GeneratedColumn<String> timezone = GeneratedColumn<String>(
+    'timezone',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recurrenceTypeMeta = const VerificationMeta(
+    'recurrenceType',
+  );
+  @override
+  late final GeneratedColumn<String> recurrenceType = GeneratedColumn<String>(
+    'recurrence_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recurrenceIntervalMeta =
+      const VerificationMeta('recurrenceInterval');
+  @override
+  late final GeneratedColumn<int> recurrenceInterval = GeneratedColumn<int>(
+    'recurrence_interval',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _recurrenceWeekdaysJsonMeta =
+      const VerificationMeta('recurrenceWeekdaysJson');
+  @override
+  late final GeneratedColumn<String> recurrenceWeekdaysJson =
+      GeneratedColumn<String>(
+        'recurrence_weekdays_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _recurrenceEndDateLocalMeta =
+      const VerificationMeta('recurrenceEndDateLocal');
+  @override
+  late final GeneratedColumn<String> recurrenceEndDateLocal =
+      GeneratedColumn<String>(
+        'recurrence_end_date_local',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('manual'),
+  );
+  static const VerificationMeta _originalUserTextMeta = const VerificationMeta(
+    'originalUserText',
+  );
+  @override
+  late final GeneratedColumn<String> originalUserText = GeneratedColumn<String>(
+    'original_user_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    itemType,
+    title,
+    description,
+    startAtUtc,
+    endAtUtc,
+    dueAtUtc,
+    localStartDate,
+    localStartTime,
+    localEndTime,
+    dueDateLocal,
+    allDay,
+    categoryId,
+    priority,
+    status,
+    timezone,
+    recurrenceType,
+    recurrenceInterval,
+    recurrenceWeekdaysJson,
+    recurrenceEndDateLocal,
+    source,
+    originalUserText,
+    completedAt,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'schedule_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ScheduleItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('item_type')) {
+      context.handle(
+        _itemTypeMeta,
+        itemType.isAcceptableOrUnknown(data['item_type']!, _itemTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemTypeMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('start_at_utc')) {
+      context.handle(
+        _startAtUtcMeta,
+        startAtUtc.isAcceptableOrUnknown(
+          data['start_at_utc']!,
+          _startAtUtcMeta,
+        ),
+      );
+    }
+    if (data.containsKey('end_at_utc')) {
+      context.handle(
+        _endAtUtcMeta,
+        endAtUtc.isAcceptableOrUnknown(data['end_at_utc']!, _endAtUtcMeta),
+      );
+    }
+    if (data.containsKey('due_at_utc')) {
+      context.handle(
+        _dueAtUtcMeta,
+        dueAtUtc.isAcceptableOrUnknown(data['due_at_utc']!, _dueAtUtcMeta),
+      );
+    }
+    if (data.containsKey('local_start_date')) {
+      context.handle(
+        _localStartDateMeta,
+        localStartDate.isAcceptableOrUnknown(
+          data['local_start_date']!,
+          _localStartDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_start_time')) {
+      context.handle(
+        _localStartTimeMeta,
+        localStartTime.isAcceptableOrUnknown(
+          data['local_start_time']!,
+          _localStartTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_end_time')) {
+      context.handle(
+        _localEndTimeMeta,
+        localEndTime.isAcceptableOrUnknown(
+          data['local_end_time']!,
+          _localEndTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('due_date_local')) {
+      context.handle(
+        _dueDateLocalMeta,
+        dueDateLocal.isAcceptableOrUnknown(
+          data['due_date_local']!,
+          _dueDateLocalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('all_day')) {
+      context.handle(
+        _allDayMeta,
+        allDay.isAcceptableOrUnknown(data['all_day']!, _allDayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_allDayMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_priorityMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('timezone')) {
+      context.handle(
+        _timezoneMeta,
+        timezone.isAcceptableOrUnknown(data['timezone']!, _timezoneMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_timezoneMeta);
+    }
+    if (data.containsKey('recurrence_type')) {
+      context.handle(
+        _recurrenceTypeMeta,
+        recurrenceType.isAcceptableOrUnknown(
+          data['recurrence_type']!,
+          _recurrenceTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recurrenceTypeMeta);
+    }
+    if (data.containsKey('recurrence_interval')) {
+      context.handle(
+        _recurrenceIntervalMeta,
+        recurrenceInterval.isAcceptableOrUnknown(
+          data['recurrence_interval']!,
+          _recurrenceIntervalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_weekdays_json')) {
+      context.handle(
+        _recurrenceWeekdaysJsonMeta,
+        recurrenceWeekdaysJson.isAcceptableOrUnknown(
+          data['recurrence_weekdays_json']!,
+          _recurrenceWeekdaysJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_end_date_local')) {
+      context.handle(
+        _recurrenceEndDateLocalMeta,
+        recurrenceEndDateLocal.isAcceptableOrUnknown(
+          data['recurrence_end_date_local']!,
+          _recurrenceEndDateLocalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('original_user_text')) {
+      context.handle(
+        _originalUserTextMeta,
+        originalUserText.isAcceptableOrUnknown(
+          data['original_user_text']!,
+          _originalUserTextMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ScheduleItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ScheduleItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      itemType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_type'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      startAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_at_utc'],
+      ),
+      endAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end_at_utc'],
+      ),
+      dueAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}due_at_utc'],
+      ),
+      localStartDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_start_date'],
+      ),
+      localStartTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_start_time'],
+      ),
+      localEndTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_end_time'],
+      ),
+      dueDateLocal: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}due_date_local'],
+      ),
+      allDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}all_day'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}priority'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      timezone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}timezone'],
+      )!,
+      recurrenceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_type'],
+      )!,
+      recurrenceInterval: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recurrence_interval'],
+      )!,
+      recurrenceWeekdaysJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_weekdays_json'],
+      ),
+      recurrenceEndDateLocal: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_end_date_local'],
+      ),
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      originalUserText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}original_user_text'],
+      ),
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ScheduleItemsTable createAlias(String alias) {
+    return $ScheduleItemsTable(attachedDatabase, alias);
+  }
+}
+
+class ScheduleItem extends DataClass implements Insertable<ScheduleItem> {
+  final String id;
+  final String itemType;
+  final String title;
+  final String? description;
+  final DateTime? startAtUtc;
+  final DateTime? endAtUtc;
+  final DateTime? dueAtUtc;
+  final String? localStartDate;
+  final String? localStartTime;
+  final String? localEndTime;
+  final String? dueDateLocal;
+  final bool allDay;
+  final String categoryId;
+  final String priority;
+  final String status;
+  final String timezone;
+  final String recurrenceType;
+  final int recurrenceInterval;
+  final String? recurrenceWeekdaysJson;
+  final String? recurrenceEndDateLocal;
+  final String source;
+  final String? originalUserText;
+  final DateTime? completedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ScheduleItem({
+    required this.id,
+    required this.itemType,
+    required this.title,
+    this.description,
+    this.startAtUtc,
+    this.endAtUtc,
+    this.dueAtUtc,
+    this.localStartDate,
+    this.localStartTime,
+    this.localEndTime,
+    this.dueDateLocal,
+    required this.allDay,
+    required this.categoryId,
+    required this.priority,
+    required this.status,
+    required this.timezone,
+    required this.recurrenceType,
+    required this.recurrenceInterval,
+    this.recurrenceWeekdaysJson,
+    this.recurrenceEndDateLocal,
+    required this.source,
+    this.originalUserText,
+    this.completedAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['item_type'] = Variable<String>(itemType);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || startAtUtc != null) {
+      map['start_at_utc'] = Variable<DateTime>(startAtUtc);
+    }
+    if (!nullToAbsent || endAtUtc != null) {
+      map['end_at_utc'] = Variable<DateTime>(endAtUtc);
+    }
+    if (!nullToAbsent || dueAtUtc != null) {
+      map['due_at_utc'] = Variable<DateTime>(dueAtUtc);
+    }
+    if (!nullToAbsent || localStartDate != null) {
+      map['local_start_date'] = Variable<String>(localStartDate);
+    }
+    if (!nullToAbsent || localStartTime != null) {
+      map['local_start_time'] = Variable<String>(localStartTime);
+    }
+    if (!nullToAbsent || localEndTime != null) {
+      map['local_end_time'] = Variable<String>(localEndTime);
+    }
+    if (!nullToAbsent || dueDateLocal != null) {
+      map['due_date_local'] = Variable<String>(dueDateLocal);
+    }
+    map['all_day'] = Variable<bool>(allDay);
+    map['category_id'] = Variable<String>(categoryId);
+    map['priority'] = Variable<String>(priority);
+    map['status'] = Variable<String>(status);
+    map['timezone'] = Variable<String>(timezone);
+    map['recurrence_type'] = Variable<String>(recurrenceType);
+    map['recurrence_interval'] = Variable<int>(recurrenceInterval);
+    if (!nullToAbsent || recurrenceWeekdaysJson != null) {
+      map['recurrence_weekdays_json'] = Variable<String>(
+        recurrenceWeekdaysJson,
+      );
+    }
+    if (!nullToAbsent || recurrenceEndDateLocal != null) {
+      map['recurrence_end_date_local'] = Variable<String>(
+        recurrenceEndDateLocal,
+      );
+    }
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || originalUserText != null) {
+      map['original_user_text'] = Variable<String>(originalUserText);
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ScheduleItemsCompanion toCompanion(bool nullToAbsent) {
+    return ScheduleItemsCompanion(
+      id: Value(id),
+      itemType: Value(itemType),
+      title: Value(title),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      startAtUtc: startAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startAtUtc),
+      endAtUtc: endAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endAtUtc),
+      dueAtUtc: dueAtUtc == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueAtUtc),
+      localStartDate: localStartDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localStartDate),
+      localStartTime: localStartTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localStartTime),
+      localEndTime: localEndTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localEndTime),
+      dueDateLocal: dueDateLocal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDateLocal),
+      allDay: Value(allDay),
+      categoryId: Value(categoryId),
+      priority: Value(priority),
+      status: Value(status),
+      timezone: Value(timezone),
+      recurrenceType: Value(recurrenceType),
+      recurrenceInterval: Value(recurrenceInterval),
+      recurrenceWeekdaysJson: recurrenceWeekdaysJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceWeekdaysJson),
+      recurrenceEndDateLocal: recurrenceEndDateLocal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceEndDateLocal),
+      source: Value(source),
+      originalUserText: originalUserText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalUserText),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ScheduleItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ScheduleItem(
+      id: serializer.fromJson<String>(json['id']),
+      itemType: serializer.fromJson<String>(json['itemType']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String?>(json['description']),
+      startAtUtc: serializer.fromJson<DateTime?>(json['startAtUtc']),
+      endAtUtc: serializer.fromJson<DateTime?>(json['endAtUtc']),
+      dueAtUtc: serializer.fromJson<DateTime?>(json['dueAtUtc']),
+      localStartDate: serializer.fromJson<String?>(json['localStartDate']),
+      localStartTime: serializer.fromJson<String?>(json['localStartTime']),
+      localEndTime: serializer.fromJson<String?>(json['localEndTime']),
+      dueDateLocal: serializer.fromJson<String?>(json['dueDateLocal']),
+      allDay: serializer.fromJson<bool>(json['allDay']),
+      categoryId: serializer.fromJson<String>(json['categoryId']),
+      priority: serializer.fromJson<String>(json['priority']),
+      status: serializer.fromJson<String>(json['status']),
+      timezone: serializer.fromJson<String>(json['timezone']),
+      recurrenceType: serializer.fromJson<String>(json['recurrenceType']),
+      recurrenceInterval: serializer.fromJson<int>(json['recurrenceInterval']),
+      recurrenceWeekdaysJson: serializer.fromJson<String?>(
+        json['recurrenceWeekdaysJson'],
+      ),
+      recurrenceEndDateLocal: serializer.fromJson<String?>(
+        json['recurrenceEndDateLocal'],
+      ),
+      source: serializer.fromJson<String>(json['source']),
+      originalUserText: serializer.fromJson<String?>(json['originalUserText']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'itemType': serializer.toJson<String>(itemType),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String?>(description),
+      'startAtUtc': serializer.toJson<DateTime?>(startAtUtc),
+      'endAtUtc': serializer.toJson<DateTime?>(endAtUtc),
+      'dueAtUtc': serializer.toJson<DateTime?>(dueAtUtc),
+      'localStartDate': serializer.toJson<String?>(localStartDate),
+      'localStartTime': serializer.toJson<String?>(localStartTime),
+      'localEndTime': serializer.toJson<String?>(localEndTime),
+      'dueDateLocal': serializer.toJson<String?>(dueDateLocal),
+      'allDay': serializer.toJson<bool>(allDay),
+      'categoryId': serializer.toJson<String>(categoryId),
+      'priority': serializer.toJson<String>(priority),
+      'status': serializer.toJson<String>(status),
+      'timezone': serializer.toJson<String>(timezone),
+      'recurrenceType': serializer.toJson<String>(recurrenceType),
+      'recurrenceInterval': serializer.toJson<int>(recurrenceInterval),
+      'recurrenceWeekdaysJson': serializer.toJson<String?>(
+        recurrenceWeekdaysJson,
+      ),
+      'recurrenceEndDateLocal': serializer.toJson<String?>(
+        recurrenceEndDateLocal,
+      ),
+      'source': serializer.toJson<String>(source),
+      'originalUserText': serializer.toJson<String?>(originalUserText),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ScheduleItem copyWith({
+    String? id,
+    String? itemType,
+    String? title,
+    Value<String?> description = const Value.absent(),
+    Value<DateTime?> startAtUtc = const Value.absent(),
+    Value<DateTime?> endAtUtc = const Value.absent(),
+    Value<DateTime?> dueAtUtc = const Value.absent(),
+    Value<String?> localStartDate = const Value.absent(),
+    Value<String?> localStartTime = const Value.absent(),
+    Value<String?> localEndTime = const Value.absent(),
+    Value<String?> dueDateLocal = const Value.absent(),
+    bool? allDay,
+    String? categoryId,
+    String? priority,
+    String? status,
+    String? timezone,
+    String? recurrenceType,
+    int? recurrenceInterval,
+    Value<String?> recurrenceWeekdaysJson = const Value.absent(),
+    Value<String?> recurrenceEndDateLocal = const Value.absent(),
+    String? source,
+    Value<String?> originalUserText = const Value.absent(),
+    Value<DateTime?> completedAt = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ScheduleItem(
+    id: id ?? this.id,
+    itemType: itemType ?? this.itemType,
+    title: title ?? this.title,
+    description: description.present ? description.value : this.description,
+    startAtUtc: startAtUtc.present ? startAtUtc.value : this.startAtUtc,
+    endAtUtc: endAtUtc.present ? endAtUtc.value : this.endAtUtc,
+    dueAtUtc: dueAtUtc.present ? dueAtUtc.value : this.dueAtUtc,
+    localStartDate: localStartDate.present
+        ? localStartDate.value
+        : this.localStartDate,
+    localStartTime: localStartTime.present
+        ? localStartTime.value
+        : this.localStartTime,
+    localEndTime: localEndTime.present ? localEndTime.value : this.localEndTime,
+    dueDateLocal: dueDateLocal.present ? dueDateLocal.value : this.dueDateLocal,
+    allDay: allDay ?? this.allDay,
+    categoryId: categoryId ?? this.categoryId,
+    priority: priority ?? this.priority,
+    status: status ?? this.status,
+    timezone: timezone ?? this.timezone,
+    recurrenceType: recurrenceType ?? this.recurrenceType,
+    recurrenceInterval: recurrenceInterval ?? this.recurrenceInterval,
+    recurrenceWeekdaysJson: recurrenceWeekdaysJson.present
+        ? recurrenceWeekdaysJson.value
+        : this.recurrenceWeekdaysJson,
+    recurrenceEndDateLocal: recurrenceEndDateLocal.present
+        ? recurrenceEndDateLocal.value
+        : this.recurrenceEndDateLocal,
+    source: source ?? this.source,
+    originalUserText: originalUserText.present
+        ? originalUserText.value
+        : this.originalUserText,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ScheduleItem copyWithCompanion(ScheduleItemsCompanion data) {
+    return ScheduleItem(
+      id: data.id.present ? data.id.value : this.id,
+      itemType: data.itemType.present ? data.itemType.value : this.itemType,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      startAtUtc: data.startAtUtc.present
+          ? data.startAtUtc.value
+          : this.startAtUtc,
+      endAtUtc: data.endAtUtc.present ? data.endAtUtc.value : this.endAtUtc,
+      dueAtUtc: data.dueAtUtc.present ? data.dueAtUtc.value : this.dueAtUtc,
+      localStartDate: data.localStartDate.present
+          ? data.localStartDate.value
+          : this.localStartDate,
+      localStartTime: data.localStartTime.present
+          ? data.localStartTime.value
+          : this.localStartTime,
+      localEndTime: data.localEndTime.present
+          ? data.localEndTime.value
+          : this.localEndTime,
+      dueDateLocal: data.dueDateLocal.present
+          ? data.dueDateLocal.value
+          : this.dueDateLocal,
+      allDay: data.allDay.present ? data.allDay.value : this.allDay,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      status: data.status.present ? data.status.value : this.status,
+      timezone: data.timezone.present ? data.timezone.value : this.timezone,
+      recurrenceType: data.recurrenceType.present
+          ? data.recurrenceType.value
+          : this.recurrenceType,
+      recurrenceInterval: data.recurrenceInterval.present
+          ? data.recurrenceInterval.value
+          : this.recurrenceInterval,
+      recurrenceWeekdaysJson: data.recurrenceWeekdaysJson.present
+          ? data.recurrenceWeekdaysJson.value
+          : this.recurrenceWeekdaysJson,
+      recurrenceEndDateLocal: data.recurrenceEndDateLocal.present
+          ? data.recurrenceEndDateLocal.value
+          : this.recurrenceEndDateLocal,
+      source: data.source.present ? data.source.value : this.source,
+      originalUserText: data.originalUserText.present
+          ? data.originalUserText.value
+          : this.originalUserText,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScheduleItem(')
+          ..write('id: $id, ')
+          ..write('itemType: $itemType, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('startAtUtc: $startAtUtc, ')
+          ..write('endAtUtc: $endAtUtc, ')
+          ..write('dueAtUtc: $dueAtUtc, ')
+          ..write('localStartDate: $localStartDate, ')
+          ..write('localStartTime: $localStartTime, ')
+          ..write('localEndTime: $localEndTime, ')
+          ..write('dueDateLocal: $dueDateLocal, ')
+          ..write('allDay: $allDay, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('priority: $priority, ')
+          ..write('status: $status, ')
+          ..write('timezone: $timezone, ')
+          ..write('recurrenceType: $recurrenceType, ')
+          ..write('recurrenceInterval: $recurrenceInterval, ')
+          ..write('recurrenceWeekdaysJson: $recurrenceWeekdaysJson, ')
+          ..write('recurrenceEndDateLocal: $recurrenceEndDateLocal, ')
+          ..write('source: $source, ')
+          ..write('originalUserText: $originalUserText, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    itemType,
+    title,
+    description,
+    startAtUtc,
+    endAtUtc,
+    dueAtUtc,
+    localStartDate,
+    localStartTime,
+    localEndTime,
+    dueDateLocal,
+    allDay,
+    categoryId,
+    priority,
+    status,
+    timezone,
+    recurrenceType,
+    recurrenceInterval,
+    recurrenceWeekdaysJson,
+    recurrenceEndDateLocal,
+    source,
+    originalUserText,
+    completedAt,
+    createdAt,
+    updatedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ScheduleItem &&
+          other.id == this.id &&
+          other.itemType == this.itemType &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.startAtUtc == this.startAtUtc &&
+          other.endAtUtc == this.endAtUtc &&
+          other.dueAtUtc == this.dueAtUtc &&
+          other.localStartDate == this.localStartDate &&
+          other.localStartTime == this.localStartTime &&
+          other.localEndTime == this.localEndTime &&
+          other.dueDateLocal == this.dueDateLocal &&
+          other.allDay == this.allDay &&
+          other.categoryId == this.categoryId &&
+          other.priority == this.priority &&
+          other.status == this.status &&
+          other.timezone == this.timezone &&
+          other.recurrenceType == this.recurrenceType &&
+          other.recurrenceInterval == this.recurrenceInterval &&
+          other.recurrenceWeekdaysJson == this.recurrenceWeekdaysJson &&
+          other.recurrenceEndDateLocal == this.recurrenceEndDateLocal &&
+          other.source == this.source &&
+          other.originalUserText == this.originalUserText &&
+          other.completedAt == this.completedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ScheduleItemsCompanion extends UpdateCompanion<ScheduleItem> {
+  final Value<String> id;
+  final Value<String> itemType;
+  final Value<String> title;
+  final Value<String?> description;
+  final Value<DateTime?> startAtUtc;
+  final Value<DateTime?> endAtUtc;
+  final Value<DateTime?> dueAtUtc;
+  final Value<String?> localStartDate;
+  final Value<String?> localStartTime;
+  final Value<String?> localEndTime;
+  final Value<String?> dueDateLocal;
+  final Value<bool> allDay;
+  final Value<String> categoryId;
+  final Value<String> priority;
+  final Value<String> status;
+  final Value<String> timezone;
+  final Value<String> recurrenceType;
+  final Value<int> recurrenceInterval;
+  final Value<String?> recurrenceWeekdaysJson;
+  final Value<String?> recurrenceEndDateLocal;
+  final Value<String> source;
+  final Value<String?> originalUserText;
+  final Value<DateTime?> completedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ScheduleItemsCompanion({
+    this.id = const Value.absent(),
+    this.itemType = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.startAtUtc = const Value.absent(),
+    this.endAtUtc = const Value.absent(),
+    this.dueAtUtc = const Value.absent(),
+    this.localStartDate = const Value.absent(),
+    this.localStartTime = const Value.absent(),
+    this.localEndTime = const Value.absent(),
+    this.dueDateLocal = const Value.absent(),
+    this.allDay = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.status = const Value.absent(),
+    this.timezone = const Value.absent(),
+    this.recurrenceType = const Value.absent(),
+    this.recurrenceInterval = const Value.absent(),
+    this.recurrenceWeekdaysJson = const Value.absent(),
+    this.recurrenceEndDateLocal = const Value.absent(),
+    this.source = const Value.absent(),
+    this.originalUserText = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ScheduleItemsCompanion.insert({
+    required String id,
+    required String itemType,
+    required String title,
+    this.description = const Value.absent(),
+    this.startAtUtc = const Value.absent(),
+    this.endAtUtc = const Value.absent(),
+    this.dueAtUtc = const Value.absent(),
+    this.localStartDate = const Value.absent(),
+    this.localStartTime = const Value.absent(),
+    this.localEndTime = const Value.absent(),
+    this.dueDateLocal = const Value.absent(),
+    required bool allDay,
+    required String categoryId,
+    required String priority,
+    required String status,
+    required String timezone,
+    required String recurrenceType,
+    this.recurrenceInterval = const Value.absent(),
+    this.recurrenceWeekdaysJson = const Value.absent(),
+    this.recurrenceEndDateLocal = const Value.absent(),
+    this.source = const Value.absent(),
+    this.originalUserText = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       itemType = Value(itemType),
+       title = Value(title),
+       allDay = Value(allDay),
+       categoryId = Value(categoryId),
+       priority = Value(priority),
+       status = Value(status),
+       timezone = Value(timezone),
+       recurrenceType = Value(recurrenceType),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ScheduleItem> custom({
+    Expression<String>? id,
+    Expression<String>? itemType,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<DateTime>? startAtUtc,
+    Expression<DateTime>? endAtUtc,
+    Expression<DateTime>? dueAtUtc,
+    Expression<String>? localStartDate,
+    Expression<String>? localStartTime,
+    Expression<String>? localEndTime,
+    Expression<String>? dueDateLocal,
+    Expression<bool>? allDay,
+    Expression<String>? categoryId,
+    Expression<String>? priority,
+    Expression<String>? status,
+    Expression<String>? timezone,
+    Expression<String>? recurrenceType,
+    Expression<int>? recurrenceInterval,
+    Expression<String>? recurrenceWeekdaysJson,
+    Expression<String>? recurrenceEndDateLocal,
+    Expression<String>? source,
+    Expression<String>? originalUserText,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (itemType != null) 'item_type': itemType,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (startAtUtc != null) 'start_at_utc': startAtUtc,
+      if (endAtUtc != null) 'end_at_utc': endAtUtc,
+      if (dueAtUtc != null) 'due_at_utc': dueAtUtc,
+      if (localStartDate != null) 'local_start_date': localStartDate,
+      if (localStartTime != null) 'local_start_time': localStartTime,
+      if (localEndTime != null) 'local_end_time': localEndTime,
+      if (dueDateLocal != null) 'due_date_local': dueDateLocal,
+      if (allDay != null) 'all_day': allDay,
+      if (categoryId != null) 'category_id': categoryId,
+      if (priority != null) 'priority': priority,
+      if (status != null) 'status': status,
+      if (timezone != null) 'timezone': timezone,
+      if (recurrenceType != null) 'recurrence_type': recurrenceType,
+      if (recurrenceInterval != null) 'recurrence_interval': recurrenceInterval,
+      if (recurrenceWeekdaysJson != null)
+        'recurrence_weekdays_json': recurrenceWeekdaysJson,
+      if (recurrenceEndDateLocal != null)
+        'recurrence_end_date_local': recurrenceEndDateLocal,
+      if (source != null) 'source': source,
+      if (originalUserText != null) 'original_user_text': originalUserText,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ScheduleItemsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? itemType,
+    Value<String>? title,
+    Value<String?>? description,
+    Value<DateTime?>? startAtUtc,
+    Value<DateTime?>? endAtUtc,
+    Value<DateTime?>? dueAtUtc,
+    Value<String?>? localStartDate,
+    Value<String?>? localStartTime,
+    Value<String?>? localEndTime,
+    Value<String?>? dueDateLocal,
+    Value<bool>? allDay,
+    Value<String>? categoryId,
+    Value<String>? priority,
+    Value<String>? status,
+    Value<String>? timezone,
+    Value<String>? recurrenceType,
+    Value<int>? recurrenceInterval,
+    Value<String?>? recurrenceWeekdaysJson,
+    Value<String?>? recurrenceEndDateLocal,
+    Value<String>? source,
+    Value<String?>? originalUserText,
+    Value<DateTime?>? completedAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ScheduleItemsCompanion(
+      id: id ?? this.id,
+      itemType: itemType ?? this.itemType,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      startAtUtc: startAtUtc ?? this.startAtUtc,
+      endAtUtc: endAtUtc ?? this.endAtUtc,
+      dueAtUtc: dueAtUtc ?? this.dueAtUtc,
+      localStartDate: localStartDate ?? this.localStartDate,
+      localStartTime: localStartTime ?? this.localStartTime,
+      localEndTime: localEndTime ?? this.localEndTime,
+      dueDateLocal: dueDateLocal ?? this.dueDateLocal,
+      allDay: allDay ?? this.allDay,
+      categoryId: categoryId ?? this.categoryId,
+      priority: priority ?? this.priority,
+      status: status ?? this.status,
+      timezone: timezone ?? this.timezone,
+      recurrenceType: recurrenceType ?? this.recurrenceType,
+      recurrenceInterval: recurrenceInterval ?? this.recurrenceInterval,
+      recurrenceWeekdaysJson:
+          recurrenceWeekdaysJson ?? this.recurrenceWeekdaysJson,
+      recurrenceEndDateLocal:
+          recurrenceEndDateLocal ?? this.recurrenceEndDateLocal,
+      source: source ?? this.source,
+      originalUserText: originalUserText ?? this.originalUserText,
+      completedAt: completedAt ?? this.completedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (itemType.present) {
+      map['item_type'] = Variable<String>(itemType.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (startAtUtc.present) {
+      map['start_at_utc'] = Variable<DateTime>(startAtUtc.value);
+    }
+    if (endAtUtc.present) {
+      map['end_at_utc'] = Variable<DateTime>(endAtUtc.value);
+    }
+    if (dueAtUtc.present) {
+      map['due_at_utc'] = Variable<DateTime>(dueAtUtc.value);
+    }
+    if (localStartDate.present) {
+      map['local_start_date'] = Variable<String>(localStartDate.value);
+    }
+    if (localStartTime.present) {
+      map['local_start_time'] = Variable<String>(localStartTime.value);
+    }
+    if (localEndTime.present) {
+      map['local_end_time'] = Variable<String>(localEndTime.value);
+    }
+    if (dueDateLocal.present) {
+      map['due_date_local'] = Variable<String>(dueDateLocal.value);
+    }
+    if (allDay.present) {
+      map['all_day'] = Variable<bool>(allDay.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<String>(priority.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (timezone.present) {
+      map['timezone'] = Variable<String>(timezone.value);
+    }
+    if (recurrenceType.present) {
+      map['recurrence_type'] = Variable<String>(recurrenceType.value);
+    }
+    if (recurrenceInterval.present) {
+      map['recurrence_interval'] = Variable<int>(recurrenceInterval.value);
+    }
+    if (recurrenceWeekdaysJson.present) {
+      map['recurrence_weekdays_json'] = Variable<String>(
+        recurrenceWeekdaysJson.value,
+      );
+    }
+    if (recurrenceEndDateLocal.present) {
+      map['recurrence_end_date_local'] = Variable<String>(
+        recurrenceEndDateLocal.value,
+      );
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (originalUserText.present) {
+      map['original_user_text'] = Variable<String>(originalUserText.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScheduleItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('itemType: $itemType, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('startAtUtc: $startAtUtc, ')
+          ..write('endAtUtc: $endAtUtc, ')
+          ..write('dueAtUtc: $dueAtUtc, ')
+          ..write('localStartDate: $localStartDate, ')
+          ..write('localStartTime: $localStartTime, ')
+          ..write('localEndTime: $localEndTime, ')
+          ..write('dueDateLocal: $dueDateLocal, ')
+          ..write('allDay: $allDay, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('priority: $priority, ')
+          ..write('status: $status, ')
+          ..write('timezone: $timezone, ')
+          ..write('recurrenceType: $recurrenceType, ')
+          ..write('recurrenceInterval: $recurrenceInterval, ')
+          ..write('recurrenceWeekdaysJson: $recurrenceWeekdaysJson, ')
+          ..write('recurrenceEndDateLocal: $recurrenceEndDateLocal, ')
+          ..write('source: $source, ')
+          ..write('originalUserText: $originalUserText, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ScheduleRemindersTable extends ScheduleReminders
+    with TableInfo<$ScheduleRemindersTable, ScheduleReminder> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ScheduleRemindersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scheduleItemIdMeta = const VerificationMeta(
+    'scheduleItemId',
+  );
+  @override
+  late final GeneratedColumn<String> scheduleItemId = GeneratedColumn<String>(
+    'schedule_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES schedule_items (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _offsetMinutesMeta = const VerificationMeta(
+    'offsetMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> offsetMinutes = GeneratedColumn<int>(
+    'offset_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isEnabledMeta = const VerificationMeta(
+    'isEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> isEnabled = GeneratedColumn<bool>(
+    'is_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_enabled" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    scheduleItemId,
+    offsetMinutes,
+    isEnabled,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'schedule_reminders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ScheduleReminder> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('schedule_item_id')) {
+      context.handle(
+        _scheduleItemIdMeta,
+        scheduleItemId.isAcceptableOrUnknown(
+          data['schedule_item_id']!,
+          _scheduleItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_scheduleItemIdMeta);
+    }
+    if (data.containsKey('offset_minutes')) {
+      context.handle(
+        _offsetMinutesMeta,
+        offsetMinutes.isAcceptableOrUnknown(
+          data['offset_minutes']!,
+          _offsetMinutesMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_offsetMinutesMeta);
+    }
+    if (data.containsKey('is_enabled')) {
+      context.handle(
+        _isEnabledMeta,
+        isEnabled.isAcceptableOrUnknown(data['is_enabled']!, _isEnabledMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_isEnabledMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ScheduleReminder map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ScheduleReminder(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      scheduleItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}schedule_item_id'],
+      )!,
+      offsetMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}offset_minutes'],
+      )!,
+      isEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_enabled'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ScheduleRemindersTable createAlias(String alias) {
+    return $ScheduleRemindersTable(attachedDatabase, alias);
+  }
+}
+
+class ScheduleReminder extends DataClass
+    implements Insertable<ScheduleReminder> {
+  final String id;
+  final String scheduleItemId;
+  final int offsetMinutes;
+  final bool isEnabled;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ScheduleReminder({
+    required this.id,
+    required this.scheduleItemId,
+    required this.offsetMinutes,
+    required this.isEnabled,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['schedule_item_id'] = Variable<String>(scheduleItemId);
+    map['offset_minutes'] = Variable<int>(offsetMinutes);
+    map['is_enabled'] = Variable<bool>(isEnabled);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ScheduleRemindersCompanion toCompanion(bool nullToAbsent) {
+    return ScheduleRemindersCompanion(
+      id: Value(id),
+      scheduleItemId: Value(scheduleItemId),
+      offsetMinutes: Value(offsetMinutes),
+      isEnabled: Value(isEnabled),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ScheduleReminder.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ScheduleReminder(
+      id: serializer.fromJson<String>(json['id']),
+      scheduleItemId: serializer.fromJson<String>(json['scheduleItemId']),
+      offsetMinutes: serializer.fromJson<int>(json['offsetMinutes']),
+      isEnabled: serializer.fromJson<bool>(json['isEnabled']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'scheduleItemId': serializer.toJson<String>(scheduleItemId),
+      'offsetMinutes': serializer.toJson<int>(offsetMinutes),
+      'isEnabled': serializer.toJson<bool>(isEnabled),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ScheduleReminder copyWith({
+    String? id,
+    String? scheduleItemId,
+    int? offsetMinutes,
+    bool? isEnabled,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ScheduleReminder(
+    id: id ?? this.id,
+    scheduleItemId: scheduleItemId ?? this.scheduleItemId,
+    offsetMinutes: offsetMinutes ?? this.offsetMinutes,
+    isEnabled: isEnabled ?? this.isEnabled,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ScheduleReminder copyWithCompanion(ScheduleRemindersCompanion data) {
+    return ScheduleReminder(
+      id: data.id.present ? data.id.value : this.id,
+      scheduleItemId: data.scheduleItemId.present
+          ? data.scheduleItemId.value
+          : this.scheduleItemId,
+      offsetMinutes: data.offsetMinutes.present
+          ? data.offsetMinutes.value
+          : this.offsetMinutes,
+      isEnabled: data.isEnabled.present ? data.isEnabled.value : this.isEnabled,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScheduleReminder(')
+          ..write('id: $id, ')
+          ..write('scheduleItemId: $scheduleItemId, ')
+          ..write('offsetMinutes: $offsetMinutes, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    scheduleItemId,
+    offsetMinutes,
+    isEnabled,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ScheduleReminder &&
+          other.id == this.id &&
+          other.scheduleItemId == this.scheduleItemId &&
+          other.offsetMinutes == this.offsetMinutes &&
+          other.isEnabled == this.isEnabled &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
+  final Value<String> id;
+  final Value<String> scheduleItemId;
+  final Value<int> offsetMinutes;
+  final Value<bool> isEnabled;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ScheduleRemindersCompanion({
+    this.id = const Value.absent(),
+    this.scheduleItemId = const Value.absent(),
+    this.offsetMinutes = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ScheduleRemindersCompanion.insert({
+    required String id,
+    required String scheduleItemId,
+    required int offsetMinutes,
+    required bool isEnabled,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       scheduleItemId = Value(scheduleItemId),
+       offsetMinutes = Value(offsetMinutes),
+       isEnabled = Value(isEnabled),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ScheduleReminder> custom({
+    Expression<String>? id,
+    Expression<String>? scheduleItemId,
+    Expression<int>? offsetMinutes,
+    Expression<bool>? isEnabled,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (scheduleItemId != null) 'schedule_item_id': scheduleItemId,
+      if (offsetMinutes != null) 'offset_minutes': offsetMinutes,
+      if (isEnabled != null) 'is_enabled': isEnabled,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ScheduleRemindersCompanion copyWith({
+    Value<String>? id,
+    Value<String>? scheduleItemId,
+    Value<int>? offsetMinutes,
+    Value<bool>? isEnabled,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ScheduleRemindersCompanion(
+      id: id ?? this.id,
+      scheduleItemId: scheduleItemId ?? this.scheduleItemId,
+      offsetMinutes: offsetMinutes ?? this.offsetMinutes,
+      isEnabled: isEnabled ?? this.isEnabled,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (scheduleItemId.present) {
+      map['schedule_item_id'] = Variable<String>(scheduleItemId.value);
+    }
+    if (offsetMinutes.present) {
+      map['offset_minutes'] = Variable<int>(offsetMinutes.value);
+    }
+    if (isEnabled.present) {
+      map['is_enabled'] = Variable<bool>(isEnabled.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScheduleRemindersCompanion(')
+          ..write('id: $id, ')
+          ..write('scheduleItemId: $scheduleItemId, ')
+          ..write('offsetMinutes: $offsetMinutes, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ScheduleNotificationOccurrencesTable
+    extends ScheduleNotificationOccurrences
+    with
+        TableInfo<
+          $ScheduleNotificationOccurrencesTable,
+          ScheduleNotificationOccurrence
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ScheduleNotificationOccurrencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reminderIdMeta = const VerificationMeta(
+    'reminderId',
+  );
+  @override
+  late final GeneratedColumn<String> reminderId = GeneratedColumn<String>(
+    'reminder_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES schedule_reminders (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _scheduleItemIdMeta = const VerificationMeta(
+    'scheduleItemId',
+  );
+  @override
+  late final GeneratedColumn<String> scheduleItemId = GeneratedColumn<String>(
+    'schedule_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES schedule_items (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _occurrenceKeyMeta = const VerificationMeta(
+    'occurrenceKey',
+  );
+  @override
+  late final GeneratedColumn<String> occurrenceKey = GeneratedColumn<String>(
+    'occurrence_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _platformNotificationIdMeta =
+      const VerificationMeta('platformNotificationId');
+  @override
+  late final GeneratedColumn<int> platformNotificationId = GeneratedColumn<int>(
+    'platform_notification_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _scheduledAtUtcMeta = const VerificationMeta(
+    'scheduledAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> scheduledAtUtc =
+      GeneratedColumn<DateTime>(
+        'scheduled_at_utc',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    reminderId,
+    scheduleItemId,
+    occurrenceKey,
+    platformNotificationId,
+    scheduledAtUtc,
+    syncStatus,
+    lastError,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'schedule_notification_occurrences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ScheduleNotificationOccurrence> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('reminder_id')) {
+      context.handle(
+        _reminderIdMeta,
+        reminderId.isAcceptableOrUnknown(data['reminder_id']!, _reminderIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_reminderIdMeta);
+    }
+    if (data.containsKey('schedule_item_id')) {
+      context.handle(
+        _scheduleItemIdMeta,
+        scheduleItemId.isAcceptableOrUnknown(
+          data['schedule_item_id']!,
+          _scheduleItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_scheduleItemIdMeta);
+    }
+    if (data.containsKey('occurrence_key')) {
+      context.handle(
+        _occurrenceKeyMeta,
+        occurrenceKey.isAcceptableOrUnknown(
+          data['occurrence_key']!,
+          _occurrenceKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_occurrenceKeyMeta);
+    }
+    if (data.containsKey('platform_notification_id')) {
+      context.handle(
+        _platformNotificationIdMeta,
+        platformNotificationId.isAcceptableOrUnknown(
+          data['platform_notification_id']!,
+          _platformNotificationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_platformNotificationIdMeta);
+    }
+    if (data.containsKey('scheduled_at_utc')) {
+      context.handle(
+        _scheduledAtUtcMeta,
+        scheduledAtUtc.isAcceptableOrUnknown(
+          data['scheduled_at_utc']!,
+          _scheduledAtUtcMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_scheduledAtUtcMeta);
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {reminderId, occurrenceKey},
+  ];
+  @override
+  ScheduleNotificationOccurrence map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ScheduleNotificationOccurrence(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      reminderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reminder_id'],
+      )!,
+      scheduleItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}schedule_item_id'],
+      )!,
+      occurrenceKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}occurrence_key'],
+      )!,
+      platformNotificationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}platform_notification_id'],
+      )!,
+      scheduledAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}scheduled_at_utc'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ScheduleNotificationOccurrencesTable createAlias(String alias) {
+    return $ScheduleNotificationOccurrencesTable(attachedDatabase, alias);
+  }
+}
+
+class ScheduleNotificationOccurrence extends DataClass
+    implements Insertable<ScheduleNotificationOccurrence> {
+  final String id;
+  final String reminderId;
+  final String scheduleItemId;
+  final String occurrenceKey;
+  final int platformNotificationId;
+  final DateTime scheduledAtUtc;
+  final String syncStatus;
+  final String? lastError;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ScheduleNotificationOccurrence({
+    required this.id,
+    required this.reminderId,
+    required this.scheduleItemId,
+    required this.occurrenceKey,
+    required this.platformNotificationId,
+    required this.scheduledAtUtc,
+    required this.syncStatus,
+    this.lastError,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['reminder_id'] = Variable<String>(reminderId);
+    map['schedule_item_id'] = Variable<String>(scheduleItemId);
+    map['occurrence_key'] = Variable<String>(occurrenceKey);
+    map['platform_notification_id'] = Variable<int>(platformNotificationId);
+    map['scheduled_at_utc'] = Variable<DateTime>(scheduledAtUtc);
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ScheduleNotificationOccurrencesCompanion toCompanion(bool nullToAbsent) {
+    return ScheduleNotificationOccurrencesCompanion(
+      id: Value(id),
+      reminderId: Value(reminderId),
+      scheduleItemId: Value(scheduleItemId),
+      occurrenceKey: Value(occurrenceKey),
+      platformNotificationId: Value(platformNotificationId),
+      scheduledAtUtc: Value(scheduledAtUtc),
+      syncStatus: Value(syncStatus),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ScheduleNotificationOccurrence.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ScheduleNotificationOccurrence(
+      id: serializer.fromJson<String>(json['id']),
+      reminderId: serializer.fromJson<String>(json['reminderId']),
+      scheduleItemId: serializer.fromJson<String>(json['scheduleItemId']),
+      occurrenceKey: serializer.fromJson<String>(json['occurrenceKey']),
+      platformNotificationId: serializer.fromJson<int>(
+        json['platformNotificationId'],
+      ),
+      scheduledAtUtc: serializer.fromJson<DateTime>(json['scheduledAtUtc']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'reminderId': serializer.toJson<String>(reminderId),
+      'scheduleItemId': serializer.toJson<String>(scheduleItemId),
+      'occurrenceKey': serializer.toJson<String>(occurrenceKey),
+      'platformNotificationId': serializer.toJson<int>(platformNotificationId),
+      'scheduledAtUtc': serializer.toJson<DateTime>(scheduledAtUtc),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'lastError': serializer.toJson<String?>(lastError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ScheduleNotificationOccurrence copyWith({
+    String? id,
+    String? reminderId,
+    String? scheduleItemId,
+    String? occurrenceKey,
+    int? platformNotificationId,
+    DateTime? scheduledAtUtc,
+    String? syncStatus,
+    Value<String?> lastError = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ScheduleNotificationOccurrence(
+    id: id ?? this.id,
+    reminderId: reminderId ?? this.reminderId,
+    scheduleItemId: scheduleItemId ?? this.scheduleItemId,
+    occurrenceKey: occurrenceKey ?? this.occurrenceKey,
+    platformNotificationId:
+        platformNotificationId ?? this.platformNotificationId,
+    scheduledAtUtc: scheduledAtUtc ?? this.scheduledAtUtc,
+    syncStatus: syncStatus ?? this.syncStatus,
+    lastError: lastError.present ? lastError.value : this.lastError,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ScheduleNotificationOccurrence copyWithCompanion(
+    ScheduleNotificationOccurrencesCompanion data,
+  ) {
+    return ScheduleNotificationOccurrence(
+      id: data.id.present ? data.id.value : this.id,
+      reminderId: data.reminderId.present
+          ? data.reminderId.value
+          : this.reminderId,
+      scheduleItemId: data.scheduleItemId.present
+          ? data.scheduleItemId.value
+          : this.scheduleItemId,
+      occurrenceKey: data.occurrenceKey.present
+          ? data.occurrenceKey.value
+          : this.occurrenceKey,
+      platformNotificationId: data.platformNotificationId.present
+          ? data.platformNotificationId.value
+          : this.platformNotificationId,
+      scheduledAtUtc: data.scheduledAtUtc.present
+          ? data.scheduledAtUtc.value
+          : this.scheduledAtUtc,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScheduleNotificationOccurrence(')
+          ..write('id: $id, ')
+          ..write('reminderId: $reminderId, ')
+          ..write('scheduleItemId: $scheduleItemId, ')
+          ..write('occurrenceKey: $occurrenceKey, ')
+          ..write('platformNotificationId: $platformNotificationId, ')
+          ..write('scheduledAtUtc: $scheduledAtUtc, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastError: $lastError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    reminderId,
+    scheduleItemId,
+    occurrenceKey,
+    platformNotificationId,
+    scheduledAtUtc,
+    syncStatus,
+    lastError,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ScheduleNotificationOccurrence &&
+          other.id == this.id &&
+          other.reminderId == this.reminderId &&
+          other.scheduleItemId == this.scheduleItemId &&
+          other.occurrenceKey == this.occurrenceKey &&
+          other.platformNotificationId == this.platformNotificationId &&
+          other.scheduledAtUtc == this.scheduledAtUtc &&
+          other.syncStatus == this.syncStatus &&
+          other.lastError == this.lastError &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ScheduleNotificationOccurrencesCompanion
+    extends UpdateCompanion<ScheduleNotificationOccurrence> {
+  final Value<String> id;
+  final Value<String> reminderId;
+  final Value<String> scheduleItemId;
+  final Value<String> occurrenceKey;
+  final Value<int> platformNotificationId;
+  final Value<DateTime> scheduledAtUtc;
+  final Value<String> syncStatus;
+  final Value<String?> lastError;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ScheduleNotificationOccurrencesCompanion({
+    this.id = const Value.absent(),
+    this.reminderId = const Value.absent(),
+    this.scheduleItemId = const Value.absent(),
+    this.occurrenceKey = const Value.absent(),
+    this.platformNotificationId = const Value.absent(),
+    this.scheduledAtUtc = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ScheduleNotificationOccurrencesCompanion.insert({
+    required String id,
+    required String reminderId,
+    required String scheduleItemId,
+    required String occurrenceKey,
+    required int platformNotificationId,
+    required DateTime scheduledAtUtc,
+    this.syncStatus = const Value.absent(),
+    this.lastError = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       reminderId = Value(reminderId),
+       scheduleItemId = Value(scheduleItemId),
+       occurrenceKey = Value(occurrenceKey),
+       platformNotificationId = Value(platformNotificationId),
+       scheduledAtUtc = Value(scheduledAtUtc),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ScheduleNotificationOccurrence> custom({
+    Expression<String>? id,
+    Expression<String>? reminderId,
+    Expression<String>? scheduleItemId,
+    Expression<String>? occurrenceKey,
+    Expression<int>? platformNotificationId,
+    Expression<DateTime>? scheduledAtUtc,
+    Expression<String>? syncStatus,
+    Expression<String>? lastError,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (reminderId != null) 'reminder_id': reminderId,
+      if (scheduleItemId != null) 'schedule_item_id': scheduleItemId,
+      if (occurrenceKey != null) 'occurrence_key': occurrenceKey,
+      if (platformNotificationId != null)
+        'platform_notification_id': platformNotificationId,
+      if (scheduledAtUtc != null) 'scheduled_at_utc': scheduledAtUtc,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (lastError != null) 'last_error': lastError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ScheduleNotificationOccurrencesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? reminderId,
+    Value<String>? scheduleItemId,
+    Value<String>? occurrenceKey,
+    Value<int>? platformNotificationId,
+    Value<DateTime>? scheduledAtUtc,
+    Value<String>? syncStatus,
+    Value<String?>? lastError,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ScheduleNotificationOccurrencesCompanion(
+      id: id ?? this.id,
+      reminderId: reminderId ?? this.reminderId,
+      scheduleItemId: scheduleItemId ?? this.scheduleItemId,
+      occurrenceKey: occurrenceKey ?? this.occurrenceKey,
+      platformNotificationId:
+          platformNotificationId ?? this.platformNotificationId,
+      scheduledAtUtc: scheduledAtUtc ?? this.scheduledAtUtc,
+      syncStatus: syncStatus ?? this.syncStatus,
+      lastError: lastError ?? this.lastError,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (reminderId.present) {
+      map['reminder_id'] = Variable<String>(reminderId.value);
+    }
+    if (scheduleItemId.present) {
+      map['schedule_item_id'] = Variable<String>(scheduleItemId.value);
+    }
+    if (occurrenceKey.present) {
+      map['occurrence_key'] = Variable<String>(occurrenceKey.value);
+    }
+    if (platformNotificationId.present) {
+      map['platform_notification_id'] = Variable<int>(
+        platformNotificationId.value,
+      );
+    }
+    if (scheduledAtUtc.present) {
+      map['scheduled_at_utc'] = Variable<DateTime>(scheduledAtUtc.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ScheduleNotificationOccurrencesCompanion(')
+          ..write('id: $id, ')
+          ..write('reminderId: $reminderId, ')
+          ..write('scheduleItemId: $scheduleItemId, ')
+          ..write('occurrenceKey: $occurrenceKey, ')
+          ..write('platformNotificationId: $platformNotificationId, ')
+          ..write('scheduledAtUtc: $scheduledAtUtc, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('lastError: $lastError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SchedulerSettingsTable extends SchedulerSettings
+    with TableInfo<$SchedulerSettingsTable, SchedulerSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SchedulerSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL CHECK (id = 1)',
+  );
+  static const VerificationMeta _defaultEventDurationMinutesMeta =
+      const VerificationMeta('defaultEventDurationMinutes');
+  @override
+  late final GeneratedColumn<int> defaultEventDurationMinutes =
+      GeneratedColumn<int>(
+        'default_event_duration_minutes',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(60),
+      );
+  static const VerificationMeta _defaultReminderMinutesMeta =
+      const VerificationMeta('defaultReminderMinutes');
+  @override
+  late final GeneratedColumn<int> defaultReminderMinutes = GeneratedColumn<int>(
+    'default_reminder_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(15),
+  );
+  static const VerificationMeta _defaultTaskReminderTimeMeta =
+      const VerificationMeta('defaultTaskReminderTime');
+  @override
+  late final GeneratedColumn<String> defaultTaskReminderTime =
+      GeneratedColumn<String>(
+        'default_task_reminder_time',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('09:00'),
+      );
+  static const VerificationMeta _weekStartsOnMeta = const VerificationMeta(
+    'weekStartsOn',
+  );
+  @override
+  late final GeneratedColumn<String> weekStartsOn = GeneratedColumn<String>(
+    'week_starts_on',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('monday'),
+  );
+  static const VerificationMeta _timezoneMeta = const VerificationMeta(
+    'timezone',
+  );
+  @override
+  late final GeneratedColumn<String> timezone = GeneratedColumn<String>(
+    'timezone',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Asia/Jakarta'),
+  );
+  static const VerificationMeta _rollingHorizonDaysMeta =
+      const VerificationMeta('rollingHorizonDays');
+  @override
+  late final GeneratedColumn<int> rollingHorizonDays = GeneratedColumn<int>(
+    'rolling_horizon_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(30),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    defaultEventDurationMinutes,
+    defaultReminderMinutes,
+    defaultTaskReminderTime,
+    weekStartsOn,
+    timezone,
+    rollingHorizonDays,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'scheduler_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SchedulerSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('default_event_duration_minutes')) {
+      context.handle(
+        _defaultEventDurationMinutesMeta,
+        defaultEventDurationMinutes.isAcceptableOrUnknown(
+          data['default_event_duration_minutes']!,
+          _defaultEventDurationMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('default_reminder_minutes')) {
+      context.handle(
+        _defaultReminderMinutesMeta,
+        defaultReminderMinutes.isAcceptableOrUnknown(
+          data['default_reminder_minutes']!,
+          _defaultReminderMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('default_task_reminder_time')) {
+      context.handle(
+        _defaultTaskReminderTimeMeta,
+        defaultTaskReminderTime.isAcceptableOrUnknown(
+          data['default_task_reminder_time']!,
+          _defaultTaskReminderTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('week_starts_on')) {
+      context.handle(
+        _weekStartsOnMeta,
+        weekStartsOn.isAcceptableOrUnknown(
+          data['week_starts_on']!,
+          _weekStartsOnMeta,
+        ),
+      );
+    }
+    if (data.containsKey('timezone')) {
+      context.handle(
+        _timezoneMeta,
+        timezone.isAcceptableOrUnknown(data['timezone']!, _timezoneMeta),
+      );
+    }
+    if (data.containsKey('rolling_horizon_days')) {
+      context.handle(
+        _rollingHorizonDaysMeta,
+        rollingHorizonDays.isAcceptableOrUnknown(
+          data['rolling_horizon_days']!,
+          _rollingHorizonDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SchedulerSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SchedulerSetting(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      defaultEventDurationMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}default_event_duration_minutes'],
+      )!,
+      defaultReminderMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}default_reminder_minutes'],
+      )!,
+      defaultTaskReminderTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}default_task_reminder_time'],
+      )!,
+      weekStartsOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}week_starts_on'],
+      )!,
+      timezone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}timezone'],
+      )!,
+      rollingHorizonDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rolling_horizon_days'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SchedulerSettingsTable createAlias(String alias) {
+    return $SchedulerSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class SchedulerSetting extends DataClass
+    implements Insertable<SchedulerSetting> {
+  final int id;
+  final int defaultEventDurationMinutes;
+  final int defaultReminderMinutes;
+  final String defaultTaskReminderTime;
+  final String weekStartsOn;
+  final String timezone;
+  final int rollingHorizonDays;
+  final DateTime updatedAt;
+  const SchedulerSetting({
+    required this.id,
+    required this.defaultEventDurationMinutes,
+    required this.defaultReminderMinutes,
+    required this.defaultTaskReminderTime,
+    required this.weekStartsOn,
+    required this.timezone,
+    required this.rollingHorizonDays,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['default_event_duration_minutes'] = Variable<int>(
+      defaultEventDurationMinutes,
+    );
+    map['default_reminder_minutes'] = Variable<int>(defaultReminderMinutes);
+    map['default_task_reminder_time'] = Variable<String>(
+      defaultTaskReminderTime,
+    );
+    map['week_starts_on'] = Variable<String>(weekStartsOn);
+    map['timezone'] = Variable<String>(timezone);
+    map['rolling_horizon_days'] = Variable<int>(rollingHorizonDays);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SchedulerSettingsCompanion toCompanion(bool nullToAbsent) {
+    return SchedulerSettingsCompanion(
+      id: Value(id),
+      defaultEventDurationMinutes: Value(defaultEventDurationMinutes),
+      defaultReminderMinutes: Value(defaultReminderMinutes),
+      defaultTaskReminderTime: Value(defaultTaskReminderTime),
+      weekStartsOn: Value(weekStartsOn),
+      timezone: Value(timezone),
+      rollingHorizonDays: Value(rollingHorizonDays),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SchedulerSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SchedulerSetting(
+      id: serializer.fromJson<int>(json['id']),
+      defaultEventDurationMinutes: serializer.fromJson<int>(
+        json['defaultEventDurationMinutes'],
+      ),
+      defaultReminderMinutes: serializer.fromJson<int>(
+        json['defaultReminderMinutes'],
+      ),
+      defaultTaskReminderTime: serializer.fromJson<String>(
+        json['defaultTaskReminderTime'],
+      ),
+      weekStartsOn: serializer.fromJson<String>(json['weekStartsOn']),
+      timezone: serializer.fromJson<String>(json['timezone']),
+      rollingHorizonDays: serializer.fromJson<int>(json['rollingHorizonDays']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'defaultEventDurationMinutes': serializer.toJson<int>(
+        defaultEventDurationMinutes,
+      ),
+      'defaultReminderMinutes': serializer.toJson<int>(defaultReminderMinutes),
+      'defaultTaskReminderTime': serializer.toJson<String>(
+        defaultTaskReminderTime,
+      ),
+      'weekStartsOn': serializer.toJson<String>(weekStartsOn),
+      'timezone': serializer.toJson<String>(timezone),
+      'rollingHorizonDays': serializer.toJson<int>(rollingHorizonDays),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SchedulerSetting copyWith({
+    int? id,
+    int? defaultEventDurationMinutes,
+    int? defaultReminderMinutes,
+    String? defaultTaskReminderTime,
+    String? weekStartsOn,
+    String? timezone,
+    int? rollingHorizonDays,
+    DateTime? updatedAt,
+  }) => SchedulerSetting(
+    id: id ?? this.id,
+    defaultEventDurationMinutes:
+        defaultEventDurationMinutes ?? this.defaultEventDurationMinutes,
+    defaultReminderMinutes:
+        defaultReminderMinutes ?? this.defaultReminderMinutes,
+    defaultTaskReminderTime:
+        defaultTaskReminderTime ?? this.defaultTaskReminderTime,
+    weekStartsOn: weekStartsOn ?? this.weekStartsOn,
+    timezone: timezone ?? this.timezone,
+    rollingHorizonDays: rollingHorizonDays ?? this.rollingHorizonDays,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  SchedulerSetting copyWithCompanion(SchedulerSettingsCompanion data) {
+    return SchedulerSetting(
+      id: data.id.present ? data.id.value : this.id,
+      defaultEventDurationMinutes: data.defaultEventDurationMinutes.present
+          ? data.defaultEventDurationMinutes.value
+          : this.defaultEventDurationMinutes,
+      defaultReminderMinutes: data.defaultReminderMinutes.present
+          ? data.defaultReminderMinutes.value
+          : this.defaultReminderMinutes,
+      defaultTaskReminderTime: data.defaultTaskReminderTime.present
+          ? data.defaultTaskReminderTime.value
+          : this.defaultTaskReminderTime,
+      weekStartsOn: data.weekStartsOn.present
+          ? data.weekStartsOn.value
+          : this.weekStartsOn,
+      timezone: data.timezone.present ? data.timezone.value : this.timezone,
+      rollingHorizonDays: data.rollingHorizonDays.present
+          ? data.rollingHorizonDays.value
+          : this.rollingHorizonDays,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SchedulerSetting(')
+          ..write('id: $id, ')
+          ..write('defaultEventDurationMinutes: $defaultEventDurationMinutes, ')
+          ..write('defaultReminderMinutes: $defaultReminderMinutes, ')
+          ..write('defaultTaskReminderTime: $defaultTaskReminderTime, ')
+          ..write('weekStartsOn: $weekStartsOn, ')
+          ..write('timezone: $timezone, ')
+          ..write('rollingHorizonDays: $rollingHorizonDays, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    defaultEventDurationMinutes,
+    defaultReminderMinutes,
+    defaultTaskReminderTime,
+    weekStartsOn,
+    timezone,
+    rollingHorizonDays,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SchedulerSetting &&
+          other.id == this.id &&
+          other.defaultEventDurationMinutes ==
+              this.defaultEventDurationMinutes &&
+          other.defaultReminderMinutes == this.defaultReminderMinutes &&
+          other.defaultTaskReminderTime == this.defaultTaskReminderTime &&
+          other.weekStartsOn == this.weekStartsOn &&
+          other.timezone == this.timezone &&
+          other.rollingHorizonDays == this.rollingHorizonDays &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SchedulerSettingsCompanion extends UpdateCompanion<SchedulerSetting> {
+  final Value<int> id;
+  final Value<int> defaultEventDurationMinutes;
+  final Value<int> defaultReminderMinutes;
+  final Value<String> defaultTaskReminderTime;
+  final Value<String> weekStartsOn;
+  final Value<String> timezone;
+  final Value<int> rollingHorizonDays;
+  final Value<DateTime> updatedAt;
+  const SchedulerSettingsCompanion({
+    this.id = const Value.absent(),
+    this.defaultEventDurationMinutes = const Value.absent(),
+    this.defaultReminderMinutes = const Value.absent(),
+    this.defaultTaskReminderTime = const Value.absent(),
+    this.weekStartsOn = const Value.absent(),
+    this.timezone = const Value.absent(),
+    this.rollingHorizonDays = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  SchedulerSettingsCompanion.insert({
+    this.id = const Value.absent(),
+    this.defaultEventDurationMinutes = const Value.absent(),
+    this.defaultReminderMinutes = const Value.absent(),
+    this.defaultTaskReminderTime = const Value.absent(),
+    this.weekStartsOn = const Value.absent(),
+    this.timezone = const Value.absent(),
+    this.rollingHorizonDays = const Value.absent(),
+    required DateTime updatedAt,
+  }) : updatedAt = Value(updatedAt);
+  static Insertable<SchedulerSetting> custom({
+    Expression<int>? id,
+    Expression<int>? defaultEventDurationMinutes,
+    Expression<int>? defaultReminderMinutes,
+    Expression<String>? defaultTaskReminderTime,
+    Expression<String>? weekStartsOn,
+    Expression<String>? timezone,
+    Expression<int>? rollingHorizonDays,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (defaultEventDurationMinutes != null)
+        'default_event_duration_minutes': defaultEventDurationMinutes,
+      if (defaultReminderMinutes != null)
+        'default_reminder_minutes': defaultReminderMinutes,
+      if (defaultTaskReminderTime != null)
+        'default_task_reminder_time': defaultTaskReminderTime,
+      if (weekStartsOn != null) 'week_starts_on': weekStartsOn,
+      if (timezone != null) 'timezone': timezone,
+      if (rollingHorizonDays != null)
+        'rolling_horizon_days': rollingHorizonDays,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  SchedulerSettingsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? defaultEventDurationMinutes,
+    Value<int>? defaultReminderMinutes,
+    Value<String>? defaultTaskReminderTime,
+    Value<String>? weekStartsOn,
+    Value<String>? timezone,
+    Value<int>? rollingHorizonDays,
+    Value<DateTime>? updatedAt,
+  }) {
+    return SchedulerSettingsCompanion(
+      id: id ?? this.id,
+      defaultEventDurationMinutes:
+          defaultEventDurationMinutes ?? this.defaultEventDurationMinutes,
+      defaultReminderMinutes:
+          defaultReminderMinutes ?? this.defaultReminderMinutes,
+      defaultTaskReminderTime:
+          defaultTaskReminderTime ?? this.defaultTaskReminderTime,
+      weekStartsOn: weekStartsOn ?? this.weekStartsOn,
+      timezone: timezone ?? this.timezone,
+      rollingHorizonDays: rollingHorizonDays ?? this.rollingHorizonDays,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (defaultEventDurationMinutes.present) {
+      map['default_event_duration_minutes'] = Variable<int>(
+        defaultEventDurationMinutes.value,
+      );
+    }
+    if (defaultReminderMinutes.present) {
+      map['default_reminder_minutes'] = Variable<int>(
+        defaultReminderMinutes.value,
+      );
+    }
+    if (defaultTaskReminderTime.present) {
+      map['default_task_reminder_time'] = Variable<String>(
+        defaultTaskReminderTime.value,
+      );
+    }
+    if (weekStartsOn.present) {
+      map['week_starts_on'] = Variable<String>(weekStartsOn.value);
+    }
+    if (timezone.present) {
+      map['timezone'] = Variable<String>(timezone.value);
+    }
+    if (rollingHorizonDays.present) {
+      map['rolling_horizon_days'] = Variable<int>(rollingHorizonDays.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SchedulerSettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('defaultEventDurationMinutes: $defaultEventDurationMinutes, ')
+          ..write('defaultReminderMinutes: $defaultReminderMinutes, ')
+          ..write('defaultTaskReminderTime: $defaultTaskReminderTime, ')
+          ..write('weekStartsOn: $weekStartsOn, ')
+          ..write('timezone: $timezone, ')
+          ..write('rollingHorizonDays: $rollingHorizonDays, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -10858,6 +14386,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $ChatDraftsTable chatDrafts = $ChatDraftsTable(this);
+  late final $ScheduleCategoriesTable scheduleCategories =
+      $ScheduleCategoriesTable(this);
+  late final $ScheduleItemsTable scheduleItems = $ScheduleItemsTable(this);
+  late final $ScheduleRemindersTable scheduleReminders =
+      $ScheduleRemindersTable(this);
+  late final $ScheduleNotificationOccurrencesTable
+  scheduleNotificationOccurrences = $ScheduleNotificationOccurrencesTable(this);
+  late final $SchedulerSettingsTable schedulerSettings =
+      $SchedulerSettingsTable(this);
   late final Index idxDailyTargetsEffective = Index(
     'idx_daily_targets_effective',
     'CREATE INDEX idx_daily_targets_effective ON daily_targets (effective_from_date)',
@@ -10934,6 +14471,34 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_chat_drafts_updated',
     'CREATE INDEX idx_chat_drafts_updated ON chat_drafts (updated_at)',
   );
+  late final Index idxScheduleCategoriesActive = Index(
+    'idx_schedule_categories_active',
+    'CREATE INDEX idx_schedule_categories_active ON schedule_categories (is_active, name)',
+  );
+  late final Index idxScheduleItemsTimeStatus = Index(
+    'idx_schedule_items_time_status',
+    'CREATE INDEX idx_schedule_items_time_status ON schedule_items (status, start_at_utc, end_at_utc)',
+  );
+  late final Index idxScheduleItemsDueStatus = Index(
+    'idx_schedule_items_due_status',
+    'CREATE INDEX idx_schedule_items_due_status ON schedule_items (status, due_date_local, due_at_utc)',
+  );
+  late final Index idxScheduleItemsCategory = Index(
+    'idx_schedule_items_category',
+    'CREATE INDEX idx_schedule_items_category ON schedule_items (category_id, status)',
+  );
+  late final Index idxScheduleRemindersItemEnabled = Index(
+    'idx_schedule_reminders_item_enabled',
+    'CREATE INDEX idx_schedule_reminders_item_enabled ON schedule_reminders (schedule_item_id, is_enabled)',
+  );
+  late final Index idxScheduleOccurrencesItemTime = Index(
+    'idx_schedule_occurrences_item_time',
+    'CREATE INDEX idx_schedule_occurrences_item_time ON schedule_notification_occurrences (schedule_item_id, scheduled_at_utc)',
+  );
+  late final Index idxScheduleOccurrencesSync = Index(
+    'idx_schedule_occurrences_sync',
+    'CREATE INDEX idx_schedule_occurrences_sync ON schedule_notification_occurrences (sync_status, scheduled_at_utc)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10956,6 +14521,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     financialTransactions,
     financeSettings,
     chatDrafts,
+    scheduleCategories,
+    scheduleItems,
+    scheduleReminders,
+    scheduleNotificationOccurrences,
+    schedulerSettings,
     idxDailyTargetsEffective,
     idxFoodLogsLocalDateDeletedStatus,
     idxFoodLogsConsumedAt,
@@ -10975,6 +14545,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxFinancialTransactionsCategory,
     idxFinancialTransactionsPeriodReimburse,
     idxChatDraftsUpdated,
+    idxScheduleCategoriesActive,
+    idxScheduleItemsTimeStatus,
+    idxScheduleItemsDueStatus,
+    idxScheduleItemsCategory,
+    idxScheduleRemindersItemEnabled,
+    idxScheduleOccurrencesItemTime,
+    idxScheduleOccurrencesSync,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -11019,6 +14596,37 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('api_key_usage_events', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'schedule_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('schedule_reminders', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'schedule_reminders',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate(
+          'schedule_notification_occurrences',
+          kind: UpdateKind.delete,
+        ),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'schedule_items',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate(
+          'schedule_notification_occurrences',
+          kind: UpdateKind.delete,
+        ),
+      ],
     ),
   ]);
 }
@@ -18000,6 +21608,2603 @@ typedef $$ChatDraftsTableProcessedTableManager =
       ChatDraft,
       PrefetchHooks Function()
     >;
+typedef $$ScheduleCategoriesTableCreateCompanionBuilder =
+    ScheduleCategoriesCompanion Function({
+      required String id,
+      required String name,
+      Value<String?> iconKey,
+      required bool isSystem,
+      required bool isActive,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ScheduleCategoriesTableUpdateCompanionBuilder =
+    ScheduleCategoriesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String?> iconKey,
+      Value<bool> isSystem,
+      Value<bool> isActive,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ScheduleCategoriesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ScheduleCategoriesTable,
+          ScheduleCategory
+        > {
+  $$ScheduleCategoriesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$ScheduleItemsTable, List<ScheduleItem>>
+  _scheduleItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.scheduleItems,
+    aliasName: 'schedule_categories__id__schedule_items__category_id',
+  );
+
+  $$ScheduleItemsTableProcessedTableManager get scheduleItemsRefs {
+    final manager = $$ScheduleItemsTableTableManager(
+      $_db,
+      $_db.scheduleItems,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_scheduleItemsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ScheduleCategoriesTableFilterComposer
+    extends Composer<_$AppDatabase, $ScheduleCategoriesTable> {
+  $$ScheduleCategoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconKey => $composableBuilder(
+    column: $table.iconKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSystem => $composableBuilder(
+    column: $table.isSystem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> scheduleItemsRefs(
+    Expression<bool> Function($$ScheduleItemsTableFilterComposer f) f,
+  ) {
+    final $$ScheduleItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.scheduleItems,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.scheduleItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ScheduleCategoriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ScheduleCategoriesTable> {
+  $$ScheduleCategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconKey => $composableBuilder(
+    column: $table.iconKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSystem => $composableBuilder(
+    column: $table.isSystem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ScheduleCategoriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ScheduleCategoriesTable> {
+  $$ScheduleCategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get iconKey =>
+      $composableBuilder(column: $table.iconKey, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSystem =>
+      $composableBuilder(column: $table.isSystem, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> scheduleItemsRefs<T extends Object>(
+    Expression<T> Function($$ScheduleItemsTableAnnotationComposer a) f,
+  ) {
+    final $$ScheduleItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.scheduleItems,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.scheduleItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ScheduleCategoriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ScheduleCategoriesTable,
+          ScheduleCategory,
+          $$ScheduleCategoriesTableFilterComposer,
+          $$ScheduleCategoriesTableOrderingComposer,
+          $$ScheduleCategoriesTableAnnotationComposer,
+          $$ScheduleCategoriesTableCreateCompanionBuilder,
+          $$ScheduleCategoriesTableUpdateCompanionBuilder,
+          (ScheduleCategory, $$ScheduleCategoriesTableReferences),
+          ScheduleCategory,
+          PrefetchHooks Function({bool scheduleItemsRefs})
+        > {
+  $$ScheduleCategoriesTableTableManager(
+    _$AppDatabase db,
+    $ScheduleCategoriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScheduleCategoriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ScheduleCategoriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ScheduleCategoriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> iconKey = const Value.absent(),
+                Value<bool> isSystem = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ScheduleCategoriesCompanion(
+                id: id,
+                name: name,
+                iconKey: iconKey,
+                isSystem: isSystem,
+                isActive: isActive,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String?> iconKey = const Value.absent(),
+                required bool isSystem,
+                required bool isActive,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ScheduleCategoriesCompanion.insert(
+                id: id,
+                name: name,
+                iconKey: iconKey,
+                isSystem: isSystem,
+                isActive: isActive,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ScheduleCategoriesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({scheduleItemsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (scheduleItemsRefs) db.scheduleItems,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (scheduleItemsRefs)
+                    await $_getPrefetchedData<
+                      ScheduleCategory,
+                      $ScheduleCategoriesTable,
+                      ScheduleItem
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ScheduleCategoriesTableReferences
+                          ._scheduleItemsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ScheduleCategoriesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).scheduleItemsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.categoryId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ScheduleCategoriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ScheduleCategoriesTable,
+      ScheduleCategory,
+      $$ScheduleCategoriesTableFilterComposer,
+      $$ScheduleCategoriesTableOrderingComposer,
+      $$ScheduleCategoriesTableAnnotationComposer,
+      $$ScheduleCategoriesTableCreateCompanionBuilder,
+      $$ScheduleCategoriesTableUpdateCompanionBuilder,
+      (ScheduleCategory, $$ScheduleCategoriesTableReferences),
+      ScheduleCategory,
+      PrefetchHooks Function({bool scheduleItemsRefs})
+    >;
+typedef $$ScheduleItemsTableCreateCompanionBuilder =
+    ScheduleItemsCompanion Function({
+      required String id,
+      required String itemType,
+      required String title,
+      Value<String?> description,
+      Value<DateTime?> startAtUtc,
+      Value<DateTime?> endAtUtc,
+      Value<DateTime?> dueAtUtc,
+      Value<String?> localStartDate,
+      Value<String?> localStartTime,
+      Value<String?> localEndTime,
+      Value<String?> dueDateLocal,
+      required bool allDay,
+      required String categoryId,
+      required String priority,
+      required String status,
+      required String timezone,
+      required String recurrenceType,
+      Value<int> recurrenceInterval,
+      Value<String?> recurrenceWeekdaysJson,
+      Value<String?> recurrenceEndDateLocal,
+      Value<String> source,
+      Value<String?> originalUserText,
+      Value<DateTime?> completedAt,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ScheduleItemsTableUpdateCompanionBuilder =
+    ScheduleItemsCompanion Function({
+      Value<String> id,
+      Value<String> itemType,
+      Value<String> title,
+      Value<String?> description,
+      Value<DateTime?> startAtUtc,
+      Value<DateTime?> endAtUtc,
+      Value<DateTime?> dueAtUtc,
+      Value<String?> localStartDate,
+      Value<String?> localStartTime,
+      Value<String?> localEndTime,
+      Value<String?> dueDateLocal,
+      Value<bool> allDay,
+      Value<String> categoryId,
+      Value<String> priority,
+      Value<String> status,
+      Value<String> timezone,
+      Value<String> recurrenceType,
+      Value<int> recurrenceInterval,
+      Value<String?> recurrenceWeekdaysJson,
+      Value<String?> recurrenceEndDateLocal,
+      Value<String> source,
+      Value<String?> originalUserText,
+      Value<DateTime?> completedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ScheduleItemsTableReferences
+    extends BaseReferences<_$AppDatabase, $ScheduleItemsTable, ScheduleItem> {
+  $$ScheduleItemsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ScheduleCategoriesTable _categoryIdTable(_$AppDatabase db) => db
+      .scheduleCategories
+      .createAlias('schedule_items__category_id__schedule_categories__id');
+
+  $$ScheduleCategoriesTableProcessedTableManager get categoryId {
+    final $_column = $_itemColumn<String>('category_id')!;
+
+    final manager = $$ScheduleCategoriesTableTableManager(
+      $_db,
+      $_db.scheduleCategories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ScheduleRemindersTable, List<ScheduleReminder>>
+  _scheduleRemindersRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.scheduleReminders,
+        aliasName: 'schedule_items__id__schedule_reminders__schedule_item_id',
+      );
+
+  $$ScheduleRemindersTableProcessedTableManager get scheduleRemindersRefs {
+    final manager = $$ScheduleRemindersTableTableManager(
+      $_db,
+      $_db.scheduleReminders,
+    ).filter((f) => f.scheduleItemId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _scheduleRemindersRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ScheduleNotificationOccurrencesTable,
+    List<ScheduleNotificationOccurrence>
+  >
+  _scheduleNotificationOccurrencesRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.scheduleNotificationOccurrences,
+    aliasName:
+        'schedule_items__id__schedule_notification_occurrences__schedule_item_id',
+  );
+
+  $$ScheduleNotificationOccurrencesTableProcessedTableManager
+  get scheduleNotificationOccurrencesRefs {
+    final manager = $$ScheduleNotificationOccurrencesTableTableManager(
+      $_db,
+      $_db.scheduleNotificationOccurrences,
+    ).filter((f) => f.scheduleItemId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _scheduleNotificationOccurrencesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ScheduleItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $ScheduleItemsTable> {
+  $$ScheduleItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemType => $composableBuilder(
+    column: $table.itemType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startAtUtc => $composableBuilder(
+    column: $table.startAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endAtUtc => $composableBuilder(
+    column: $table.endAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dueAtUtc => $composableBuilder(
+    column: $table.dueAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localStartDate => $composableBuilder(
+    column: $table.localStartDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localStartTime => $composableBuilder(
+    column: $table.localStartTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localEndTime => $composableBuilder(
+    column: $table.localEndTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dueDateLocal => $composableBuilder(
+    column: $table.dueDateLocal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get allDay => $composableBuilder(
+    column: $table.allDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get timezone => $composableBuilder(
+    column: $table.timezone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceType => $composableBuilder(
+    column: $table.recurrenceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recurrenceInterval => $composableBuilder(
+    column: $table.recurrenceInterval,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceWeekdaysJson => $composableBuilder(
+    column: $table.recurrenceWeekdaysJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceEndDateLocal => $composableBuilder(
+    column: $table.recurrenceEndDateLocal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get originalUserText => $composableBuilder(
+    column: $table.originalUserText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ScheduleCategoriesTableFilterComposer get categoryId {
+    final $$ScheduleCategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.scheduleCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleCategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.scheduleCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> scheduleRemindersRefs(
+    Expression<bool> Function($$ScheduleRemindersTableFilterComposer f) f,
+  ) {
+    final $$ScheduleRemindersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.scheduleReminders,
+      getReferencedColumn: (t) => t.scheduleItemId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleRemindersTableFilterComposer(
+            $db: $db,
+            $table: $db.scheduleReminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> scheduleNotificationOccurrencesRefs(
+    Expression<bool> Function(
+      $$ScheduleNotificationOccurrencesTableFilterComposer f,
+    )
+    f,
+  ) {
+    final $$ScheduleNotificationOccurrencesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.scheduleNotificationOccurrences,
+          getReferencedColumn: (t) => t.scheduleItemId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScheduleNotificationOccurrencesTableFilterComposer(
+                $db: $db,
+                $table: $db.scheduleNotificationOccurrences,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ScheduleItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ScheduleItemsTable> {
+  $$ScheduleItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemType => $composableBuilder(
+    column: $table.itemType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startAtUtc => $composableBuilder(
+    column: $table.startAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endAtUtc => $composableBuilder(
+    column: $table.endAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dueAtUtc => $composableBuilder(
+    column: $table.dueAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localStartDate => $composableBuilder(
+    column: $table.localStartDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localStartTime => $composableBuilder(
+    column: $table.localStartTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localEndTime => $composableBuilder(
+    column: $table.localEndTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dueDateLocal => $composableBuilder(
+    column: $table.dueDateLocal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get allDay => $composableBuilder(
+    column: $table.allDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get timezone => $composableBuilder(
+    column: $table.timezone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceType => $composableBuilder(
+    column: $table.recurrenceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get recurrenceInterval => $composableBuilder(
+    column: $table.recurrenceInterval,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceWeekdaysJson => $composableBuilder(
+    column: $table.recurrenceWeekdaysJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceEndDateLocal => $composableBuilder(
+    column: $table.recurrenceEndDateLocal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get originalUserText => $composableBuilder(
+    column: $table.originalUserText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ScheduleCategoriesTableOrderingComposer get categoryId {
+    final $$ScheduleCategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.scheduleCategories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleCategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.scheduleCategories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScheduleItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ScheduleItemsTable> {
+  $$ScheduleItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get itemType =>
+      $composableBuilder(column: $table.itemType, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startAtUtc => $composableBuilder(
+    column: $table.startAtUtc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get endAtUtc =>
+      $composableBuilder(column: $table.endAtUtc, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dueAtUtc =>
+      $composableBuilder(column: $table.dueAtUtc, builder: (column) => column);
+
+  GeneratedColumn<String> get localStartDate => $composableBuilder(
+    column: $table.localStartDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get localStartTime => $composableBuilder(
+    column: $table.localStartTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get localEndTime => $composableBuilder(
+    column: $table.localEndTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get dueDateLocal => $composableBuilder(
+    column: $table.dueDateLocal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get allDay =>
+      $composableBuilder(column: $table.allDay, builder: (column) => column);
+
+  GeneratedColumn<String> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get timezone =>
+      $composableBuilder(column: $table.timezone, builder: (column) => column);
+
+  GeneratedColumn<String> get recurrenceType => $composableBuilder(
+    column: $table.recurrenceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get recurrenceInterval => $composableBuilder(
+    column: $table.recurrenceInterval,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recurrenceWeekdaysJson => $composableBuilder(
+    column: $table.recurrenceWeekdaysJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recurrenceEndDateLocal => $composableBuilder(
+    column: $table.recurrenceEndDateLocal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get originalUserText => $composableBuilder(
+    column: $table.originalUserText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ScheduleCategoriesTableAnnotationComposer get categoryId {
+    final $$ScheduleCategoriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.categoryId,
+          referencedTable: $db.scheduleCategories,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScheduleCategoriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.scheduleCategories,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  Expression<T> scheduleRemindersRefs<T extends Object>(
+    Expression<T> Function($$ScheduleRemindersTableAnnotationComposer a) f,
+  ) {
+    final $$ScheduleRemindersTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.scheduleReminders,
+          getReferencedColumn: (t) => t.scheduleItemId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScheduleRemindersTableAnnotationComposer(
+                $db: $db,
+                $table: $db.scheduleReminders,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> scheduleNotificationOccurrencesRefs<T extends Object>(
+    Expression<T> Function(
+      $$ScheduleNotificationOccurrencesTableAnnotationComposer a,
+    )
+    f,
+  ) {
+    final $$ScheduleNotificationOccurrencesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.scheduleNotificationOccurrences,
+          getReferencedColumn: (t) => t.scheduleItemId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScheduleNotificationOccurrencesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.scheduleNotificationOccurrences,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ScheduleItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ScheduleItemsTable,
+          ScheduleItem,
+          $$ScheduleItemsTableFilterComposer,
+          $$ScheduleItemsTableOrderingComposer,
+          $$ScheduleItemsTableAnnotationComposer,
+          $$ScheduleItemsTableCreateCompanionBuilder,
+          $$ScheduleItemsTableUpdateCompanionBuilder,
+          (ScheduleItem, $$ScheduleItemsTableReferences),
+          ScheduleItem,
+          PrefetchHooks Function({
+            bool categoryId,
+            bool scheduleRemindersRefs,
+            bool scheduleNotificationOccurrencesRefs,
+          })
+        > {
+  $$ScheduleItemsTableTableManager(_$AppDatabase db, $ScheduleItemsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScheduleItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ScheduleItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ScheduleItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> itemType = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<DateTime?> startAtUtc = const Value.absent(),
+                Value<DateTime?> endAtUtc = const Value.absent(),
+                Value<DateTime?> dueAtUtc = const Value.absent(),
+                Value<String?> localStartDate = const Value.absent(),
+                Value<String?> localStartTime = const Value.absent(),
+                Value<String?> localEndTime = const Value.absent(),
+                Value<String?> dueDateLocal = const Value.absent(),
+                Value<bool> allDay = const Value.absent(),
+                Value<String> categoryId = const Value.absent(),
+                Value<String> priority = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> timezone = const Value.absent(),
+                Value<String> recurrenceType = const Value.absent(),
+                Value<int> recurrenceInterval = const Value.absent(),
+                Value<String?> recurrenceWeekdaysJson = const Value.absent(),
+                Value<String?> recurrenceEndDateLocal = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> originalUserText = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ScheduleItemsCompanion(
+                id: id,
+                itemType: itemType,
+                title: title,
+                description: description,
+                startAtUtc: startAtUtc,
+                endAtUtc: endAtUtc,
+                dueAtUtc: dueAtUtc,
+                localStartDate: localStartDate,
+                localStartTime: localStartTime,
+                localEndTime: localEndTime,
+                dueDateLocal: dueDateLocal,
+                allDay: allDay,
+                categoryId: categoryId,
+                priority: priority,
+                status: status,
+                timezone: timezone,
+                recurrenceType: recurrenceType,
+                recurrenceInterval: recurrenceInterval,
+                recurrenceWeekdaysJson: recurrenceWeekdaysJson,
+                recurrenceEndDateLocal: recurrenceEndDateLocal,
+                source: source,
+                originalUserText: originalUserText,
+                completedAt: completedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String itemType,
+                required String title,
+                Value<String?> description = const Value.absent(),
+                Value<DateTime?> startAtUtc = const Value.absent(),
+                Value<DateTime?> endAtUtc = const Value.absent(),
+                Value<DateTime?> dueAtUtc = const Value.absent(),
+                Value<String?> localStartDate = const Value.absent(),
+                Value<String?> localStartTime = const Value.absent(),
+                Value<String?> localEndTime = const Value.absent(),
+                Value<String?> dueDateLocal = const Value.absent(),
+                required bool allDay,
+                required String categoryId,
+                required String priority,
+                required String status,
+                required String timezone,
+                required String recurrenceType,
+                Value<int> recurrenceInterval = const Value.absent(),
+                Value<String?> recurrenceWeekdaysJson = const Value.absent(),
+                Value<String?> recurrenceEndDateLocal = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> originalUserText = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ScheduleItemsCompanion.insert(
+                id: id,
+                itemType: itemType,
+                title: title,
+                description: description,
+                startAtUtc: startAtUtc,
+                endAtUtc: endAtUtc,
+                dueAtUtc: dueAtUtc,
+                localStartDate: localStartDate,
+                localStartTime: localStartTime,
+                localEndTime: localEndTime,
+                dueDateLocal: dueDateLocal,
+                allDay: allDay,
+                categoryId: categoryId,
+                priority: priority,
+                status: status,
+                timezone: timezone,
+                recurrenceType: recurrenceType,
+                recurrenceInterval: recurrenceInterval,
+                recurrenceWeekdaysJson: recurrenceWeekdaysJson,
+                recurrenceEndDateLocal: recurrenceEndDateLocal,
+                source: source,
+                originalUserText: originalUserText,
+                completedAt: completedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ScheduleItemsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                categoryId = false,
+                scheduleRemindersRefs = false,
+                scheduleNotificationOccurrencesRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (scheduleRemindersRefs) db.scheduleReminders,
+                    if (scheduleNotificationOccurrencesRefs)
+                      db.scheduleNotificationOccurrences,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (categoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.categoryId,
+                                    referencedTable:
+                                        $$ScheduleItemsTableReferences
+                                            ._categoryIdTable(db),
+                                    referencedColumn:
+                                        $$ScheduleItemsTableReferences
+                                            ._categoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (scheduleRemindersRefs)
+                        await $_getPrefetchedData<
+                          ScheduleItem,
+                          $ScheduleItemsTable,
+                          ScheduleReminder
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ScheduleItemsTableReferences
+                              ._scheduleRemindersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ScheduleItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).scheduleRemindersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.scheduleItemId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (scheduleNotificationOccurrencesRefs)
+                        await $_getPrefetchedData<
+                          ScheduleItem,
+                          $ScheduleItemsTable,
+                          ScheduleNotificationOccurrence
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ScheduleItemsTableReferences
+                              ._scheduleNotificationOccurrencesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ScheduleItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).scheduleNotificationOccurrencesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.scheduleItemId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ScheduleItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ScheduleItemsTable,
+      ScheduleItem,
+      $$ScheduleItemsTableFilterComposer,
+      $$ScheduleItemsTableOrderingComposer,
+      $$ScheduleItemsTableAnnotationComposer,
+      $$ScheduleItemsTableCreateCompanionBuilder,
+      $$ScheduleItemsTableUpdateCompanionBuilder,
+      (ScheduleItem, $$ScheduleItemsTableReferences),
+      ScheduleItem,
+      PrefetchHooks Function({
+        bool categoryId,
+        bool scheduleRemindersRefs,
+        bool scheduleNotificationOccurrencesRefs,
+      })
+    >;
+typedef $$ScheduleRemindersTableCreateCompanionBuilder =
+    ScheduleRemindersCompanion Function({
+      required String id,
+      required String scheduleItemId,
+      required int offsetMinutes,
+      required bool isEnabled,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ScheduleRemindersTableUpdateCompanionBuilder =
+    ScheduleRemindersCompanion Function({
+      Value<String> id,
+      Value<String> scheduleItemId,
+      Value<int> offsetMinutes,
+      Value<bool> isEnabled,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ScheduleRemindersTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ScheduleRemindersTable,
+          ScheduleReminder
+        > {
+  $$ScheduleRemindersTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ScheduleItemsTable _scheduleItemIdTable(_$AppDatabase db) => db
+      .scheduleItems
+      .createAlias('schedule_reminders__schedule_item_id__schedule_items__id');
+
+  $$ScheduleItemsTableProcessedTableManager get scheduleItemId {
+    final $_column = $_itemColumn<String>('schedule_item_id')!;
+
+    final manager = $$ScheduleItemsTableTableManager(
+      $_db,
+      $_db.scheduleItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_scheduleItemIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ScheduleNotificationOccurrencesTable,
+    List<ScheduleNotificationOccurrence>
+  >
+  _scheduleNotificationOccurrencesRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.scheduleNotificationOccurrences,
+    aliasName:
+        'schedule_reminders__id__schedule_notification_occurrences__reminder_id',
+  );
+
+  $$ScheduleNotificationOccurrencesTableProcessedTableManager
+  get scheduleNotificationOccurrencesRefs {
+    final manager = $$ScheduleNotificationOccurrencesTableTableManager(
+      $_db,
+      $_db.scheduleNotificationOccurrences,
+    ).filter((f) => f.reminderId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _scheduleNotificationOccurrencesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ScheduleRemindersTableFilterComposer
+    extends Composer<_$AppDatabase, $ScheduleRemindersTable> {
+  $$ScheduleRemindersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get offsetMinutes => $composableBuilder(
+    column: $table.offsetMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ScheduleItemsTableFilterComposer get scheduleItemId {
+    final $$ScheduleItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.scheduleItemId,
+      referencedTable: $db.scheduleItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.scheduleItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> scheduleNotificationOccurrencesRefs(
+    Expression<bool> Function(
+      $$ScheduleNotificationOccurrencesTableFilterComposer f,
+    )
+    f,
+  ) {
+    final $$ScheduleNotificationOccurrencesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.scheduleNotificationOccurrences,
+          getReferencedColumn: (t) => t.reminderId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScheduleNotificationOccurrencesTableFilterComposer(
+                $db: $db,
+                $table: $db.scheduleNotificationOccurrences,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ScheduleRemindersTableOrderingComposer
+    extends Composer<_$AppDatabase, $ScheduleRemindersTable> {
+  $$ScheduleRemindersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get offsetMinutes => $composableBuilder(
+    column: $table.offsetMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ScheduleItemsTableOrderingComposer get scheduleItemId {
+    final $$ScheduleItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.scheduleItemId,
+      referencedTable: $db.scheduleItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.scheduleItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScheduleRemindersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ScheduleRemindersTable> {
+  $$ScheduleRemindersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get offsetMinutes => $composableBuilder(
+    column: $table.offsetMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isEnabled =>
+      $composableBuilder(column: $table.isEnabled, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ScheduleItemsTableAnnotationComposer get scheduleItemId {
+    final $$ScheduleItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.scheduleItemId,
+      referencedTable: $db.scheduleItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.scheduleItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> scheduleNotificationOccurrencesRefs<T extends Object>(
+    Expression<T> Function(
+      $$ScheduleNotificationOccurrencesTableAnnotationComposer a,
+    )
+    f,
+  ) {
+    final $$ScheduleNotificationOccurrencesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.scheduleNotificationOccurrences,
+          getReferencedColumn: (t) => t.reminderId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScheduleNotificationOccurrencesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.scheduleNotificationOccurrences,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ScheduleRemindersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ScheduleRemindersTable,
+          ScheduleReminder,
+          $$ScheduleRemindersTableFilterComposer,
+          $$ScheduleRemindersTableOrderingComposer,
+          $$ScheduleRemindersTableAnnotationComposer,
+          $$ScheduleRemindersTableCreateCompanionBuilder,
+          $$ScheduleRemindersTableUpdateCompanionBuilder,
+          (ScheduleReminder, $$ScheduleRemindersTableReferences),
+          ScheduleReminder,
+          PrefetchHooks Function({
+            bool scheduleItemId,
+            bool scheduleNotificationOccurrencesRefs,
+          })
+        > {
+  $$ScheduleRemindersTableTableManager(
+    _$AppDatabase db,
+    $ScheduleRemindersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScheduleRemindersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ScheduleRemindersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ScheduleRemindersTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> scheduleItemId = const Value.absent(),
+                Value<int> offsetMinutes = const Value.absent(),
+                Value<bool> isEnabled = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ScheduleRemindersCompanion(
+                id: id,
+                scheduleItemId: scheduleItemId,
+                offsetMinutes: offsetMinutes,
+                isEnabled: isEnabled,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String scheduleItemId,
+                required int offsetMinutes,
+                required bool isEnabled,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ScheduleRemindersCompanion.insert(
+                id: id,
+                scheduleItemId: scheduleItemId,
+                offsetMinutes: offsetMinutes,
+                isEnabled: isEnabled,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ScheduleRemindersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                scheduleItemId = false,
+                scheduleNotificationOccurrencesRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (scheduleNotificationOccurrencesRefs)
+                      db.scheduleNotificationOccurrences,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (scheduleItemId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.scheduleItemId,
+                                    referencedTable:
+                                        $$ScheduleRemindersTableReferences
+                                            ._scheduleItemIdTable(db),
+                                    referencedColumn:
+                                        $$ScheduleRemindersTableReferences
+                                            ._scheduleItemIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (scheduleNotificationOccurrencesRefs)
+                        await $_getPrefetchedData<
+                          ScheduleReminder,
+                          $ScheduleRemindersTable,
+                          ScheduleNotificationOccurrence
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ScheduleRemindersTableReferences
+                              ._scheduleNotificationOccurrencesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ScheduleRemindersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).scheduleNotificationOccurrencesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.reminderId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ScheduleRemindersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ScheduleRemindersTable,
+      ScheduleReminder,
+      $$ScheduleRemindersTableFilterComposer,
+      $$ScheduleRemindersTableOrderingComposer,
+      $$ScheduleRemindersTableAnnotationComposer,
+      $$ScheduleRemindersTableCreateCompanionBuilder,
+      $$ScheduleRemindersTableUpdateCompanionBuilder,
+      (ScheduleReminder, $$ScheduleRemindersTableReferences),
+      ScheduleReminder,
+      PrefetchHooks Function({
+        bool scheduleItemId,
+        bool scheduleNotificationOccurrencesRefs,
+      })
+    >;
+typedef $$ScheduleNotificationOccurrencesTableCreateCompanionBuilder =
+    ScheduleNotificationOccurrencesCompanion Function({
+      required String id,
+      required String reminderId,
+      required String scheduleItemId,
+      required String occurrenceKey,
+      required int platformNotificationId,
+      required DateTime scheduledAtUtc,
+      Value<String> syncStatus,
+      Value<String?> lastError,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ScheduleNotificationOccurrencesTableUpdateCompanionBuilder =
+    ScheduleNotificationOccurrencesCompanion Function({
+      Value<String> id,
+      Value<String> reminderId,
+      Value<String> scheduleItemId,
+      Value<String> occurrenceKey,
+      Value<int> platformNotificationId,
+      Value<DateTime> scheduledAtUtc,
+      Value<String> syncStatus,
+      Value<String?> lastError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ScheduleNotificationOccurrencesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ScheduleNotificationOccurrencesTable,
+          ScheduleNotificationOccurrence
+        > {
+  $$ScheduleNotificationOccurrencesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ScheduleRemindersTable _reminderIdTable(
+    _$AppDatabase db,
+  ) => db.scheduleReminders.createAlias(
+    'schedule_notification_occurrences__reminder_id__schedule_reminders__id',
+  );
+
+  $$ScheduleRemindersTableProcessedTableManager get reminderId {
+    final $_column = $_itemColumn<String>('reminder_id')!;
+
+    final manager = $$ScheduleRemindersTableTableManager(
+      $_db,
+      $_db.scheduleReminders,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_reminderIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ScheduleItemsTable _scheduleItemIdTable(
+    _$AppDatabase db,
+  ) => db.scheduleItems.createAlias(
+    'schedule_notification_occurrences__schedule_item_id__schedule_items__id',
+  );
+
+  $$ScheduleItemsTableProcessedTableManager get scheduleItemId {
+    final $_column = $_itemColumn<String>('schedule_item_id')!;
+
+    final manager = $$ScheduleItemsTableTableManager(
+      $_db,
+      $_db.scheduleItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_scheduleItemIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ScheduleNotificationOccurrencesTableFilterComposer
+    extends Composer<_$AppDatabase, $ScheduleNotificationOccurrencesTable> {
+  $$ScheduleNotificationOccurrencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get occurrenceKey => $composableBuilder(
+    column: $table.occurrenceKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get platformNotificationId => $composableBuilder(
+    column: $table.platformNotificationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get scheduledAtUtc => $composableBuilder(
+    column: $table.scheduledAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ScheduleRemindersTableFilterComposer get reminderId {
+    final $$ScheduleRemindersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.reminderId,
+      referencedTable: $db.scheduleReminders,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleRemindersTableFilterComposer(
+            $db: $db,
+            $table: $db.scheduleReminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ScheduleItemsTableFilterComposer get scheduleItemId {
+    final $$ScheduleItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.scheduleItemId,
+      referencedTable: $db.scheduleItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.scheduleItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScheduleNotificationOccurrencesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ScheduleNotificationOccurrencesTable> {
+  $$ScheduleNotificationOccurrencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get occurrenceKey => $composableBuilder(
+    column: $table.occurrenceKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get platformNotificationId => $composableBuilder(
+    column: $table.platformNotificationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get scheduledAtUtc => $composableBuilder(
+    column: $table.scheduledAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ScheduleRemindersTableOrderingComposer get reminderId {
+    final $$ScheduleRemindersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.reminderId,
+      referencedTable: $db.scheduleReminders,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleRemindersTableOrderingComposer(
+            $db: $db,
+            $table: $db.scheduleReminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ScheduleItemsTableOrderingComposer get scheduleItemId {
+    final $$ScheduleItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.scheduleItemId,
+      referencedTable: $db.scheduleItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.scheduleItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScheduleNotificationOccurrencesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ScheduleNotificationOccurrencesTable> {
+  $$ScheduleNotificationOccurrencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get occurrenceKey => $composableBuilder(
+    column: $table.occurrenceKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get platformNotificationId => $composableBuilder(
+    column: $table.platformNotificationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get scheduledAtUtc => $composableBuilder(
+    column: $table.scheduledAtUtc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ScheduleRemindersTableAnnotationComposer get reminderId {
+    final $$ScheduleRemindersTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.reminderId,
+          referencedTable: $db.scheduleReminders,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ScheduleRemindersTableAnnotationComposer(
+                $db: $db,
+                $table: $db.scheduleReminders,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$ScheduleItemsTableAnnotationComposer get scheduleItemId {
+    final $$ScheduleItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.scheduleItemId,
+      referencedTable: $db.scheduleItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ScheduleItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.scheduleItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ScheduleNotificationOccurrencesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ScheduleNotificationOccurrencesTable,
+          ScheduleNotificationOccurrence,
+          $$ScheduleNotificationOccurrencesTableFilterComposer,
+          $$ScheduleNotificationOccurrencesTableOrderingComposer,
+          $$ScheduleNotificationOccurrencesTableAnnotationComposer,
+          $$ScheduleNotificationOccurrencesTableCreateCompanionBuilder,
+          $$ScheduleNotificationOccurrencesTableUpdateCompanionBuilder,
+          (
+            ScheduleNotificationOccurrence,
+            $$ScheduleNotificationOccurrencesTableReferences,
+          ),
+          ScheduleNotificationOccurrence,
+          PrefetchHooks Function({bool reminderId, bool scheduleItemId})
+        > {
+  $$ScheduleNotificationOccurrencesTableTableManager(
+    _$AppDatabase db,
+    $ScheduleNotificationOccurrencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ScheduleNotificationOccurrencesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ScheduleNotificationOccurrencesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ScheduleNotificationOccurrencesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> reminderId = const Value.absent(),
+                Value<String> scheduleItemId = const Value.absent(),
+                Value<String> occurrenceKey = const Value.absent(),
+                Value<int> platformNotificationId = const Value.absent(),
+                Value<DateTime> scheduledAtUtc = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ScheduleNotificationOccurrencesCompanion(
+                id: id,
+                reminderId: reminderId,
+                scheduleItemId: scheduleItemId,
+                occurrenceKey: occurrenceKey,
+                platformNotificationId: platformNotificationId,
+                scheduledAtUtc: scheduledAtUtc,
+                syncStatus: syncStatus,
+                lastError: lastError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String reminderId,
+                required String scheduleItemId,
+                required String occurrenceKey,
+                required int platformNotificationId,
+                required DateTime scheduledAtUtc,
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ScheduleNotificationOccurrencesCompanion.insert(
+                id: id,
+                reminderId: reminderId,
+                scheduleItemId: scheduleItemId,
+                occurrenceKey: occurrenceKey,
+                platformNotificationId: platformNotificationId,
+                scheduledAtUtc: scheduledAtUtc,
+                syncStatus: syncStatus,
+                lastError: lastError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ScheduleNotificationOccurrencesTableReferences(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({reminderId = false, scheduleItemId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (reminderId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.reminderId,
+                                referencedTable:
+                                    $$ScheduleNotificationOccurrencesTableReferences
+                                        ._reminderIdTable(db),
+                                referencedColumn:
+                                    $$ScheduleNotificationOccurrencesTableReferences
+                                        ._reminderIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (scheduleItemId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.scheduleItemId,
+                                referencedTable:
+                                    $$ScheduleNotificationOccurrencesTableReferences
+                                        ._scheduleItemIdTable(db),
+                                referencedColumn:
+                                    $$ScheduleNotificationOccurrencesTableReferences
+                                        ._scheduleItemIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ScheduleNotificationOccurrencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ScheduleNotificationOccurrencesTable,
+      ScheduleNotificationOccurrence,
+      $$ScheduleNotificationOccurrencesTableFilterComposer,
+      $$ScheduleNotificationOccurrencesTableOrderingComposer,
+      $$ScheduleNotificationOccurrencesTableAnnotationComposer,
+      $$ScheduleNotificationOccurrencesTableCreateCompanionBuilder,
+      $$ScheduleNotificationOccurrencesTableUpdateCompanionBuilder,
+      (
+        ScheduleNotificationOccurrence,
+        $$ScheduleNotificationOccurrencesTableReferences,
+      ),
+      ScheduleNotificationOccurrence,
+      PrefetchHooks Function({bool reminderId, bool scheduleItemId})
+    >;
+typedef $$SchedulerSettingsTableCreateCompanionBuilder =
+    SchedulerSettingsCompanion Function({
+      Value<int> id,
+      Value<int> defaultEventDurationMinutes,
+      Value<int> defaultReminderMinutes,
+      Value<String> defaultTaskReminderTime,
+      Value<String> weekStartsOn,
+      Value<String> timezone,
+      Value<int> rollingHorizonDays,
+      required DateTime updatedAt,
+    });
+typedef $$SchedulerSettingsTableUpdateCompanionBuilder =
+    SchedulerSettingsCompanion Function({
+      Value<int> id,
+      Value<int> defaultEventDurationMinutes,
+      Value<int> defaultReminderMinutes,
+      Value<String> defaultTaskReminderTime,
+      Value<String> weekStartsOn,
+      Value<String> timezone,
+      Value<int> rollingHorizonDays,
+      Value<DateTime> updatedAt,
+    });
+
+class $$SchedulerSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $SchedulerSettingsTable> {
+  $$SchedulerSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get defaultEventDurationMinutes => $composableBuilder(
+    column: $table.defaultEventDurationMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get defaultReminderMinutes => $composableBuilder(
+    column: $table.defaultReminderMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get defaultTaskReminderTime => $composableBuilder(
+    column: $table.defaultTaskReminderTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get weekStartsOn => $composableBuilder(
+    column: $table.weekStartsOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get timezone => $composableBuilder(
+    column: $table.timezone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rollingHorizonDays => $composableBuilder(
+    column: $table.rollingHorizonDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SchedulerSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SchedulerSettingsTable> {
+  $$SchedulerSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get defaultEventDurationMinutes => $composableBuilder(
+    column: $table.defaultEventDurationMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get defaultReminderMinutes => $composableBuilder(
+    column: $table.defaultReminderMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get defaultTaskReminderTime => $composableBuilder(
+    column: $table.defaultTaskReminderTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get weekStartsOn => $composableBuilder(
+    column: $table.weekStartsOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get timezone => $composableBuilder(
+    column: $table.timezone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rollingHorizonDays => $composableBuilder(
+    column: $table.rollingHorizonDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SchedulerSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SchedulerSettingsTable> {
+  $$SchedulerSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get defaultEventDurationMinutes => $composableBuilder(
+    column: $table.defaultEventDurationMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get defaultReminderMinutes => $composableBuilder(
+    column: $table.defaultReminderMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get defaultTaskReminderTime => $composableBuilder(
+    column: $table.defaultTaskReminderTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get weekStartsOn => $composableBuilder(
+    column: $table.weekStartsOn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get timezone =>
+      $composableBuilder(column: $table.timezone, builder: (column) => column);
+
+  GeneratedColumn<int> get rollingHorizonDays => $composableBuilder(
+    column: $table.rollingHorizonDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SchedulerSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SchedulerSettingsTable,
+          SchedulerSetting,
+          $$SchedulerSettingsTableFilterComposer,
+          $$SchedulerSettingsTableOrderingComposer,
+          $$SchedulerSettingsTableAnnotationComposer,
+          $$SchedulerSettingsTableCreateCompanionBuilder,
+          $$SchedulerSettingsTableUpdateCompanionBuilder,
+          (
+            SchedulerSetting,
+            BaseReferences<
+              _$AppDatabase,
+              $SchedulerSettingsTable,
+              SchedulerSetting
+            >,
+          ),
+          SchedulerSetting,
+          PrefetchHooks Function()
+        > {
+  $$SchedulerSettingsTableTableManager(
+    _$AppDatabase db,
+    $SchedulerSettingsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SchedulerSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SchedulerSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SchedulerSettingsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> defaultEventDurationMinutes = const Value.absent(),
+                Value<int> defaultReminderMinutes = const Value.absent(),
+                Value<String> defaultTaskReminderTime = const Value.absent(),
+                Value<String> weekStartsOn = const Value.absent(),
+                Value<String> timezone = const Value.absent(),
+                Value<int> rollingHorizonDays = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => SchedulerSettingsCompanion(
+                id: id,
+                defaultEventDurationMinutes: defaultEventDurationMinutes,
+                defaultReminderMinutes: defaultReminderMinutes,
+                defaultTaskReminderTime: defaultTaskReminderTime,
+                weekStartsOn: weekStartsOn,
+                timezone: timezone,
+                rollingHorizonDays: rollingHorizonDays,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> defaultEventDurationMinutes = const Value.absent(),
+                Value<int> defaultReminderMinutes = const Value.absent(),
+                Value<String> defaultTaskReminderTime = const Value.absent(),
+                Value<String> weekStartsOn = const Value.absent(),
+                Value<String> timezone = const Value.absent(),
+                Value<int> rollingHorizonDays = const Value.absent(),
+                required DateTime updatedAt,
+              }) => SchedulerSettingsCompanion.insert(
+                id: id,
+                defaultEventDurationMinutes: defaultEventDurationMinutes,
+                defaultReminderMinutes: defaultReminderMinutes,
+                defaultTaskReminderTime: defaultTaskReminderTime,
+                weekStartsOn: weekStartsOn,
+                timezone: timezone,
+                rollingHorizonDays: rollingHorizonDays,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SchedulerSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SchedulerSettingsTable,
+      SchedulerSetting,
+      $$SchedulerSettingsTableFilterComposer,
+      $$SchedulerSettingsTableOrderingComposer,
+      $$SchedulerSettingsTableAnnotationComposer,
+      $$SchedulerSettingsTableCreateCompanionBuilder,
+      $$SchedulerSettingsTableUpdateCompanionBuilder,
+      (
+        SchedulerSetting,
+        BaseReferences<
+          _$AppDatabase,
+          $SchedulerSettingsTable,
+          SchedulerSetting
+        >,
+      ),
+      SchedulerSetting,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -18038,4 +24243,18 @@ class $AppDatabaseManager {
       $$FinanceSettingsTableTableManager(_db, _db.financeSettings);
   $$ChatDraftsTableTableManager get chatDrafts =>
       $$ChatDraftsTableTableManager(_db, _db.chatDrafts);
+  $$ScheduleCategoriesTableTableManager get scheduleCategories =>
+      $$ScheduleCategoriesTableTableManager(_db, _db.scheduleCategories);
+  $$ScheduleItemsTableTableManager get scheduleItems =>
+      $$ScheduleItemsTableTableManager(_db, _db.scheduleItems);
+  $$ScheduleRemindersTableTableManager get scheduleReminders =>
+      $$ScheduleRemindersTableTableManager(_db, _db.scheduleReminders);
+  $$ScheduleNotificationOccurrencesTableTableManager
+  get scheduleNotificationOccurrences =>
+      $$ScheduleNotificationOccurrencesTableTableManager(
+        _db,
+        _db.scheduleNotificationOccurrences,
+      );
+  $$SchedulerSettingsTableTableManager get schedulerSettings =>
+      $$SchedulerSettingsTableTableManager(_db, _db.schedulerSettings);
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Background utama widget: neo-brutalist paper dengan border tebal dan rounded corners -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#F5F3EE" />
+    <stroke android:width="3dp" android:color="#111111" />
+    <corners android:radius="16dp" />
+</shape>

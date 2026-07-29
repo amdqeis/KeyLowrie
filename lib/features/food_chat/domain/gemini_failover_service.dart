@@ -280,7 +280,11 @@ class GeminiFailoverService {
           );
           parseOutcome = ParsedResult(value: draft, isAmbiguous: false);
         } on _AmbiguousInputSignal catch (e) {
-          parseOutcome = ParsedResult(value: null, isAmbiguous: true, detail: e.reason);
+          parseOutcome = ParsedResult(
+            value: null,
+            isAmbiguous: true,
+            detail: e.reason,
+          );
         }
 
         if (parseOutcome.value != null) {
@@ -436,7 +440,8 @@ class GeminiFailoverService {
       return _unifiedParser.parse(repaired.data, context: context);
     } on UnifiedChatResponseException catch (e) {
       // Setelah repair pun masih gagal — tentukan jenis kegagalan
-      if (_isAmbiguousReason(e.reason) || _isAmbiguousReason(firstException.reason)) {
+      if (_isAmbiguousReason(e.reason) ||
+          _isAmbiguousReason(firstException.reason)) {
         throw _AmbiguousInputSignal(e.reason);
       }
       return null;
@@ -625,7 +630,11 @@ class _AmbiguousInputSignal implements Exception {
 
 /// Container hasil parsing internal yang membawa info apakah kegagalan bersifat ambigu.
 class ParsedResult<T> {
-  const ParsedResult({required this.value, required this.isAmbiguous, this.detail});
+  const ParsedResult({
+    required this.value,
+    required this.isAmbiguous,
+    this.detail,
+  });
   final T value;
   final bool isAmbiguous;
   final String? detail;

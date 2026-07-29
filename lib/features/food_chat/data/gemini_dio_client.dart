@@ -259,18 +259,19 @@ Map<String, dynamic> buildUnifiedGeminiRequest({
   final categories = context.activeCategories
       .map((category) => {'name': category.name, 'type': category.type.name})
       .toList(growable: false);
+  final current = context.currentDateTime ?? DateTime.now();
   final repairInstruction = repairAttempt
       ? ' Respons sebelumnya tidak valid. Perbaiki seluruh field dan kembalikan JSON saja.'
       : '';
   final modeInstruction = context.mode.name == 'automatic'
-      ? 'Deteksi domain nutrition, expense, income, atau unknown.'
+      ? 'Deteksi domain nutrition, expense, income, schedule, atau unknown.'
       : 'Domain dikunci ke ${context.mode.name}; jangan klasifikasikan ke domain lain.';
   return {
     'systemInstruction': {
       'parts': [
         {
           'text':
-              'Kamu mengekstrak catatan nutrisi dan keuangan Bahasa Indonesia. '
+              'Kamu mengekstrak catatan nutrisi, keuangan, dan jadwal Bahasa Indonesia. '
               '$modeInstruction '
               'Input singkat berupa \'nama item + jumlah\' (tanpa kata kerja '
               'seperti \'makan\' atau \'beli\', dan tanpa penanda waktu seperti '
@@ -288,7 +289,9 @@ Map<String, dynamic> buildUnifiedGeminiRequest({
               'Kategori keuangan wajib dari active_categories; jika tidak cocok '
               'gunakan Lainnya. Jangan menghasilkan is_reimburse; nilai itu hanya '
               'berasal dari pengguna. Jangan menyatakan estimasi nutrisi sebagai '
-              'nilai pasti.$repairInstruction',
+              'nilai pasti. Untuk jadwal jangan mengarang tanggal atau waktu; '
+              'gunakan timezone dan current_datetime, serta minta klarifikasi bila '
+              'waktu tidak dapat ditentukan.$repairInstruction',
         },
       ],
     },
@@ -304,6 +307,11 @@ Map<String, dynamic> buildUnifiedGeminiRequest({
               'timezone': context.timezone,
               'currency': context.currencyCode,
               'active_categories': categories,
+              'current_datetime': current.toIso8601String(),
+              'week_starts_on': context.weekStartsOn,
+              'default_event_duration_minutes':
+                  context.defaultEventDurationMinutes,
+              'active_schedule_categories': context.scheduleCategories,
             }),
           },
         ],
@@ -328,7 +336,7 @@ const geminiUnifiedChatResponseSchema = <String, dynamic>{
   'properties': {
     'detected_domain': {
       'type': 'string',
-      'enum': ['nutrition', 'expense', 'income', 'unknown'],
+      'enum': ['nutrition', 'expense', 'income', 'schedule', 'unknown'],
     },
     'confidence': {'type': 'number', 'minimum': 0, 'maximum': 1},
     'requires_clarification': {'type': 'boolean'},
@@ -374,6 +382,71 @@ const geminiUnifiedChatResponseSchema = <String, dynamic>{
         'total_fat_g': {'type': 'number', 'nullable': true, 'minimum': 0},
         'needs_user_review': {'type': 'boolean'},
         'general_note': {'type': 'string', 'nullable': true},
+      },
+    },
+    'schedule': {
+      'type': 'object',
+      'nullable': true,
+      'required': [
+        'intent',
+        'title',
+        'description',
+        'start_at',
+        'end_at',
+        'due_at',
+        'all_day',
+        'category',
+        'priority',
+        'recurrence',
+        'reminders',
+        'assumptions',
+      ],
+      'properties': {
+        'intent': {
+          'type': 'string',
+          'enum': ['create_event', 'create_task'],
+        },
+        'title': {'type': 'string'},
+        'description': {'type': 'string', 'nullable': true},
+        'start_at': {'type': 'string', 'nullable': true},
+        'end_at': {'type': 'string', 'nullable': true},
+        'due_at': {'type': 'string', 'nullable': true},
+        'all_day': {'type': 'boolean'},
+        'category': {'type': 'string'},
+        'priority': {
+          'type': 'string',
+          'enum': ['low', 'medium', 'high'],
+        },
+        'recurrence': {
+          'type': 'object',
+          'required': ['type', 'interval', 'weekdays', 'end_at'],
+          'properties': {
+            'type': {
+              'type': 'string',
+              'enum': ['none', 'daily', 'weekly', 'monthly'],
+            },
+            'interval': {'type': 'integer', 'minimum': 1},
+            'weekdays': {
+              'type': 'array',
+              'items': {'type': 'integer', 'minimum': 1, 'maximum': 7},
+            },
+            'end_at': {'type': 'string', 'nullable': true},
+          },
+        },
+        'reminders': {
+          'type': 'array',
+          'items': {
+            'type': 'object',
+            'required': ['offset_minutes'],
+            'properties': {
+              'offset_minutes': {'type': 'integer', 'minimum': 0},
+            },
+          },
+        },
+        'assumptions': {
+          'type': 'array',
+          'items': {'type': 'string'},
+        },
       },
     },
   },

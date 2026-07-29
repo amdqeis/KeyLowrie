@@ -458,6 +458,175 @@ class ChatDrafts extends Table {
 
   @override
   List<String> get customConstraints => [
-    "CHECK (selected_mode IN ('automatic', 'nutrition', 'expense', 'income'))",
+    "CHECK (selected_mode IN ('automatic', 'nutrition', 'expense', 'income', 'schedule'))",
   ];
+}
+
+@TableIndex(name: 'idx_schedule_categories_active', columns: {#isActive, #name})
+class ScheduleCategories extends Table {
+  @override
+  String get tableName => 'schedule_categories';
+
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get iconKey => text().named('icon_key').nullable()();
+  BoolColumn get isSystem => boolean().named('is_system')();
+  BoolColumn get isActive => boolean().named('is_active')();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'idx_schedule_items_time_status',
+  columns: {#status, #startAtUtc, #endAtUtc},
+)
+@TableIndex(
+  name: 'idx_schedule_items_due_status',
+  columns: {#status, #dueDateLocal, #dueAtUtc},
+)
+@TableIndex(
+  name: 'idx_schedule_items_category',
+  columns: {#categoryId, #status},
+)
+class ScheduleItems extends Table {
+  @override
+  String get tableName => 'schedule_items';
+
+  TextColumn get id => text()();
+  TextColumn get itemType => text().named('item_type')();
+  TextColumn get title => text().withLength(min: 1, max: 200)();
+  TextColumn get description => text().nullable()();
+  DateTimeColumn get startAtUtc =>
+      dateTime().named('start_at_utc').nullable()();
+  DateTimeColumn get endAtUtc => dateTime().named('end_at_utc').nullable()();
+  DateTimeColumn get dueAtUtc => dateTime().named('due_at_utc').nullable()();
+  TextColumn get localStartDate =>
+      text().named('local_start_date').nullable()();
+  TextColumn get localStartTime =>
+      text().named('local_start_time').nullable()();
+  TextColumn get localEndTime => text().named('local_end_time').nullable()();
+  TextColumn get dueDateLocal => text().named('due_date_local').nullable()();
+  BoolColumn get allDay => boolean().named('all_day')();
+  TextColumn get categoryId => text()
+      .named('category_id')
+      .references(ScheduleCategories, #id, onDelete: KeyAction.restrict)();
+  TextColumn get priority => text()();
+  TextColumn get status => text()();
+  TextColumn get timezone => text()();
+  TextColumn get recurrenceType => text().named('recurrence_type')();
+  IntColumn get recurrenceInterval =>
+      integer().named('recurrence_interval').withDefault(const Constant(1))();
+  TextColumn get recurrenceWeekdaysJson =>
+      text().named('recurrence_weekdays_json').nullable()();
+  TextColumn get recurrenceEndDateLocal =>
+      text().named('recurrence_end_date_local').nullable()();
+  TextColumn get source => text().withDefault(const Constant('manual'))();
+  TextColumn get originalUserText =>
+      text().named('original_user_text').nullable()();
+  DateTimeColumn get completedAt =>
+      dateTime().named('completed_at').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    "CHECK (item_type IN ('event', 'task'))",
+    "CHECK (priority IN ('low', 'medium', 'high'))",
+    "CHECK (status IN ('pending', 'completed', 'cancelled'))",
+    "CHECK (recurrence_type IN ('none', 'daily', 'weekly', 'monthly'))",
+    'CHECK (recurrence_interval >= 1)',
+    "CHECK ((item_type = 'event' AND (all_day = 1 OR start_at_utc IS NOT NULL)) OR item_type = 'task')",
+    'CHECK (end_at_utc IS NULL OR start_at_utc IS NULL OR end_at_utc > start_at_utc)',
+  ];
+}
+
+@TableIndex(
+  name: 'idx_schedule_reminders_item_enabled',
+  columns: {#scheduleItemId, #isEnabled},
+)
+class ScheduleReminders extends Table {
+  @override
+  String get tableName => 'schedule_reminders';
+
+  TextColumn get id => text()();
+  TextColumn get scheduleItemId => text()
+      .named('schedule_item_id')
+      .references(ScheduleItems, #id, onDelete: KeyAction.cascade)();
+  IntColumn get offsetMinutes => integer().named('offset_minutes')();
+  BoolColumn get isEnabled => boolean().named('is_enabled')();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(
+  name: 'idx_schedule_occurrences_item_time',
+  columns: {#scheduleItemId, #scheduledAtUtc},
+)
+@TableIndex(
+  name: 'idx_schedule_occurrences_sync',
+  columns: {#syncStatus, #scheduledAtUtc},
+)
+class ScheduleNotificationOccurrences extends Table {
+  @override
+  String get tableName => 'schedule_notification_occurrences';
+
+  TextColumn get id => text()();
+  TextColumn get reminderId => text()
+      .named('reminder_id')
+      .references(ScheduleReminders, #id, onDelete: KeyAction.cascade)();
+  TextColumn get scheduleItemId => text()
+      .named('schedule_item_id')
+      .references(ScheduleItems, #id, onDelete: KeyAction.cascade)();
+  TextColumn get occurrenceKey => text().named('occurrence_key')();
+  IntColumn get platformNotificationId =>
+      integer().named('platform_notification_id').unique()();
+  DateTimeColumn get scheduledAtUtc => dateTime().named('scheduled_at_utc')();
+  TextColumn get syncStatus =>
+      text().named('sync_status').withDefault(const Constant('pending'))();
+  TextColumn get lastError => text().named('last_error').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {reminderId, occurrenceKey},
+  ];
+}
+
+class SchedulerSettings extends Table {
+  @override
+  String get tableName => 'scheduler_settings';
+
+  IntColumn get id => integer().customConstraint('NOT NULL CHECK (id = 1)')();
+  IntColumn get defaultEventDurationMinutes => integer()
+      .named('default_event_duration_minutes')
+      .withDefault(const Constant(60))();
+  IntColumn get defaultReminderMinutes => integer()
+      .named('default_reminder_minutes')
+      .withDefault(const Constant(15))();
+  TextColumn get defaultTaskReminderTime => text()
+      .named('default_task_reminder_time')
+      .withDefault(const Constant('09:00'))();
+  TextColumn get weekStartsOn =>
+      text().named('week_starts_on').withDefault(const Constant('monday'))();
+  TextColumn get timezone =>
+      text().withDefault(const Constant('Asia/Jakarta'))();
+  IntColumn get rollingHorizonDays =>
+      integer().named('rolling_horizon_days').withDefault(const Constant(30))();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
 }

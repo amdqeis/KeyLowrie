@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- KeySpace Daily Widget (4×2) — kalori + keuangan + jadwal terdekat -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="14dp"
+    android:id="@+id/widget_daily_root">
+
+    <!-- Header: branding + jam update -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="KeySpace" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="KEYSPACE"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#111111"
+            android:letterSpacing="0.1"
+            android:layout_marginStart="6dp"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/widget_daily_updated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--:--"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="#77111111"
+            android:fontFamily="monospace" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#111111"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Row 1: Kalori & Budget berdampingan -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <!-- Kalori -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_card_yellow"
+            android:padding="10dp"
+            android:id="@+id/widget_daily_calorie_card">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="KALORI HARI INI"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#88111111"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/widget_daily_calories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-- kkal"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:layout_marginTop="2dp"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="6dp"
+            android:layout_height="match_parent" />
+
+        <!-- Keuangan -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_card_green"
+            android:padding="10dp"
+            android:id="@+id/widget_daily_budget_card">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SISA BUDGET"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#88111111"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/widget_daily_budget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rp --"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="6dp" />
+
+    <!-- Row 2: Jadwal terdekat -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/widget_card_blue"
+        android:padding="10dp"
+        android:id="@+id/widget_daily_schedule_card">
+
+        <!-- Time badge -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:minWidth="44dp">
+
+            <TextView
+                android:id="@+id/widget_daily_next_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--:--"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:fontFamily="monospace" />
+
+            <TextView
+                android:id="@+id/widget_daily_next_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#77111111" />
+
+        </LinearLayout>
+
+        <!-- Divider vertical -->
+        <View
+            android:layout_width="3dp"
+            android:layout_height="match_parent"
+            android:background="#33111111"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp" />
+
+        <!-- Schedule info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="JADWAL TERDEKAT"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#88111111"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/widget_daily_next_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tidak ada jadwal"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#111111"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginTop="2dp"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

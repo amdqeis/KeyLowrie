@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KeySpace</string>
+    <string name="widget_quick_description">Shortcut cepat ke Chat AI KeySpace</string>
+    <string name="widget_daily_description">Ringkasan harian: kalori, sisa budget, dan jadwal terdekat</string>
+    <string name="widget_full_description">Widget lengkap KeySpace: kalori, keuangan, jadwal, dan shortcut chat</string>
+</resources>

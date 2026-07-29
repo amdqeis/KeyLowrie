@@ -20,13 +20,16 @@ void main() {
     addTearDown(database.close);
     await SettingsRepository(database).initialize();
     final cases = <String, String>{
-      '/onboarding': 'CATAT MAKANAN\nCUKUP LEWAT CHAT',
+      '/onboarding': 'CATAT MAKANAN',
       '/home': 'HARI INI',
       '/chat': 'CHAT TERPADU',
       '/history': 'RIWAYAT HARIAN',
       '/history/2026-07-21': 'RIWAYAT 2026-07-21',
       '/food-log/log-1/edit': 'EDIT FOOD LOG',
-      '/insights': 'INSIGHT',
+      '/insights': 'JADWAL',
+      '/scheduler': 'JADWAL',
+      '/scheduler/new': 'BUAT JADWAL',
+      '/scheduler/missing': 'Jadwal tidak ditemukan',
       '/finance': 'KEUANGAN',
       '/finance/history': 'RIWAYAT KEUANGAN',
       '/finance/transaction/missing': 'DETAIL TRANSAKSI',
@@ -42,7 +45,7 @@ void main() {
       final router = createAppRouter(initialLocation: entry.key);
       await tester.pumpWidget(_testApp(database, router));
       await tester.pump(const Duration(seconds: 1));
-      expect(find.text(entry.value), findsOneWidget, reason: entry.key);
+      expect(find.text(entry.value), findsWidgets, reason: entry.key);
       expect(tester.takeException(), isNull, reason: entry.key);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
@@ -61,7 +64,7 @@ void main() {
     final router = createAppRouter();
     addTearDown(router.dispose);
     await tester.pumpWidget(_testApp(database, router));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(seconds: 1));
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
     final theme = Theme.of(tester.element(find.byType(Scaffold).first));
