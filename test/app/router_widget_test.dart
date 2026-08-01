@@ -32,6 +32,8 @@ void main() {
       '/scheduler/missing': 'Jadwal tidak ditemukan',
       '/finance': 'KEUANGAN',
       '/finance/history': 'RIWAYAT KEUANGAN',
+      '/finance/analytics': 'ANALITIK KEUANGAN',
+      '/finance/net-worth': 'NET WORTH BELUM DIATUR',
       '/finance/transaction/missing': 'DETAIL TRANSAKSI',
       '/settings': 'PENGATURAN',
       '/settings/api-keys': 'API KEY POOL',

@@ -327,7 +327,19 @@ class FinanceRepository {
     final query = database.select(transactions).join([
       innerJoin(categories, categories.id.equalsExp(transactions.categoryId)),
     ]);
-    query.where(transactions.financialPeriodId.equals(filter.periodId));
+    if (filter.periodId != null) {
+      query.where(transactions.financialPeriodId.equals(filter.periodId!));
+    }
+    if (filter.startDate != null) {
+      query.where(
+        transactions.transactionDate.isBiggerOrEqualValue(filter.startDate!),
+      );
+    }
+    if (filter.endDate != null) {
+      query.where(
+        transactions.transactionDate.isSmallerThanValue(filter.endDate!),
+      );
+    }
     if (filter.type != null) {
       query.where(transactions.type.equals(filter.type!.storageValue));
     }
@@ -425,6 +437,197 @@ class FinanceRepository {
       (row) => row == null ? null : _mapTransactionRow(row),
     );
   }
+
+  Future<List<CategoryFinanceSummary>> getExpenseByCategory(
+    DateTime startDate,
+    DateTime endDate,
+  ) => _categorySummary(
+    type: FinancialTransactionType.expense,
+    startDate: startDate,
+    endDate: endDate,
+  );
+
+  Future<List<CategoryFinanceSummary>> getIncomeByCategory(
+    DateTime startDate,
+    DateTime endDate,
+  ) => _categorySummary(
+    type: FinancialTransactionType.income,
+    startDate: startDate,
+    endDate: endDate,
+  );
+
+  Future<List<FinanceTrendPoint>> getFinanceTrend(
+    DateTime startDate,
+    DateTime endDate,
+  ) => _trend(FinanceAnalyticsFilter(startDate: startDate, endDate: endDate));
+
+  Future<FinanceAnalyticsData> getAnalytics(
+    FinanceAnalyticsFilter filter,
+  ) async {
+    if (!filter.endDate.isAfter(filter.startDate)) {
+      throw const FormatException('finance_analytics_range_invalid');
+    }
+    final includeExpense = filter.type != FinanceAnalyticsType.income;
+    final includeIncome = filter.type != FinanceAnalyticsType.expense;
+    final results = await Future.wait<Object>([
+      if (includeExpense)
+        getExpenseByCategory(filter.startDate, filter.endDate)
+      else
+        Future.value(const <CategoryFinanceSummary>[]),
+      if (includeIncome)
+        getIncomeByCategory(filter.startDate, filter.endDate)
+      else
+        Future.value(const <CategoryFinanceSummary>[]),
+      _analyticsTotals(filter),
+      _trend(filter),
+    ]);
+    final expense = results[0] as List<CategoryFinanceSummary>;
+    final income = results[1] as List<CategoryFinanceSummary>;
+    final totals = results[2] as ({int expense, int income, int reimburse});
+    final days = filter.dayCount.clamp(1, 1 << 31);
+    return FinanceAnalyticsData(
+      filter: filter,
+      summary: FinanceAnalyticsSummary(
+        totalExpense: totals.expense,
+        totalIncome: totals.income,
+        netBalance: totals.income - totals.expense,
+        averageExpensePerDay: totals.expense ~/ days,
+        averageIncomePerDay: totals.income ~/ days,
+        totalReimburse: totals.reimburse,
+        largestExpenseCategory: expense.firstOrNull,
+        largestIncomeCategory: income.firstOrNull,
+      ),
+      expensesByCategory: expense,
+      incomeByCategory: income,
+      trend: results[3] as List<FinanceTrendPoint>,
+    );
+  }
+
+  Future<List<CategoryFinanceSummary>> _categorySummary({
+    required FinancialTransactionType type,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final rows = await database
+        .customSelect(
+          '''
+SELECT c.id AS category_id, c.name AS category_name,
+  COUNT(t.id) AS transaction_count, SUM(t.amount) AS total_amount
+FROM financial_transactions t
+JOIN financial_categories c ON c.id = t.category_id
+WHERE t.type = ? AND t.transaction_date >= ? AND t.transaction_date < ?
+GROUP BY c.id, c.name
+ORDER BY total_amount DESC, c.name ASC
+''',
+          variables: [
+            Variable<String>(type.storageValue),
+            Variable<DateTime>(_analyticsDate(startDate)),
+            Variable<DateTime>(_analyticsDate(endDate)),
+          ],
+          readsFrom: {
+            database.financialTransactions,
+            database.financialCategories,
+          },
+        )
+        .get();
+    final total = rows.fold<int>(
+      0,
+      (sum, row) => sum + row.read<int>('total_amount'),
+    );
+    return rows
+        .map(
+          (row) => CategoryFinanceSummary(
+            categoryId: row.read<String>('category_id'),
+            categoryName: row.read<String>('category_name'),
+            transactionCount: row.read<int>('transaction_count'),
+            totalAmount: row.read<int>('total_amount'),
+            percentage: total == 0
+                ? 0
+                : row.read<int>('total_amount') / total * 100,
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  Future<({int expense, int income, int reimburse})> _analyticsTotals(
+    FinanceAnalyticsFilter filter,
+  ) async {
+    final type = filter.type == FinanceAnalyticsType.all
+        ? null
+        : filter.type.name;
+    final row = await database
+        .customSelect(
+          '''
+SELECT
+  COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS expense,
+  COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS income,
+  COALESCE(SUM(CASE WHEN type = 'expense' AND is_reimburse = 1 THEN amount ELSE 0 END), 0) AS reimburse
+FROM financial_transactions
+WHERE transaction_date >= ? AND transaction_date < ?
+  AND (? IS NULL OR type = ?)
+''',
+          variables: [
+            Variable<DateTime>(_analyticsDate(filter.startDate)),
+            Variable<DateTime>(_analyticsDate(filter.endDate)),
+            Variable<String>(type),
+            Variable<String>(type),
+          ],
+          readsFrom: {database.financialTransactions},
+        )
+        .getSingle();
+    return (
+      expense: row.read<int>('expense'),
+      income: row.read<int>('income'),
+      reimburse: row.read<int>('reimburse'),
+    );
+  }
+
+  Future<List<FinanceTrendPoint>> _trend(FinanceAnalyticsFilter filter) async {
+    final bucket = switch (filter.granularity) {
+      FinanceTrendGranularity.day =>
+        "date(transaction_date, 'unixepoch', 'localtime')",
+      FinanceTrendGranularity.week =>
+        "date(transaction_date, 'unixepoch', 'localtime', '-' || ((CAST(strftime('%w', transaction_date, 'unixepoch', 'localtime') AS INTEGER) + 6) % 7) || ' days')",
+      FinanceTrendGranularity.month =>
+        "date(transaction_date, 'unixepoch', 'localtime', 'start of month')",
+    };
+    final type = filter.type == FinanceAnalyticsType.all
+        ? null
+        : filter.type.name;
+    final rows = await database
+        .customSelect(
+          '''
+SELECT $bucket AS bucket_date,
+  COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS expense,
+  COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS income
+FROM financial_transactions
+WHERE transaction_date >= ? AND transaction_date < ?
+  AND (? IS NULL OR type = ?)
+GROUP BY bucket_date
+ORDER BY bucket_date ASC
+''',
+          variables: [
+            Variable<DateTime>(_analyticsDate(filter.startDate)),
+            Variable<DateTime>(_analyticsDate(filter.endDate)),
+            Variable<String>(type),
+            Variable<String>(type),
+          ],
+          readsFrom: {database.financialTransactions},
+        )
+        .get();
+    return rows
+        .map(
+          (row) => FinanceTrendPoint(
+            date: DateTime.parse(row.read<String>('bucket_date')),
+            expenseAmount: row.read<int>('expense'),
+            incomeAmount: row.read<int>('income'),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  DateTime _analyticsDate(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
 
   Future<FinancialPeriod> _getOrCreatePeriod(
     DateTime transactionDate, {

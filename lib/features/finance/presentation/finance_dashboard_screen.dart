@@ -7,6 +7,7 @@ import 'package:keyspace/database/app_database.dart';
 import 'package:keyspace/features/finance/domain/finance_models.dart';
 import 'package:keyspace/features/finance/presentation/finance_providers.dart';
 import 'package:keyspace/features/finance/presentation/finance_ui.dart';
+import 'package:keyspace/features/net_worth/presentation/net_worth_screen.dart';
 import 'package:keyspace/features/report_export/domain/report_models.dart';
 import 'package:keyspace/features/report_export/presentation/export_config_sheet.dart';
 import 'package:keyspace/shared/widgets/brutal_widgets.dart';
@@ -21,6 +22,11 @@ class FinanceDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('KEUANGAN'),
         actions: [
+          IconButton(
+            tooltip: 'Lihat Analitik',
+            onPressed: () => context.push(AppRoutes.financeAnalytics),
+            icon: const Icon(Icons.analytics_outlined),
+          ),
           IconButton(
             tooltip: 'Export PDF',
             onPressed: () =>
@@ -98,6 +104,8 @@ class _FinanceDashboardBody extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
+          NetWorthDashboardCard(period: period),
+          const SizedBox(height: 16),
           summary.when(
             data: (value) => LayoutBuilder(
               builder: (context, constraints) {
@@ -148,6 +156,13 @@ class _FinanceDashboardBody extends ConsumerWidget {
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (_, _) => const SizedBox.shrink(),
+          ),
+          const SizedBox(height: 16),
+          BrutalButton(
+            label: 'LIHAT ANALITIK',
+            icon: Icons.analytics_outlined,
+            secondary: true,
+            onPressed: () => context.push(AppRoutes.financeAnalytics),
           ),
           const SizedBox(height: 24),
           _SectionHeader(

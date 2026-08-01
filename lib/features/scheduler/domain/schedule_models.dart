@@ -50,7 +50,7 @@ class ScheduleDraft {
     this.allDay = false,
     this.priority = SchedulePriority.medium,
     this.recurrence = const ScheduleRecurrence(),
-    this.reminderOffsets = const [15],
+    this.reminderOffsets = const [1440, 30],
     this.assumptions = const [],
     this.requiresClarification = false,
     this.clarificationQuestion,
@@ -172,4 +172,35 @@ class ScheduleConflict {
 class ScheduleValidationException implements Exception {
   const ScheduleValidationException(this.reason);
   final String reason;
+}
+
+class ScheduleReminderSelection {
+  const ScheduleReminderSelection({
+    this.dayBeforeEnabled = true,
+    this.minutesBeforeEnabled = true,
+    this.minutesBeforeOffset = 30,
+  });
+
+  final bool dayBeforeEnabled;
+  final bool minutesBeforeEnabled;
+  final int minutesBeforeOffset;
+
+  List<int> get enabledOffsets => [
+    if (dayBeforeEnabled) 1440,
+    if (minutesBeforeEnabled) minutesBeforeOffset,
+  ];
+
+  static ScheduleReminderSelection fromOffsets(Iterable<int> offsets) {
+    final values = offsets.toSet();
+    final minute = values.contains(30)
+        ? 30
+        : values.contains(15)
+        ? 15
+        : 30;
+    return ScheduleReminderSelection(
+      dayBeforeEnabled: values.contains(1440),
+      minutesBeforeEnabled: values.any((value) => value == 15 || value == 30),
+      minutesBeforeOffset: minute,
+    );
+  }
 }

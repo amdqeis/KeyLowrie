@@ -10,7 +10,18 @@ import 'package:keyspace/shared/providers/infrastructure_providers.dart';
 import 'package:keyspace/shared/widgets/brutal_widgets.dart';
 
 class FinanceHistoryScreen extends ConsumerStatefulWidget {
-  const FinanceHistoryScreen({super.key});
+  const FinanceHistoryScreen({
+    super.key,
+    this.initialStartDate,
+    this.initialEndDate,
+    this.initialType,
+    this.initialCategoryId,
+  });
+
+  final DateTime? initialStartDate;
+  final DateTime? initialEndDate;
+  final String? initialType;
+  final String? initialCategoryId;
 
   @override
   ConsumerState<FinanceHistoryScreen> createState() =>
@@ -23,6 +34,20 @@ class _FinanceHistoryScreenState extends ConsumerState<FinanceHistoryScreen> {
   FinancialTransactionType? _type;
   String? _categoryId;
   bool? _isReimburse;
+
+  bool get _customRange =>
+      widget.initialStartDate != null && widget.initialEndDate != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _type = switch (widget.initialType) {
+      'expense' => FinancialTransactionType.expense,
+      'income' => FinancialTransactionType.income,
+      _ => null,
+    };
+    _categoryId = widget.initialCategoryId;
+  }
 
   @override
   void dispose() {
@@ -58,7 +83,8 @@ class _FinanceHistoryScreenState extends ConsumerState<FinanceHistoryScreen> {
           final selected = values.firstWhere((item) => item.id == _periodId);
           final categoryValues =
               categories.value ?? const <FinancialCategory>[];
-          if (_categoryId != null &&
+          if (categories.hasValue &&
+              _categoryId != null &&
               !categoryValues.any((item) => item.id == _categoryId)) {
             _categoryId = null;
           }
@@ -79,7 +105,9 @@ class _FinanceHistoryScreenState extends ConsumerState<FinanceHistoryScreen> {
     List<FinancialCategory> categories,
   ) {
     final filter = FinanceTransactionFilter(
-      periodId: selected.id,
+      periodId: _customRange ? null : selected.id,
+      startDate: widget.initialStartDate,
+      endDate: widget.initialEndDate,
       type: _type,
       categoryId: _categoryId,
       isReimburse: _isReimburse,
@@ -91,41 +119,51 @@ class _FinanceHistoryScreenState extends ConsumerState<FinanceHistoryScreen> {
       key: const ValueKey('finance-history-list'),
       padding: const EdgeInsets.all(16),
       children: [
-        DropdownButtonFormField<String>(
-          key: ValueKey('finance-period-${selected.id}'),
-          isExpanded: true,
-          initialValue: selected.id,
-          decoration: const InputDecoration(labelText: 'Periode'),
-          items: periods
-              .map(
-                (period) => DropdownMenuItem(
-                  value: period.id,
-                  child: Text('${period.name} • ${formatPeriodRange(period)}'),
-                ),
-              )
-              .toList(growable: false),
-          onChanged: (value) => setState(() => _periodId = value),
-        ),
-        const SizedBox(height: 12),
-        summary.when(
-          data: (value) => BrutalCard(
-            color: const Color(0xFFFFD60A),
-            child: Wrap(
-              spacing: 20,
-              runSpacing: 8,
-              children: [
-                Text('TOTAL EXPENSE ${formatIdr(value.totalExpense)}'),
-                Text('TOTAL INCOME ${formatIdr(value.totalIncome)}'),
-                Text(
-                  'SALDO ${formatIdr(value.netBalance)}',
-                  style: const TextStyle(fontWeight: FontWeight.w900),
-                ),
-              ],
+        if (_customRange)
+          BrutalCard(
+            child: Text(
+              'RENTANG ANALITIK • ${formatFinanceDate(widget.initialStartDate!)} – ${formatFinanceDate(widget.initialEndDate!.subtract(const Duration(days: 1)))}',
             ),
+          )
+        else
+          DropdownButtonFormField<String>(
+            key: ValueKey('finance-period-${selected.id}'),
+            isExpanded: true,
+            initialValue: selected.id,
+            decoration: const InputDecoration(labelText: 'Periode'),
+            items: periods
+                .map(
+                  (period) => DropdownMenuItem(
+                    value: period.id,
+                    child: Text(
+                      '${period.name} • ${formatPeriodRange(period)}',
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+            onChanged: (value) => setState(() => _periodId = value),
           ),
-          loading: () => const LinearProgressIndicator(),
-          error: (_, _) => const Text('Total periode gagal dimuat.'),
-        ),
+        const SizedBox(height: 12),
+        if (!_customRange)
+          summary.when(
+            data: (value) => BrutalCard(
+              color: const Color(0xFFFFD60A),
+              child: Wrap(
+                spacing: 20,
+                runSpacing: 8,
+                children: [
+                  Text('TOTAL EXPENSE ${formatIdr(value.totalExpense)}'),
+                  Text('TOTAL INCOME ${formatIdr(value.totalIncome)}'),
+                  Text(
+                    'SALDO ${formatIdr(value.netBalance)}',
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                ],
+              ),
+            ),
+            loading: () => const LinearProgressIndicator(),
+            error: (_, _) => const Text('Total periode gagal dimuat.'),
+          ),
         const SizedBox(height: 16),
         TextField(
           controller: _search,
@@ -214,37 +252,39 @@ class _FinanceHistoryScreenState extends ConsumerState<FinanceHistoryScreen> {
           },
         ),
         const SizedBox(height: 24),
-        Text(
-          'REKAP KATEGORI PENGELUARAN',
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
-        ),
+        if (!_customRange)
+          Text(
+            'REKAP KATEGORI PENGELUARAN',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+          ),
         const SizedBox(height: 8),
-        breakdown.when(
-          data: (values) => values.isEmpty
-              ? const Text('Belum ada pengeluaran pada periode ini.')
-              : BrutalCard(
-                  child: Column(
-                    children: values
-                        .map(
-                          (item) => ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(item.categoryName),
-                            trailing: Text(
-                              formatIdr(item.total),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
+        if (!_customRange)
+          breakdown.when(
+            data: (values) => values.isEmpty
+                ? const Text('Belum ada pengeluaran pada periode ini.')
+                : BrutalCard(
+                    child: Column(
+                      children: values
+                          .map(
+                            (item) => ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(item.categoryName),
+                              trailing: Text(
+                                formatIdr(item.total),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
                             ),
-                          ),
-                        )
-                        .toList(growable: false),
+                          )
+                          .toList(growable: false),
+                    ),
                   ),
-                ),
-          loading: () => const LinearProgressIndicator(),
-          error: (_, _) => const Text('Rekap kategori gagal dimuat.'),
-        ),
+            loading: () => const LinearProgressIndicator(),
+            error: (_, _) => const Text('Rekap kategori gagal dimuat.'),
+          ),
       ],
     );
   }

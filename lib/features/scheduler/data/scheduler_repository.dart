@@ -48,13 +48,47 @@ class SchedulerRepository {
             ..orderBy([(row) => OrderingTerm.asc(row.offsetMinutes)]))
           .get();
 
+  Future<ScheduleReminderSelection> reminderSelectionForItem(String id) async {
+    final reminders = await (database.select(
+      database.scheduleReminders,
+    )..where((row) => row.scheduleItemId.equals(id))).get();
+    final day = reminders.where((row) => row.reminderType == 'day_before');
+    final minutes = reminders.where(
+      (row) => row.reminderType == 'minutes_before',
+    );
+    return ScheduleReminderSelection(
+      dayBeforeEnabled: day.any((row) => row.isEnabled),
+      minutesBeforeEnabled: minutes.any((row) => row.isEnabled),
+      minutesBeforeOffset:
+          minutes
+              .where(
+                (row) => row.offsetMinutes == 15 || row.offsetMinutes == 30,
+              )
+              .firstOrNull
+              ?.offsetMinutes ??
+          30,
+    );
+  }
+
   Future<String> saveDraft(
     ScheduleDraft draft, {
     String? id,
     String source = 'manual',
     String? originalUserText,
+    ScheduleReminderSelection? reminderSelection,
   }) async {
     _validate(draft);
+    var selection =
+        reminderSelection ??
+        ScheduleReminderSelection.fromOffsets(draft.reminderOffsets);
+    if (draft.itemType == ScheduleItemType.task &&
+        draft.dueAtUtc == null &&
+        draft.dueDateLocal == null) {
+      selection = const ScheduleReminderSelection(
+        dayBeforeEnabled: false,
+        minutesBeforeEnabled: false,
+      );
+    }
     final itemId = id ?? _uuid.v4();
     final now = DateTime.now().toUtc();
     await database.transaction(() async {
@@ -98,12 +132,24 @@ class SchedulerRepository {
       await database.batch((batch) {
         batch.insertAll(
           database.scheduleReminders,
-          draft.reminderOffsets.toSet().map(
-            (offset) => ScheduleRemindersCompanion.insert(
+          [
+            (
+              type: 'day_before',
+              offset: 1440,
+              enabled: selection.dayBeforeEnabled,
+            ),
+            (
+              type: 'minutes_before',
+              offset: selection.minutesBeforeOffset,
+              enabled: selection.minutesBeforeEnabled,
+            ),
+          ].map(
+            (reminder) => ScheduleRemindersCompanion.insert(
               id: _uuid.v4(),
               scheduleItemId: itemId,
-              offsetMinutes: offset,
-              isEnabled: true,
+              reminderType: Value(reminder.type),
+              offsetMinutes: reminder.offset,
+              isEnabled: reminder.enabled,
               createdAt: now,
               updatedAt: now,
             ),
@@ -242,11 +288,10 @@ class SchedulerRepository {
         !draft.endAtUtc!.isAfter(draft.startAtUtc!)) {
       throw const ScheduleValidationException('event_end_invalid');
     }
-    if (draft.itemType == ScheduleItemType.task &&
-        draft.reminderOffsets.isNotEmpty &&
-        draft.dueAtUtc == null &&
-        draft.dueDateLocal == null) {
-      throw const ScheduleValidationException('task_reminder_without_due_date');
+    if (draft.reminderOffsets.any(
+      (offset) => offset != 15 && offset != 30 && offset != 1440,
+    )) {
+      throw const ScheduleValidationException('reminder_offset_invalid');
     }
   }
 

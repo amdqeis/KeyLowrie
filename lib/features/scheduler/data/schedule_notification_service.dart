@@ -49,14 +49,14 @@ class LocalScheduleNotificationService implements ScheduleNotificationService {
               actions: [
                 DarwinNotificationAction.plain('complete', 'Selesai'),
                 DarwinNotificationAction.plain('snooze', 'Tunda 10 menit'),
-                DarwinNotificationAction.plain('reschedule', 'Ubah waktu'),
+                DarwinNotificationAction.plain('open', 'Buka Jadwal'),
               ],
             ),
             DarwinNotificationCategory(
               'keyspace_schedule_event',
               actions: [
                 DarwinNotificationAction.plain('snooze', 'Tunda 10 menit'),
-                DarwinNotificationAction.plain('reschedule', 'Ubah waktu'),
+                DarwinNotificationAction.plain('open', 'Buka Jadwal'),
               ],
             ),
           ],
@@ -136,7 +136,7 @@ class LocalScheduleNotificationService implements ScheduleNotificationService {
           actions: [
             if (isTask) const AndroidNotificationAction('complete', 'Selesai'),
             const AndroidNotificationAction('snooze', 'Tunda 10 menit'),
-            const AndroidNotificationAction('reschedule', 'Ubah waktu'),
+            const AndroidNotificationAction('open', 'Buka Jadwal'),
           ],
         ),
         iOS: DarwinNotificationDetails(

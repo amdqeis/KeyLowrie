@@ -65,14 +65,18 @@ class FinanceCategoryBreakdown {
 
 class FinanceTransactionFilter {
   const FinanceTransactionFilter({
-    required this.periodId,
+    this.periodId,
+    this.startDate,
+    this.endDate,
     this.type,
     this.categoryId,
     this.isReimburse,
     this.search,
   });
 
-  final String periodId;
+  final String? periodId;
+  final DateTime? startDate;
+  final DateTime? endDate;
   final FinancialTransactionType? type;
   final String? categoryId;
   final bool? isReimburse;
@@ -109,4 +113,104 @@ class FinanceTransactionRecord {
   final String periodId;
   final DateTime createdAt;
   final DateTime updatedAt;
+}
+
+enum FinanceAnalyticsType { all, expense, income }
+
+enum FinanceTrendGranularity { day, week, month }
+
+class FinanceAnalyticsFilter {
+  const FinanceAnalyticsFilter({
+    required this.startDate,
+    required this.endDate,
+    this.type = FinanceAnalyticsType.all,
+  });
+
+  final DateTime startDate;
+  final DateTime endDate;
+  final FinanceAnalyticsType type;
+
+  int get dayCount => endDate.difference(startDate).inDays;
+
+  FinanceTrendGranularity get granularity => dayCount <= 31
+      ? FinanceTrendGranularity.day
+      : dayCount <= 180
+      ? FinanceTrendGranularity.week
+      : FinanceTrendGranularity.month;
+
+  @override
+  bool operator ==(Object other) =>
+      other is FinanceAnalyticsFilter &&
+      other.startDate == startDate &&
+      other.endDate == endDate &&
+      other.type == type;
+
+  @override
+  int get hashCode => Object.hash(startDate, endDate, type);
+}
+
+class CategoryFinanceSummary {
+  const CategoryFinanceSummary({
+    required this.categoryId,
+    required this.categoryName,
+    required this.transactionCount,
+    required this.totalAmount,
+    required this.percentage,
+  });
+
+  final String categoryId;
+  final String categoryName;
+  final int transactionCount;
+  final int totalAmount;
+  final double percentage;
+}
+
+class FinanceTrendPoint {
+  const FinanceTrendPoint({
+    required this.date,
+    required this.expenseAmount,
+    required this.incomeAmount,
+  });
+
+  final DateTime date;
+  final int expenseAmount;
+  final int incomeAmount;
+}
+
+class FinanceAnalyticsSummary {
+  const FinanceAnalyticsSummary({
+    required this.totalExpense,
+    required this.totalIncome,
+    required this.netBalance,
+    required this.averageExpensePerDay,
+    required this.averageIncomePerDay,
+    required this.totalReimburse,
+    this.largestExpenseCategory,
+    this.largestIncomeCategory,
+  });
+
+  final int totalExpense;
+  final int totalIncome;
+  final int netBalance;
+  final int averageExpensePerDay;
+  final int averageIncomePerDay;
+  final int totalReimburse;
+  final CategoryFinanceSummary? largestExpenseCategory;
+  final CategoryFinanceSummary? largestIncomeCategory;
+}
+
+class FinanceAnalyticsData {
+  const FinanceAnalyticsData({
+    required this.filter,
+    required this.summary,
+    required this.expensesByCategory,
+    required this.incomeByCategory,
+    required this.trend,
+  });
+
+  final FinanceAnalyticsFilter filter;
+  final FinanceAnalyticsSummary summary;
+  final List<CategoryFinanceSummary> expensesByCategory;
+  final List<CategoryFinanceSummary> incomeByCategory;
+  final List<FinanceTrendPoint> trend;
 }

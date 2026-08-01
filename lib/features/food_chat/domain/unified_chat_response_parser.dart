@@ -189,7 +189,7 @@ class UnifiedChatResponseParser {
         .map((entry) {
           if (entry is! Map<String, dynamic> ||
               entry['offset_minutes'] is! int ||
-              (entry['offset_minutes'] as int) < 0) {
+              !const {15, 30, 1440}.contains(entry['offset_minutes'])) {
             throw const UnifiedChatResponseException('reminder_offset_invalid');
           }
           return entry['offset_minutes'] as int;

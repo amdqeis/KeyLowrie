@@ -248,3 +248,13 @@ Audit ini menjadi baseline sebelum penambahan voice-to-text dan personal finance
 - Nutrisi/regresi: preview/edit/confirm Food Log, reminder reconciliation, riwayat harian, target, API-key management, dan root lifecycle tanpa `_dependents.isEmpty`.
 
 Gate Tahap 7 selesai berdasarkan hasil aktual di atas; tidak ada klaim physical-device, secure-storage platform, live Gemini, atau clean Android build completion.
+
+## Net Worth, Analitik Keuangan, dan Dual Reminder (2026-08-01)
+
+- Drift v4 bersifat additive: menambah singleton `net_worth_initialization`, `net_worth_adjustments`, indeks rentang transaksi/adjustment, dan `schedule_reminders.reminder_type`. Migration v1/v2/v3→v4 mempertahankan seluruh data lama; reminder v3 dibackfill menjadi `day_before` untuk offset 1440 dan `minutes_before` untuk offset lain.
+- `DriftNetWorthRepository` menghitung initial + income - expense + adjustment melalui scalar SQL aggregates. Tanggal sebelum inisialisasi, budget, dan adjustment manual di luar rentang tidak masuk formula; nominal tetap integer IDR.
+- Finance analytics memakai query SQL rentang `[start, end)`, group-by kategori, dan bucket lokal harian (≤31 hari), mingguan (32–180), atau bulanan (>180). `fl_chart` hanya menerima presentation models; tidak ada data finance yang dikirim ke Gemini.
+- Route publik additive adalah `/finance/net-worth` dan `/finance/analytics`. Drill-down kategori menggunakan `/finance/history` dengan query filter rentang/tipe/kategori tanpa mengganti route lama.
+- Scheduler menyimpan dua record reminder semantik per jadwal. Jadwal baru default H-1 + 30 menit, pilihan kedua 15/30 menit, toggle independen, all-day/deadline tanggal-only pukul 09.00 lokal, task tanpa deadline disabled, serta ID notification occurrence unik dengan collision check.
+- Edit membatalkan occurrence lama sebelum menyimpan dan merekonsiliasi ulang. Complete/delete membatalkan seluruh notification, snooze tetap 10 menit, action baru membuka jadwal, dan action ID legacy `reschedule` tetap diterima.
+- Quality gate implementasi: codegen dan snapshot/helper v4 berhasil, migration tests lulus, `flutter analyze` bersih, dan full suite 163 test lulus. Notification app-closed/reboot/action serta perilaku perangkat Android/iOS masih memerlukan smoke test fisik.

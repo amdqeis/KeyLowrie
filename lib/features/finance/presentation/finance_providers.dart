@@ -52,3 +52,11 @@ final allFinanceCategoriesProvider = StreamProvider<List<FinancialCategory>>((
       .watch(financeRepositoryProvider)
       .watchCategories(activeOnly: false);
 });
+
+final financeAnalyticsProvider =
+    FutureProvider.family<FinanceAnalyticsData, FinanceAnalyticsFilter>((
+      ref,
+      filter,
+    ) {
+      return ref.watch(financeRepositoryProvider).getAnalytics(filter);
+    });

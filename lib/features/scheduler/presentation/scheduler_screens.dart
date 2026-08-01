@@ -10,14 +10,64 @@ import 'package:keyspace/features/scheduler/domain/schedule_models.dart';
 import 'package:keyspace/shared/providers/infrastructure_providers.dart';
 import 'package:keyspace/shared/widgets/brutal_widgets.dart';
 
+// ─── Upcoming schedules provider ────────────────────────────────────────────
+
+/// Mengembalikan semua item jadwal yang dimulai/jatuh tempo dalam [hoursAhead] jam
+/// ke depan dan belum selesai — dipakai sebagai pengingat mendekati.
+final upcomingSchedulesProvider = Provider<List<ScheduleItem>>((ref) {
+  final now = DateTime.now();
+  final horizon = now.add(const Duration(hours: 24));
+  final items =
+      ref.watch(scheduleItemsProvider).value ?? const <ScheduleItem>[];
+  return items.where((item) {
+    if (item.status != 'pending') return false;
+    // Ambil waktu mulai atau deadline
+    final anchor =
+        item.startAtUtc?.toLocal() ??
+        item.dueAtUtc?.toLocal() ??
+        _localDateToDateTime(item.localStartDate ?? item.dueDateLocal);
+    if (anchor == null) return false;
+    return anchor.isAfter(now) && anchor.isBefore(horizon);
+  }).toList()..sort((a, b) {
+    final aT = a.startAtUtc ?? a.dueAtUtc;
+    final bT = b.startAtUtc ?? b.dueAtUtc;
+    if (aT == null && bT == null) return 0;
+    if (aT == null) return 1;
+    if (bT == null) return -1;
+    return aT.compareTo(bT);
+  });
+});
+
+DateTime? _localDateToDateTime(String? dateKey) {
+  if (dateKey == null) return null;
+  return DateTime.tryParse(dateKey);
+}
+
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 const _kDayNames = [
-  'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu',
+  'Senin',
+  'Selasa',
+  'Rabu',
+  'Kamis',
+  'Jumat',
+  'Sabtu',
+  'Minggu',
 ];
 const _kMonthNames = [
-  '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+  '',
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
 ];
 
 String _formatShortDate(DateTime d) =>
@@ -74,6 +124,8 @@ class _SchedulerScreenState extends ConsumerState<SchedulerScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // ── Upcoming Reminders Banner ─────────────────────────────────
+            const _UpcomingBanner(),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -169,7 +221,8 @@ class _DateSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ink = Theme.of(context).colorScheme.onSurface;
-    final isToday = !weekly &&
+    final isToday =
+        !weekly &&
         value.year == DateTime.now().year &&
         value.month == DateTime.now().month &&
         value.day == DateTime.now().day;
@@ -195,89 +248,86 @@ class _DateSelector extends StatelessWidget {
               header: true,
               child: Column(
                 children: [
-                  if (!weekly) ...
-                    [
-                      Text(
-                        _kDayNames[value.weekday - 1].toUpperCase(),
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                          color: ink.withValues(alpha: 0.55),
-                        ),
+                  if (!weekly) ...[
+                    Text(
+                      _kDayNames[value.weekday - 1].toUpperCase(),
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                        color: ink.withValues(alpha: 0.55),
                       ),
-                      const SizedBox(height: 2),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            '${value.day}',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w900,
-                              color: ink,
-                              height: 1,
-                            ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          '${value.day}',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: ink,
+                            height: 1,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${_kMonthNames[value.month]} ${value.year}',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: ink,
-                            ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${_kMonthNames[value.month]} ${value.year}',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: ink,
                           ),
-                          if (isToday) ...
-                            [
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: KeySpaceColors.signalYellow,
-                                  border:
-                                      Border.all(color: ink, width: 2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'HARI INI',
-                                  style: GoogleFonts.spaceGrotesk(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.8,
-                                    color: ink,
-                                  ),
-                                ),
+                        ),
+                        if (isToday) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: KeySpaceColors.signalYellow,
+                              border: Border.all(color: ink, width: 2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'HARI INI',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                                color: ink,
                               ),
-                            ],
+                            ),
+                          ),
                         ],
+                      ],
+                    ),
+                  ] else ...[
+                    Text(
+                      'MINGGU INI',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                        color: ink.withValues(alpha: 0.55),
                       ),
-                    ]
-                  else ...
-                    [
-                      Text(
-                        'MINGGU INI',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                          color: ink.withValues(alpha: 0.55),
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${weekStart!.day} ${_kMonthNames[weekStart.month]} – '
+                      '${weekEnd!.day} ${_kMonthNames[weekEnd.month]} ${weekEnd.year}',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: ink,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${weekStart!.day} ${_kMonthNames[weekStart.month]} – '
-                        '${weekEnd!.day} ${_kMonthNames[weekEnd.month]} ${weekEnd.year}',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: ink,
-                        ),
-                      ),
-                    ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -317,10 +367,9 @@ class _ScheduleList extends ConsumerWidget {
               Icon(
                 Icons.calendar_today_outlined,
                 size: 48,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.25),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.25),
               ),
               const SizedBox(height: 16),
               Text(
@@ -336,10 +385,9 @@ class _ScheduleList extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 13,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.55),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.55),
                 ),
               ),
             ],
@@ -380,8 +428,8 @@ class _ScheduleList extends ConsumerWidget {
               .read(schedulerReminderCoordinatorProvider)
               .reconcileItem(sorted[index].id);
         },
-        onTap: () => context.push(
-            AppRoutes.schedulerDetailPath(sorted[index].id)),
+        onTap: () =>
+            context.push(AppRoutes.schedulerDetailPath(sorted[index].id)),
       ),
     );
   }
@@ -399,12 +447,13 @@ class _WeeklyGroupedList extends StatelessWidget {
     // Group by local date key (YYYY-MM-DD)
     final Map<String, List<ScheduleItem>> groups = {};
     for (final row in rows) {
-      final key = row.localStartDate ??
+      final key =
+          row.localStartDate ??
           row.dueDateLocal ??
-          (row.startAtUtc ?? row.dueAtUtc)
-              ?.toLocal()
-              .toString()
-              .substring(0, 10) ??
+          (row.startAtUtc ?? row.dueAtUtc)?.toLocal().toString().substring(
+            0,
+            10,
+          ) ??
           'unknown';
       (groups[key] ??= []).add(row);
     }
@@ -444,8 +493,7 @@ class _WeeklyGroupedList extends StatelessWidget {
                   .read(schedulerReminderCoordinatorProvider)
                   .reconcileItem(row.id);
             },
-            onTap: () =>
-                context.push(AppRoutes.schedulerDetailPath(row.id)),
+            onTap: () => context.push(AppRoutes.schedulerDetailPath(row.id)),
           ),
         );
       }
@@ -469,7 +517,8 @@ class _DayHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final ink = Theme.of(context).colorScheme.onSurface;
     final now = DateTime.now();
-    final isToday = date != null &&
+    final isToday =
+        date != null &&
         date!.year == now.year &&
         date!.month == now.month &&
         date!.day == now.day;
@@ -479,8 +528,7 @@ class _DayHeader extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             color: isToday ? KeySpaceColors.signalYellow : Colors.transparent,
             border: Border.all(color: ink, width: 2),
@@ -500,6 +548,173 @@ class _DayHeader extends StatelessWidget {
         Expanded(child: Container(height: 2, color: ink)),
       ],
     );
+  }
+}
+
+// ─── Upcoming reminders banner ──────────────────────────────────────────────
+
+/// Banner horizontal-scroll yang menampilkan jadwal-jadwal yang akan
+/// dimulai/jatuh tempo dalam 24 jam ke depan.
+class _UpcomingBanner extends ConsumerWidget {
+  const _UpcomingBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final upcoming = ref.watch(upcomingSchedulesProvider);
+    if (upcoming.isEmpty) return const SizedBox.shrink();
+
+    final ink = Theme.of(context).colorScheme.onSurface;
+    final now = DateTime.now();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3CD),
+        border: Border(
+          bottom: BorderSide(color: ink.withValues(alpha: 0.18), width: 1.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.notifications_active,
+                  size: 15,
+                  color: const Color(0xFFE6A800),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'PENGINGAT — JADWAL MENDEKATI',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                    color: const Color(0xFFB07800),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${upcoming.length} item',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: ink.withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 90,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+              itemCount: upcoming.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (context, index) {
+                final item = upcoming[index];
+                final anchor =
+                    item.startAtUtc?.toLocal() ?? item.dueAtUtc?.toLocal();
+                final diff = anchor?.difference(now);
+                final diffLabel = _formatDiff(diff);
+                final isTask = item.itemType == 'task';
+                return GestureDetector(
+                  onTap: () =>
+                      context.push(AppRoutes.schedulerDetailPath(item.id)),
+                  child: Container(
+                    width: 200,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isTask
+                          ? const Color(0xFFBDE0FE)
+                          : const Color(0xFFFFE79A),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: ink, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: ink.withValues(alpha: 0.08),
+                          blurRadius: 4,
+                          offset: const Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isTask
+                                    ? const Color(0xFF4A90D9)
+                                    : const Color(0xFFE6A800),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Text(
+                                isTask ? 'TASK' : 'EVENT',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            if (diffLabel != null)
+                              Text(
+                                diffLabel,
+                                style: GoogleFonts.ibmPlexMono(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFFB07800),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: ink,
+                              height: 1.2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _formatDiff(Duration? diff) {
+    if (diff == null) return null;
+    final totalMinutes = diff.inMinutes;
+    if (totalMinutes < 1) return 'Sekarang';
+    if (totalMinutes < 60) return '${totalMinutes}m lagi';
+    final hours = diff.inHours;
+    final minutes = totalMinutes - hours * 60;
+    return minutes > 0 ? '${hours}j ${minutes}m' : '${hours}j lagi';
   }
 }
 
@@ -570,9 +785,7 @@ class _ScheduleCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: BrutalCard(
         padding: EdgeInsets.zero,
-        color: isDone
-            ? Theme.of(context).colorScheme.surface
-            : cardColor,
+        color: isDone ? Theme.of(context).colorScheme.surface : cardColor,
         child: InkWell(
           borderRadius: BorderRadius.circular(6),
           onTap: onTap,
@@ -673,7 +886,9 @@ class _ScheduleCard extends StatelessWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: isTask
                                   ? const Color(0xFF4A90D9)
@@ -698,8 +913,7 @@ class _ScheduleCard extends StatelessWidget {
                                 value: isDone,
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,
-                                onChanged: (v) =>
-                                    onToggleComplete(v ?? false),
+                                onChanged: (v) => onToggleComplete(v ?? false),
                               ),
                             ),
                         ],
@@ -713,9 +927,7 @@ class _ScheduleCard extends StatelessWidget {
                         style: GoogleFonts.spaceGrotesk(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: isDone
-                              ? ink.withValues(alpha: 0.4)
-                              : ink,
+                          color: isDone ? ink.withValues(alpha: 0.4) : ink,
                           decoration: isDone
                               ? TextDecoration.lineThrough
                               : null,
@@ -790,7 +1002,9 @@ class _InfoPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: (color ?? ink).withValues(alpha: 0.10),
         border: Border.all(
-            color: (color ?? ink).withValues(alpha: 0.30), width: 1.5),
+          color: (color ?? ink).withValues(alpha: 0.30),
+          width: 1.5,
+        ),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
@@ -931,7 +1145,10 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
     DateTime.now().add(const Duration(hours: 1)),
   );
   bool _allDay = false;
-  int _reminder = 15;
+  bool _taskHasDeadline = true;
+  bool _dayReminderEnabled = true;
+  bool _minutesReminderEnabled = true;
+  int _minutesReminder = 30;
   String? _categoryId;
   bool _saving = false;
   List<ScheduleConflict> _conflicts = const [];
@@ -957,7 +1174,9 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
     final repository = ref.read(schedulerRepositoryProvider);
     final row = await repository.findById(widget.id!);
     if (row == null || !mounted) return;
-    final reminders = await repository.remindersForItem(widget.id!);
+    final reminderSelection = await repository.reminderSelectionForItem(
+      widget.id!,
+    );
     if (!mounted) return;
     _title.text = row.title;
     _description.text = row.description ?? '';
@@ -966,6 +1185,7 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
     _recurrence = ScheduleRecurrenceType.values.byName(row.recurrenceType);
     _categoryId = row.categoryId;
     _allDay = row.allDay;
+    _taskHasDeadline = row.dueAtUtc != null || row.dueDateLocal != null;
     final value = row.startAtUtc?.toLocal() ?? row.dueAtUtc?.toLocal();
     if (value != null) {
       _date = value;
@@ -974,7 +1194,9 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
     if (row.endAtUtc != null) {
       _end = TimeOfDay.fromDateTime(row.endAtUtc!.toLocal());
     }
-    _reminder = reminders.firstOrNull?.offsetMinutes ?? 15;
+    _dayReminderEnabled = reminderSelection.dayBeforeEnabled;
+    _minutesReminderEnabled = reminderSelection.minutesBeforeEnabled;
+    _minutesReminder = reminderSelection.minutesBeforeOffset;
     setState(() {});
   }
 
@@ -994,7 +1216,13 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
     if (draft.endAtUtc != null) {
       _end = TimeOfDay.fromDateTime(draft.endAtUtc!.toLocal());
     }
-    _reminder = draft.reminderOffsets.firstOrNull ?? 15;
+    final reminderSelection = ScheduleReminderSelection.fromOffsets(
+      draft.reminderOffsets,
+    );
+    _dayReminderEnabled = reminderSelection.dayBeforeEnabled;
+    _minutesReminderEnabled = reminderSelection.minutesBeforeEnabled;
+    _minutesReminder = reminderSelection.minutesBeforeOffset;
+    _taskHasDeadline = draft.dueAtUtc != null || draft.dueDateLocal != null;
   }
 
   @override
@@ -1056,11 +1284,6 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
               decoration: const InputDecoration(labelText: 'Deskripsi'),
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _pickDate,
-              icon: const Icon(Icons.calendar_month),
-              label: Text(localDateKey(_date)),
-            ),
             if (_type == ScheduleItemType.event)
               SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
@@ -1068,7 +1291,30 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
                 value: _allDay,
                 onChanged: (value) => setState(() => _allDay = value),
               ),
-            if (!_allDay)
+            if (_type == ScheduleItemType.task)
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Task memiliki deadline'),
+                subtitle: const Text(
+                  'Task tanpa deadline disimpan tanpa pengingat.',
+                ),
+                value: _taskHasDeadline,
+                onChanged: (value) => setState(() {
+                  _taskHasDeadline = value;
+                  if (!value) {
+                    _dayReminderEnabled = false;
+                    _minutesReminderEnabled = false;
+                  }
+                }),
+              ),
+            if (_type == ScheduleItemType.event || _taskHasDeadline)
+              OutlinedButton.icon(
+                onPressed: _pickDate,
+                icon: const Icon(Icons.calendar_month),
+                label: Text(localDateKey(_date)),
+              ),
+            if ((_type == ScheduleItemType.event && !_allDay) ||
+                (_type == ScheduleItemType.task && _taskHasDeadline))
               Row(
                 children: [
                   Expanded(
@@ -1134,15 +1380,60 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
               onChanged: (value) => setState(() => _recurrence = value!),
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<int>(
-              initialValue: _reminder,
-              decoration: const InputDecoration(labelText: 'Reminder'),
-              items: const [
-                DropdownMenuItem(value: 15, child: Text('15 menit sebelumnya')),
-                DropdownMenuItem(value: 60, child: Text('1 jam sebelumnya')),
-                DropdownMenuItem(value: 0, child: Text('Saat waktu tiba')),
-              ],
-              onChanged: (value) => setState(() => _reminder = value!),
+            BrutalCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'PENGINGAT',
+                    style: TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('1 hari sebelumnya'),
+                    value: _dayReminderEnabled,
+                    onChanged:
+                        _type == ScheduleItemType.task && !_taskHasDeadline
+                        ? null
+                        : (value) => setState(
+                            () => _dayReminderEnabled = value ?? false,
+                          ),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('$_minutesReminder menit sebelumnya'),
+                    subtitle: _allDay
+                        ? const Text('Pada event all-day: hari kegiatan 09.00')
+                        : null,
+                    value: _minutesReminderEnabled,
+                    onChanged:
+                        _type == ScheduleItemType.task && !_taskHasDeadline
+                        ? null
+                        : (value) => setState(
+                            () => _minutesReminderEnabled = value ?? false,
+                          ),
+                  ),
+                  DropdownButtonFormField<int>(
+                    initialValue: _minutesReminder,
+                    decoration: const InputDecoration(
+                      labelText: 'Reminder kedua',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 15,
+                        child: Text('15 menit sebelumnya'),
+                      ),
+                      DropdownMenuItem(
+                        value: 30,
+                        child: Text('30 menit sebelumnya'),
+                      ),
+                    ],
+                    onChanged: _minutesReminderEnabled
+                        ? (value) => setState(() => _minutesReminder = value!)
+                        : null,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
             BrutalButton(
@@ -1182,7 +1473,11 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
     if (!_formKey.currentState!.validate()) return;
     final categories = ref.read(scheduleCategoriesProvider).value ?? const [];
     final category = categories.firstWhere((row) => row.id == _categoryId);
-    final start = _allDay ? null : _combine(_start);
+    final start =
+        (_type == ScheduleItemType.event && _allDay) ||
+            (_type == ScheduleItemType.task && !_taskHasDeadline)
+        ? null
+        : _combine(_start);
     final end = _type == ScheduleItemType.event && !_allDay
         ? _combine(_end)
         : null;
@@ -1192,14 +1487,16 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
       description: _description.text,
       startAtUtc: _type == ScheduleItemType.event ? start?.toUtc() : null,
       endAtUtc: end?.toUtc(),
-      dueAtUtc: _type == ScheduleItemType.task && !_allDay
+      dueAtUtc: _type == ScheduleItemType.task && _taskHasDeadline
           ? start?.toUtc()
           : null,
       localStartDate: _type == ScheduleItemType.event
           ? localDateKey(_date)
           : null,
-      dueDateLocal: _type == ScheduleItemType.task ? localDateKey(_date) : null,
-      allDay: _allDay,
+      dueDateLocal: _type == ScheduleItemType.task && _taskHasDeadline
+          ? localDateKey(_date)
+          : null,
+      allDay: _type == ScheduleItemType.event && _allDay,
       categoryId: category.id,
       categoryName: category.name,
       priority: _priority,
@@ -1210,7 +1507,10 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
             ? [_date.weekday]
             : const [],
       ),
-      reminderOffsets: [_reminder],
+      reminderOffsets: [
+        if (_dayReminderEnabled) 1440,
+        if (_minutesReminderEnabled) _minutesReminder,
+      ],
     );
     if (start != null && end != null && _conflicts.isEmpty) {
       final conflicts = await ref
@@ -1223,15 +1523,36 @@ class _ScheduleEditorScreenState extends ConsumerState<ScheduleEditorScreen> {
     }
     setState(() => _saving = true);
     try {
+      if (widget.id != null) {
+        await ref
+            .read(schedulerReminderCoordinatorProvider)
+            .cancelItem(widget.id!);
+      }
       final id = await ref
           .read(schedulerRepositoryProvider)
           .saveDraft(
             draft,
             id: widget.id,
             source: widget.initialDraft == null ? 'manual' : 'gemini',
+            reminderSelection: ScheduleReminderSelection(
+              dayBeforeEnabled: _dayReminderEnabled,
+              minutesBeforeEnabled: _minutesReminderEnabled,
+              minutesBeforeOffset: _minutesReminder,
+            ),
           );
-      await ref.read(schedulerReminderCoordinatorProvider).reconcileItem(id);
-      if (mounted) context.go(AppRoutes.schedulerDetailPath(id));
+      final result = await ref
+          .read(schedulerReminderCoordinatorProvider)
+          .reconcileItem(id);
+      if (!mounted) return;
+      if (result.hasIssues) {
+        final message = result.scheduledCount == 0
+            ? 'Jadwal tersimpan, tetapi tidak ada pengingat yang dapat dijadwalkan.'
+            : 'Jadwal tersimpan. Sebagian pengingat tidak dapat dijadwalkan.';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
+      context.go(AppRoutes.schedulerDetailPath(id));
     } on Object catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

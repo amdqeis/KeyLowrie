@@ -24,8 +24,8 @@ void main() {
     await database.close();
   });
 
-  group('AppDatabase schema v3', () {
-    test('committed snapshots preserve v1/v2 and describe v3', () {
+  group('AppDatabase schema v4', () {
+    test('committed snapshots preserve v1/v2/v3 and describe v4', () {
       final v1Snapshot =
           jsonDecode(
                 File('drift_schemas/drift_schema_v1.json').readAsStringSync(),
@@ -50,14 +50,23 @@ void main() {
       final v3Tables = (v3Snapshot['entities'] as List<dynamic>)
           .cast<Map<String, dynamic>>()
           .where((entity) => entity['type'] == 'table');
+      final v4Snapshot =
+          jsonDecode(
+                File('drift_schemas/drift_schema_v4.json').readAsStringSync(),
+              )
+              as Map<String, dynamic>;
+      final v4Tables = (v4Snapshot['entities'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .where((entity) => entity['type'] == 'table');
       expect(v1Tables, hasLength(12));
       expect(v2Tables, hasLength(17));
       expect(v3Tables, hasLength(22));
-      expect(database.schemaVersion, 3);
+      expect(v4Tables, hasLength(24));
+      expect(database.schemaVersion, 4);
     });
 
     test(
-      'creates exactly 22 domain tables with required indices and FK',
+      'creates exactly 24 domain tables with required indices and FK',
       () async {
         final tables = await database
             .customSelect(
@@ -88,6 +97,8 @@ void main() {
           'schedule_reminders',
           'schedule_notification_occurrences',
           'scheduler_settings',
+          'net_worth_initialization',
+          'net_worth_adjustments',
         });
         final indices = await database
             .customSelect("SELECT name FROM sqlite_master WHERE type = 'index'")
@@ -110,6 +121,8 @@ void main() {
             'idx_financial_transactions_period_type_date',
             'idx_financial_transactions_category',
             'idx_financial_transactions_period_reimburse',
+            'idx_financial_transactions_date_type_category',
+            'idx_net_worth_adjustments_date',
             'idx_chat_drafts_updated',
             'idx_schedule_categories_active',
             'idx_schedule_items_time_status',
@@ -161,7 +174,7 @@ void main() {
       }
     });
 
-    test('migrates v1 to v3 without losing nutrition data', () async {
+    test('migrates v1 to v4 without losing nutrition data', () async {
       final verifier = SchemaVerifier(GeneratedHelper());
       final schema = await verifier.schemaAt(1);
       schema.rawDatabase.execute(
@@ -172,7 +185,7 @@ void main() {
         "'confirmed', 450, 1, 1)",
       );
       final migrated = AppDatabase(schema.newConnection());
-      await verifier.migrateAndValidate(migrated, 3);
+      await verifier.migrateAndValidate(migrated, 4);
 
       expect(await _count(migrated, 'food_logs'), 1);
       expect(await _count(migrated, 'financial_categories'), 23);
@@ -191,7 +204,7 @@ void main() {
       schema.close();
     });
 
-    test('migrates v2 to v3 without losing finance data', () async {
+    test('migrates v2 to v4 without losing finance data', () async {
       final verifier = SchemaVerifier(GeneratedHelper());
       final schema = await verifier.schemaAt(2);
       schema.rawDatabase.execute(
@@ -200,11 +213,49 @@ void main() {
         "VALUES ('legacy-category', 'Lama', 'expense', 0, 1, 1, 1)",
       );
       final migrated = AppDatabase(schema.newConnection());
-      await verifier.migrateAndValidate(migrated, 3);
+      await verifier.migrateAndValidate(migrated, 4);
 
       expect(await _count(migrated, 'financial_categories'), 24);
       expect(await _count(migrated, 'schedule_categories'), 8);
       expect(await _count(migrated, 'scheduler_settings'), 1);
+
+      await migrated.close();
+      schema.close();
+    });
+
+    test('migrates v3 to v4 and backfills reminder type', () async {
+      final verifier = SchemaVerifier(GeneratedHelper());
+      final schema = await verifier.schemaAt(3);
+      schema.rawDatabase.execute(
+        "INSERT INTO schedule_categories "
+        "(id, name, is_system, is_active, created_at, updated_at) "
+        "VALUES ('legacy-schedule-category', 'Lama', 0, 1, 1, 1)",
+      );
+      schema.rawDatabase.execute(
+        "INSERT INTO schedule_items "
+        "(id, item_type, title, start_at_utc, end_at_utc, all_day, "
+        "category_id, priority, status, timezone, recurrence_type, "
+        "recurrence_interval, source, created_at, updated_at) "
+        "VALUES ('legacy-schedule', 'event', 'Jadwal lama', 2000000000, "
+        "2000003600, 0, 'legacy-schedule-category', 'medium', 'pending', "
+        "'Asia/Jakarta', 'none', 1, 'manual', 1, 1)",
+      );
+      schema.rawDatabase.execute(
+        "INSERT INTO schedule_reminders "
+        "(id, schedule_item_id, offset_minutes, is_enabled, created_at, updated_at) "
+        "VALUES ('legacy-day', 'legacy-schedule', 1440, 1, 1, 1), "
+        "('legacy-minutes', 'legacy-schedule', 15, 1, 1, 1)",
+      );
+      final migrated = AppDatabase(schema.newConnection());
+      await verifier.migrateAndValidate(migrated, 4);
+
+      final reminders = await migrated.select(migrated.scheduleReminders).get();
+      expect(reminders, hasLength(2));
+      expect(reminders.map((row) => row.reminderType).toSet(), {
+        'day_before',
+        'minutes_before',
+      });
+      expect(await _count(migrated, 'schedule_items'), 1);
 
       await migrated.close();
       schema.close();

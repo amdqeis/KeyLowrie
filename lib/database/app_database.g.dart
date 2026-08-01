@@ -10827,6 +10827,959 @@ class ChatDraftsCompanion extends UpdateCompanion<ChatDraft> {
   }
 }
 
+class $NetWorthInitializationsTable extends NetWorthInitializations
+    with TableInfo<$NetWorthInitializationsTable, NetWorthInitialization> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NetWorthInitializationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (id = \'local_net_worth\')',
+  );
+  static const VerificationMeta _initialAmountMeta = const VerificationMeta(
+    'initialAmount',
+  );
+  @override
+  late final GeneratedColumn<int> initialAmount = GeneratedColumn<int>(
+    'initial_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _initializationDateMeta =
+      const VerificationMeta('initializationDate');
+  @override
+  late final GeneratedColumn<DateTime> initializationDate =
+      GeneratedColumn<DateTime>(
+        'initialization_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currencyCodeMeta = const VerificationMeta(
+    'currencyCode',
+  );
+  @override
+  late final GeneratedColumn<String> currencyCode = GeneratedColumn<String>(
+    'currency_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('IDR'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    initialAmount,
+    initializationDate,
+    notes,
+    currencyCode,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'net_worth_initialization';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NetWorthInitialization> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('initial_amount')) {
+      context.handle(
+        _initialAmountMeta,
+        initialAmount.isAcceptableOrUnknown(
+          data['initial_amount']!,
+          _initialAmountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_initialAmountMeta);
+    }
+    if (data.containsKey('initialization_date')) {
+      context.handle(
+        _initializationDateMeta,
+        initializationDate.isAcceptableOrUnknown(
+          data['initialization_date']!,
+          _initializationDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_initializationDateMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('currency_code')) {
+      context.handle(
+        _currencyCodeMeta,
+        currencyCode.isAcceptableOrUnknown(
+          data['currency_code']!,
+          _currencyCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  NetWorthInitialization map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NetWorthInitialization(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      initialAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}initial_amount'],
+      )!,
+      initializationDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}initialization_date'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      currencyCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency_code'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $NetWorthInitializationsTable createAlias(String alias) {
+    return $NetWorthInitializationsTable(attachedDatabase, alias);
+  }
+}
+
+class NetWorthInitialization extends DataClass
+    implements Insertable<NetWorthInitialization> {
+  final String id;
+  final int initialAmount;
+  final DateTime initializationDate;
+  final String? notes;
+  final String currencyCode;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const NetWorthInitialization({
+    required this.id,
+    required this.initialAmount,
+    required this.initializationDate,
+    this.notes,
+    required this.currencyCode,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['initial_amount'] = Variable<int>(initialAmount);
+    map['initialization_date'] = Variable<DateTime>(initializationDate);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['currency_code'] = Variable<String>(currencyCode);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  NetWorthInitializationsCompanion toCompanion(bool nullToAbsent) {
+    return NetWorthInitializationsCompanion(
+      id: Value(id),
+      initialAmount: Value(initialAmount),
+      initializationDate: Value(initializationDate),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      currencyCode: Value(currencyCode),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory NetWorthInitialization.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NetWorthInitialization(
+      id: serializer.fromJson<String>(json['id']),
+      initialAmount: serializer.fromJson<int>(json['initialAmount']),
+      initializationDate: serializer.fromJson<DateTime>(
+        json['initializationDate'],
+      ),
+      notes: serializer.fromJson<String?>(json['notes']),
+      currencyCode: serializer.fromJson<String>(json['currencyCode']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'initialAmount': serializer.toJson<int>(initialAmount),
+      'initializationDate': serializer.toJson<DateTime>(initializationDate),
+      'notes': serializer.toJson<String?>(notes),
+      'currencyCode': serializer.toJson<String>(currencyCode),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  NetWorthInitialization copyWith({
+    String? id,
+    int? initialAmount,
+    DateTime? initializationDate,
+    Value<String?> notes = const Value.absent(),
+    String? currencyCode,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => NetWorthInitialization(
+    id: id ?? this.id,
+    initialAmount: initialAmount ?? this.initialAmount,
+    initializationDate: initializationDate ?? this.initializationDate,
+    notes: notes.present ? notes.value : this.notes,
+    currencyCode: currencyCode ?? this.currencyCode,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  NetWorthInitialization copyWithCompanion(
+    NetWorthInitializationsCompanion data,
+  ) {
+    return NetWorthInitialization(
+      id: data.id.present ? data.id.value : this.id,
+      initialAmount: data.initialAmount.present
+          ? data.initialAmount.value
+          : this.initialAmount,
+      initializationDate: data.initializationDate.present
+          ? data.initializationDate.value
+          : this.initializationDate,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      currencyCode: data.currencyCode.present
+          ? data.currencyCode.value
+          : this.currencyCode,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NetWorthInitialization(')
+          ..write('id: $id, ')
+          ..write('initialAmount: $initialAmount, ')
+          ..write('initializationDate: $initializationDate, ')
+          ..write('notes: $notes, ')
+          ..write('currencyCode: $currencyCode, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    initialAmount,
+    initializationDate,
+    notes,
+    currencyCode,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NetWorthInitialization &&
+          other.id == this.id &&
+          other.initialAmount == this.initialAmount &&
+          other.initializationDate == this.initializationDate &&
+          other.notes == this.notes &&
+          other.currencyCode == this.currencyCode &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class NetWorthInitializationsCompanion
+    extends UpdateCompanion<NetWorthInitialization> {
+  final Value<String> id;
+  final Value<int> initialAmount;
+  final Value<DateTime> initializationDate;
+  final Value<String?> notes;
+  final Value<String> currencyCode;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const NetWorthInitializationsCompanion({
+    this.id = const Value.absent(),
+    this.initialAmount = const Value.absent(),
+    this.initializationDate = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.currencyCode = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NetWorthInitializationsCompanion.insert({
+    required String id,
+    required int initialAmount,
+    required DateTime initializationDate,
+    this.notes = const Value.absent(),
+    this.currencyCode = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       initialAmount = Value(initialAmount),
+       initializationDate = Value(initializationDate),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<NetWorthInitialization> custom({
+    Expression<String>? id,
+    Expression<int>? initialAmount,
+    Expression<DateTime>? initializationDate,
+    Expression<String>? notes,
+    Expression<String>? currencyCode,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (initialAmount != null) 'initial_amount': initialAmount,
+      if (initializationDate != null) 'initialization_date': initializationDate,
+      if (notes != null) 'notes': notes,
+      if (currencyCode != null) 'currency_code': currencyCode,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NetWorthInitializationsCompanion copyWith({
+    Value<String>? id,
+    Value<int>? initialAmount,
+    Value<DateTime>? initializationDate,
+    Value<String?>? notes,
+    Value<String>? currencyCode,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return NetWorthInitializationsCompanion(
+      id: id ?? this.id,
+      initialAmount: initialAmount ?? this.initialAmount,
+      initializationDate: initializationDate ?? this.initializationDate,
+      notes: notes ?? this.notes,
+      currencyCode: currencyCode ?? this.currencyCode,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (initialAmount.present) {
+      map['initial_amount'] = Variable<int>(initialAmount.value);
+    }
+    if (initializationDate.present) {
+      map['initialization_date'] = Variable<DateTime>(initializationDate.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (currencyCode.present) {
+      map['currency_code'] = Variable<String>(currencyCode.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NetWorthInitializationsCompanion(')
+          ..write('id: $id, ')
+          ..write('initialAmount: $initialAmount, ')
+          ..write('initializationDate: $initializationDate, ')
+          ..write('notes: $notes, ')
+          ..write('currencyCode: $currencyCode, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $NetWorthAdjustmentsTable extends NetWorthAdjustments
+    with TableInfo<$NetWorthAdjustmentsTable, NetWorthAdjustment> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NetWorthAdjustmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _adjustmentDateMeta = const VerificationMeta(
+    'adjustmentDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> adjustmentDate =
+      GeneratedColumn<DateTime>(
+        'adjustment_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    amount,
+    adjustmentDate,
+    notes,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'net_worth_adjustments';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NetWorthAdjustment> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('adjustment_date')) {
+      context.handle(
+        _adjustmentDateMeta,
+        adjustmentDate.isAcceptableOrUnknown(
+          data['adjustment_date']!,
+          _adjustmentDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_adjustmentDateMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  NetWorthAdjustment map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NetWorthAdjustment(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount'],
+      )!,
+      adjustmentDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}adjustment_date'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $NetWorthAdjustmentsTable createAlias(String alias) {
+    return $NetWorthAdjustmentsTable(attachedDatabase, alias);
+  }
+}
+
+class NetWorthAdjustment extends DataClass
+    implements Insertable<NetWorthAdjustment> {
+  final String id;
+  final String name;
+  final int amount;
+  final DateTime adjustmentDate;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const NetWorthAdjustment({
+    required this.id,
+    required this.name,
+    required this.amount,
+    required this.adjustmentDate,
+    this.notes,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['amount'] = Variable<int>(amount);
+    map['adjustment_date'] = Variable<DateTime>(adjustmentDate);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  NetWorthAdjustmentsCompanion toCompanion(bool nullToAbsent) {
+    return NetWorthAdjustmentsCompanion(
+      id: Value(id),
+      name: Value(name),
+      amount: Value(amount),
+      adjustmentDate: Value(adjustmentDate),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory NetWorthAdjustment.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NetWorthAdjustment(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      amount: serializer.fromJson<int>(json['amount']),
+      adjustmentDate: serializer.fromJson<DateTime>(json['adjustmentDate']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'amount': serializer.toJson<int>(amount),
+      'adjustmentDate': serializer.toJson<DateTime>(adjustmentDate),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  NetWorthAdjustment copyWith({
+    String? id,
+    String? name,
+    int? amount,
+    DateTime? adjustmentDate,
+    Value<String?> notes = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => NetWorthAdjustment(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    amount: amount ?? this.amount,
+    adjustmentDate: adjustmentDate ?? this.adjustmentDate,
+    notes: notes.present ? notes.value : this.notes,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  NetWorthAdjustment copyWithCompanion(NetWorthAdjustmentsCompanion data) {
+    return NetWorthAdjustment(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      adjustmentDate: data.adjustmentDate.present
+          ? data.adjustmentDate.value
+          : this.adjustmentDate,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NetWorthAdjustment(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('amount: $amount, ')
+          ..write('adjustmentDate: $adjustmentDate, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    amount,
+    adjustmentDate,
+    notes,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NetWorthAdjustment &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.amount == this.amount &&
+          other.adjustmentDate == this.adjustmentDate &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class NetWorthAdjustmentsCompanion extends UpdateCompanion<NetWorthAdjustment> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<int> amount;
+  final Value<DateTime> adjustmentDate;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const NetWorthAdjustmentsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.adjustmentDate = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NetWorthAdjustmentsCompanion.insert({
+    required String id,
+    required String name,
+    required int amount,
+    required DateTime adjustmentDate,
+    this.notes = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       amount = Value(amount),
+       adjustmentDate = Value(adjustmentDate),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<NetWorthAdjustment> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<int>? amount,
+    Expression<DateTime>? adjustmentDate,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (amount != null) 'amount': amount,
+      if (adjustmentDate != null) 'adjustment_date': adjustmentDate,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NetWorthAdjustmentsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<int>? amount,
+    Value<DateTime>? adjustmentDate,
+    Value<String?>? notes,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return NetWorthAdjustmentsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      amount: amount ?? this.amount,
+      adjustmentDate: adjustmentDate ?? this.adjustmentDate,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<int>(amount.value);
+    }
+    if (adjustmentDate.present) {
+      map['adjustment_date'] = Variable<DateTime>(adjustmentDate.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NetWorthAdjustmentsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('amount: $amount, ')
+          ..write('adjustmentDate: $adjustmentDate, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ScheduleCategoriesTable extends ScheduleCategories
     with TableInfo<$ScheduleCategoriesTable, ScheduleCategory> {
   @override
@@ -12748,6 +13701,18 @@ class $ScheduleRemindersTable extends ScheduleReminders
       'REFERENCES schedule_items (id) ON DELETE CASCADE',
     ),
   );
+  static const VerificationMeta _reminderTypeMeta = const VerificationMeta(
+    'reminderType',
+  );
+  @override
+  late final GeneratedColumn<String> reminderType = GeneratedColumn<String>(
+    'reminder_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('minutes_before'),
+  );
   static const VerificationMeta _offsetMinutesMeta = const VerificationMeta(
     'offsetMinutes',
   );
@@ -12799,6 +13764,7 @@ class $ScheduleRemindersTable extends ScheduleReminders
   List<GeneratedColumn> get $columns => [
     id,
     scheduleItemId,
+    reminderType,
     offsetMinutes,
     isEnabled,
     createdAt,
@@ -12831,6 +13797,15 @@ class $ScheduleRemindersTable extends ScheduleReminders
       );
     } else if (isInserting) {
       context.missing(_scheduleItemIdMeta);
+    }
+    if (data.containsKey('reminder_type')) {
+      context.handle(
+        _reminderTypeMeta,
+        reminderType.isAcceptableOrUnknown(
+          data['reminder_type']!,
+          _reminderTypeMeta,
+        ),
+      );
     }
     if (data.containsKey('offset_minutes')) {
       context.handle(
@@ -12884,6 +13859,10 @@ class $ScheduleRemindersTable extends ScheduleReminders
         DriftSqlType.string,
         data['${effectivePrefix}schedule_item_id'],
       )!,
+      reminderType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reminder_type'],
+      )!,
       offsetMinutes: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}offset_minutes'],
@@ -12913,6 +13892,7 @@ class ScheduleReminder extends DataClass
     implements Insertable<ScheduleReminder> {
   final String id;
   final String scheduleItemId;
+  final String reminderType;
   final int offsetMinutes;
   final bool isEnabled;
   final DateTime createdAt;
@@ -12920,6 +13900,7 @@ class ScheduleReminder extends DataClass
   const ScheduleReminder({
     required this.id,
     required this.scheduleItemId,
+    required this.reminderType,
     required this.offsetMinutes,
     required this.isEnabled,
     required this.createdAt,
@@ -12930,6 +13911,7 @@ class ScheduleReminder extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['schedule_item_id'] = Variable<String>(scheduleItemId);
+    map['reminder_type'] = Variable<String>(reminderType);
     map['offset_minutes'] = Variable<int>(offsetMinutes);
     map['is_enabled'] = Variable<bool>(isEnabled);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -12941,6 +13923,7 @@ class ScheduleReminder extends DataClass
     return ScheduleRemindersCompanion(
       id: Value(id),
       scheduleItemId: Value(scheduleItemId),
+      reminderType: Value(reminderType),
       offsetMinutes: Value(offsetMinutes),
       isEnabled: Value(isEnabled),
       createdAt: Value(createdAt),
@@ -12956,6 +13939,7 @@ class ScheduleReminder extends DataClass
     return ScheduleReminder(
       id: serializer.fromJson<String>(json['id']),
       scheduleItemId: serializer.fromJson<String>(json['scheduleItemId']),
+      reminderType: serializer.fromJson<String>(json['reminderType']),
       offsetMinutes: serializer.fromJson<int>(json['offsetMinutes']),
       isEnabled: serializer.fromJson<bool>(json['isEnabled']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -12968,6 +13952,7 @@ class ScheduleReminder extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'scheduleItemId': serializer.toJson<String>(scheduleItemId),
+      'reminderType': serializer.toJson<String>(reminderType),
       'offsetMinutes': serializer.toJson<int>(offsetMinutes),
       'isEnabled': serializer.toJson<bool>(isEnabled),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -12978,6 +13963,7 @@ class ScheduleReminder extends DataClass
   ScheduleReminder copyWith({
     String? id,
     String? scheduleItemId,
+    String? reminderType,
     int? offsetMinutes,
     bool? isEnabled,
     DateTime? createdAt,
@@ -12985,6 +13971,7 @@ class ScheduleReminder extends DataClass
   }) => ScheduleReminder(
     id: id ?? this.id,
     scheduleItemId: scheduleItemId ?? this.scheduleItemId,
+    reminderType: reminderType ?? this.reminderType,
     offsetMinutes: offsetMinutes ?? this.offsetMinutes,
     isEnabled: isEnabled ?? this.isEnabled,
     createdAt: createdAt ?? this.createdAt,
@@ -12996,6 +13983,9 @@ class ScheduleReminder extends DataClass
       scheduleItemId: data.scheduleItemId.present
           ? data.scheduleItemId.value
           : this.scheduleItemId,
+      reminderType: data.reminderType.present
+          ? data.reminderType.value
+          : this.reminderType,
       offsetMinutes: data.offsetMinutes.present
           ? data.offsetMinutes.value
           : this.offsetMinutes,
@@ -13010,6 +14000,7 @@ class ScheduleReminder extends DataClass
     return (StringBuffer('ScheduleReminder(')
           ..write('id: $id, ')
           ..write('scheduleItemId: $scheduleItemId, ')
+          ..write('reminderType: $reminderType, ')
           ..write('offsetMinutes: $offsetMinutes, ')
           ..write('isEnabled: $isEnabled, ')
           ..write('createdAt: $createdAt, ')
@@ -13022,6 +14013,7 @@ class ScheduleReminder extends DataClass
   int get hashCode => Object.hash(
     id,
     scheduleItemId,
+    reminderType,
     offsetMinutes,
     isEnabled,
     createdAt,
@@ -13033,6 +14025,7 @@ class ScheduleReminder extends DataClass
       (other is ScheduleReminder &&
           other.id == this.id &&
           other.scheduleItemId == this.scheduleItemId &&
+          other.reminderType == this.reminderType &&
           other.offsetMinutes == this.offsetMinutes &&
           other.isEnabled == this.isEnabled &&
           other.createdAt == this.createdAt &&
@@ -13042,6 +14035,7 @@ class ScheduleReminder extends DataClass
 class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
   final Value<String> id;
   final Value<String> scheduleItemId;
+  final Value<String> reminderType;
   final Value<int> offsetMinutes;
   final Value<bool> isEnabled;
   final Value<DateTime> createdAt;
@@ -13050,6 +14044,7 @@ class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
   const ScheduleRemindersCompanion({
     this.id = const Value.absent(),
     this.scheduleItemId = const Value.absent(),
+    this.reminderType = const Value.absent(),
     this.offsetMinutes = const Value.absent(),
     this.isEnabled = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -13059,6 +14054,7 @@ class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
   ScheduleRemindersCompanion.insert({
     required String id,
     required String scheduleItemId,
+    this.reminderType = const Value.absent(),
     required int offsetMinutes,
     required bool isEnabled,
     required DateTime createdAt,
@@ -13073,6 +14069,7 @@ class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
   static Insertable<ScheduleReminder> custom({
     Expression<String>? id,
     Expression<String>? scheduleItemId,
+    Expression<String>? reminderType,
     Expression<int>? offsetMinutes,
     Expression<bool>? isEnabled,
     Expression<DateTime>? createdAt,
@@ -13082,6 +14079,7 @@ class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (scheduleItemId != null) 'schedule_item_id': scheduleItemId,
+      if (reminderType != null) 'reminder_type': reminderType,
       if (offsetMinutes != null) 'offset_minutes': offsetMinutes,
       if (isEnabled != null) 'is_enabled': isEnabled,
       if (createdAt != null) 'created_at': createdAt,
@@ -13093,6 +14091,7 @@ class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
   ScheduleRemindersCompanion copyWith({
     Value<String>? id,
     Value<String>? scheduleItemId,
+    Value<String>? reminderType,
     Value<int>? offsetMinutes,
     Value<bool>? isEnabled,
     Value<DateTime>? createdAt,
@@ -13102,6 +14101,7 @@ class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
     return ScheduleRemindersCompanion(
       id: id ?? this.id,
       scheduleItemId: scheduleItemId ?? this.scheduleItemId,
+      reminderType: reminderType ?? this.reminderType,
       offsetMinutes: offsetMinutes ?? this.offsetMinutes,
       isEnabled: isEnabled ?? this.isEnabled,
       createdAt: createdAt ?? this.createdAt,
@@ -13118,6 +14118,9 @@ class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
     }
     if (scheduleItemId.present) {
       map['schedule_item_id'] = Variable<String>(scheduleItemId.value);
+    }
+    if (reminderType.present) {
+      map['reminder_type'] = Variable<String>(reminderType.value);
     }
     if (offsetMinutes.present) {
       map['offset_minutes'] = Variable<int>(offsetMinutes.value);
@@ -13142,6 +14145,7 @@ class ScheduleRemindersCompanion extends UpdateCompanion<ScheduleReminder> {
     return (StringBuffer('ScheduleRemindersCompanion(')
           ..write('id: $id, ')
           ..write('scheduleItemId: $scheduleItemId, ')
+          ..write('reminderType: $reminderType, ')
           ..write('offsetMinutes: $offsetMinutes, ')
           ..write('isEnabled: $isEnabled, ')
           ..write('createdAt: $createdAt, ')
@@ -14386,6 +15390,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $ChatDraftsTable chatDrafts = $ChatDraftsTable(this);
+  late final $NetWorthInitializationsTable netWorthInitializations =
+      $NetWorthInitializationsTable(this);
+  late final $NetWorthAdjustmentsTable netWorthAdjustments =
+      $NetWorthAdjustmentsTable(this);
   late final $ScheduleCategoriesTable scheduleCategories =
       $ScheduleCategoriesTable(this);
   late final $ScheduleItemsTable scheduleItems = $ScheduleItemsTable(this);
@@ -14467,9 +15475,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_financial_transactions_period_reimburse',
     'CREATE INDEX idx_financial_transactions_period_reimburse ON financial_transactions (financial_period_id, is_reimburse)',
   );
+  late final Index idxFinancialTransactionsDateTypeCategory = Index(
+    'idx_financial_transactions_date_type_category',
+    'CREATE INDEX idx_financial_transactions_date_type_category ON financial_transactions (transaction_date, type, category_id)',
+  );
   late final Index idxChatDraftsUpdated = Index(
     'idx_chat_drafts_updated',
     'CREATE INDEX idx_chat_drafts_updated ON chat_drafts (updated_at)',
+  );
+  late final Index idxNetWorthAdjustmentsDate = Index(
+    'idx_net_worth_adjustments_date',
+    'CREATE INDEX idx_net_worth_adjustments_date ON net_worth_adjustments (adjustment_date)',
   );
   late final Index idxScheduleCategoriesActive = Index(
     'idx_schedule_categories_active',
@@ -14521,6 +15537,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     financialTransactions,
     financeSettings,
     chatDrafts,
+    netWorthInitializations,
+    netWorthAdjustments,
     scheduleCategories,
     scheduleItems,
     scheduleReminders,
@@ -14544,7 +15562,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxFinancialTransactionsPeriodTypeDate,
     idxFinancialTransactionsCategory,
     idxFinancialTransactionsPeriodReimburse,
+    idxFinancialTransactionsDateTypeCategory,
     idxChatDraftsUpdated,
+    idxNetWorthAdjustmentsDate,
     idxScheduleCategoriesActive,
     idxScheduleItemsTimeStatus,
     idxScheduleItemsDueStatus,
@@ -21608,6 +22628,525 @@ typedef $$ChatDraftsTableProcessedTableManager =
       ChatDraft,
       PrefetchHooks Function()
     >;
+typedef $$NetWorthInitializationsTableCreateCompanionBuilder =
+    NetWorthInitializationsCompanion Function({
+      required String id,
+      required int initialAmount,
+      required DateTime initializationDate,
+      Value<String?> notes,
+      Value<String> currencyCode,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$NetWorthInitializationsTableUpdateCompanionBuilder =
+    NetWorthInitializationsCompanion Function({
+      Value<String> id,
+      Value<int> initialAmount,
+      Value<DateTime> initializationDate,
+      Value<String?> notes,
+      Value<String> currencyCode,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$NetWorthInitializationsTableFilterComposer
+    extends Composer<_$AppDatabase, $NetWorthInitializationsTable> {
+  $$NetWorthInitializationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get initialAmount => $composableBuilder(
+    column: $table.initialAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get initializationDate => $composableBuilder(
+    column: $table.initializationDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$NetWorthInitializationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $NetWorthInitializationsTable> {
+  $$NetWorthInitializationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get initialAmount => $composableBuilder(
+    column: $table.initialAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get initializationDate => $composableBuilder(
+    column: $table.initializationDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$NetWorthInitializationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NetWorthInitializationsTable> {
+  $$NetWorthInitializationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get initialAmount => $composableBuilder(
+    column: $table.initialAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get initializationDate => $composableBuilder(
+    column: $table.initializationDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$NetWorthInitializationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NetWorthInitializationsTable,
+          NetWorthInitialization,
+          $$NetWorthInitializationsTableFilterComposer,
+          $$NetWorthInitializationsTableOrderingComposer,
+          $$NetWorthInitializationsTableAnnotationComposer,
+          $$NetWorthInitializationsTableCreateCompanionBuilder,
+          $$NetWorthInitializationsTableUpdateCompanionBuilder,
+          (
+            NetWorthInitialization,
+            BaseReferences<
+              _$AppDatabase,
+              $NetWorthInitializationsTable,
+              NetWorthInitialization
+            >,
+          ),
+          NetWorthInitialization,
+          PrefetchHooks Function()
+        > {
+  $$NetWorthInitializationsTableTableManager(
+    _$AppDatabase db,
+    $NetWorthInitializationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NetWorthInitializationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$NetWorthInitializationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$NetWorthInitializationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<int> initialAmount = const Value.absent(),
+                Value<DateTime> initializationDate = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NetWorthInitializationsCompanion(
+                id: id,
+                initialAmount: initialAmount,
+                initializationDate: initializationDate,
+                notes: notes,
+                currencyCode: currencyCode,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required int initialAmount,
+                required DateTime initializationDate,
+                Value<String?> notes = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => NetWorthInitializationsCompanion.insert(
+                id: id,
+                initialAmount: initialAmount,
+                initializationDate: initializationDate,
+                notes: notes,
+                currencyCode: currencyCode,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$NetWorthInitializationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NetWorthInitializationsTable,
+      NetWorthInitialization,
+      $$NetWorthInitializationsTableFilterComposer,
+      $$NetWorthInitializationsTableOrderingComposer,
+      $$NetWorthInitializationsTableAnnotationComposer,
+      $$NetWorthInitializationsTableCreateCompanionBuilder,
+      $$NetWorthInitializationsTableUpdateCompanionBuilder,
+      (
+        NetWorthInitialization,
+        BaseReferences<
+          _$AppDatabase,
+          $NetWorthInitializationsTable,
+          NetWorthInitialization
+        >,
+      ),
+      NetWorthInitialization,
+      PrefetchHooks Function()
+    >;
+typedef $$NetWorthAdjustmentsTableCreateCompanionBuilder =
+    NetWorthAdjustmentsCompanion Function({
+      required String id,
+      required String name,
+      required int amount,
+      required DateTime adjustmentDate,
+      Value<String?> notes,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$NetWorthAdjustmentsTableUpdateCompanionBuilder =
+    NetWorthAdjustmentsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<int> amount,
+      Value<DateTime> adjustmentDate,
+      Value<String?> notes,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$NetWorthAdjustmentsTableFilterComposer
+    extends Composer<_$AppDatabase, $NetWorthAdjustmentsTable> {
+  $$NetWorthAdjustmentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get adjustmentDate => $composableBuilder(
+    column: $table.adjustmentDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$NetWorthAdjustmentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $NetWorthAdjustmentsTable> {
+  $$NetWorthAdjustmentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get adjustmentDate => $composableBuilder(
+    column: $table.adjustmentDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$NetWorthAdjustmentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NetWorthAdjustmentsTable> {
+  $$NetWorthAdjustmentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get adjustmentDate => $composableBuilder(
+    column: $table.adjustmentDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$NetWorthAdjustmentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NetWorthAdjustmentsTable,
+          NetWorthAdjustment,
+          $$NetWorthAdjustmentsTableFilterComposer,
+          $$NetWorthAdjustmentsTableOrderingComposer,
+          $$NetWorthAdjustmentsTableAnnotationComposer,
+          $$NetWorthAdjustmentsTableCreateCompanionBuilder,
+          $$NetWorthAdjustmentsTableUpdateCompanionBuilder,
+          (
+            NetWorthAdjustment,
+            BaseReferences<
+              _$AppDatabase,
+              $NetWorthAdjustmentsTable,
+              NetWorthAdjustment
+            >,
+          ),
+          NetWorthAdjustment,
+          PrefetchHooks Function()
+        > {
+  $$NetWorthAdjustmentsTableTableManager(
+    _$AppDatabase db,
+    $NetWorthAdjustmentsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NetWorthAdjustmentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NetWorthAdjustmentsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$NetWorthAdjustmentsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> amount = const Value.absent(),
+                Value<DateTime> adjustmentDate = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NetWorthAdjustmentsCompanion(
+                id: id,
+                name: name,
+                amount: amount,
+                adjustmentDate: adjustmentDate,
+                notes: notes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required int amount,
+                required DateTime adjustmentDate,
+                Value<String?> notes = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => NetWorthAdjustmentsCompanion.insert(
+                id: id,
+                name: name,
+                amount: amount,
+                adjustmentDate: adjustmentDate,
+                notes: notes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$NetWorthAdjustmentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NetWorthAdjustmentsTable,
+      NetWorthAdjustment,
+      $$NetWorthAdjustmentsTableFilterComposer,
+      $$NetWorthAdjustmentsTableOrderingComposer,
+      $$NetWorthAdjustmentsTableAnnotationComposer,
+      $$NetWorthAdjustmentsTableCreateCompanionBuilder,
+      $$NetWorthAdjustmentsTableUpdateCompanionBuilder,
+      (
+        NetWorthAdjustment,
+        BaseReferences<
+          _$AppDatabase,
+          $NetWorthAdjustmentsTable,
+          NetWorthAdjustment
+        >,
+      ),
+      NetWorthAdjustment,
+      PrefetchHooks Function()
+    >;
 typedef $$ScheduleCategoriesTableCreateCompanionBuilder =
     ScheduleCategoriesCompanion Function({
       required String id,
@@ -22913,6 +24452,7 @@ typedef $$ScheduleRemindersTableCreateCompanionBuilder =
     ScheduleRemindersCompanion Function({
       required String id,
       required String scheduleItemId,
+      Value<String> reminderType,
       required int offsetMinutes,
       required bool isEnabled,
       required DateTime createdAt,
@@ -22923,6 +24463,7 @@ typedef $$ScheduleRemindersTableUpdateCompanionBuilder =
     ScheduleRemindersCompanion Function({
       Value<String> id,
       Value<String> scheduleItemId,
+      Value<String> reminderType,
       Value<int> offsetMinutes,
       Value<bool> isEnabled,
       Value<DateTime> createdAt,
@@ -23000,6 +24541,11 @@ class $$ScheduleRemindersTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reminderType => $composableBuilder(
+    column: $table.reminderType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23090,6 +24636,11 @@ class $$ScheduleRemindersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get reminderType => $composableBuilder(
+    column: $table.reminderType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get offsetMinutes => $composableBuilder(
     column: $table.offsetMinutes,
     builder: (column) => ColumnOrderings(column),
@@ -23145,6 +24696,11 @@ class $$ScheduleRemindersTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get reminderType => $composableBuilder(
+    column: $table.reminderType,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get offsetMinutes => $composableBuilder(
     column: $table.offsetMinutes,
@@ -23251,6 +24807,7 @@ class $$ScheduleRemindersTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> scheduleItemId = const Value.absent(),
+                Value<String> reminderType = const Value.absent(),
                 Value<int> offsetMinutes = const Value.absent(),
                 Value<bool> isEnabled = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -23259,6 +24816,7 @@ class $$ScheduleRemindersTableTableManager
               }) => ScheduleRemindersCompanion(
                 id: id,
                 scheduleItemId: scheduleItemId,
+                reminderType: reminderType,
                 offsetMinutes: offsetMinutes,
                 isEnabled: isEnabled,
                 createdAt: createdAt,
@@ -23269,6 +24827,7 @@ class $$ScheduleRemindersTableTableManager
               ({
                 required String id,
                 required String scheduleItemId,
+                Value<String> reminderType = const Value.absent(),
                 required int offsetMinutes,
                 required bool isEnabled,
                 required DateTime createdAt,
@@ -23277,6 +24836,7 @@ class $$ScheduleRemindersTableTableManager
               }) => ScheduleRemindersCompanion.insert(
                 id: id,
                 scheduleItemId: scheduleItemId,
+                reminderType: reminderType,
                 offsetMinutes: offsetMinutes,
                 isEnabled: isEnabled,
                 createdAt: createdAt,
@@ -24243,6 +25803,13 @@ class $AppDatabaseManager {
       $$FinanceSettingsTableTableManager(_db, _db.financeSettings);
   $$ChatDraftsTableTableManager get chatDrafts =>
       $$ChatDraftsTableTableManager(_db, _db.chatDrafts);
+  $$NetWorthInitializationsTableTableManager get netWorthInitializations =>
+      $$NetWorthInitializationsTableTableManager(
+        _db,
+        _db.netWorthInitializations,
+      );
+  $$NetWorthAdjustmentsTableTableManager get netWorthAdjustments =>
+      $$NetWorthAdjustmentsTableTableManager(_db, _db.netWorthAdjustments);
   $$ScheduleCategoriesTableTableManager get scheduleCategories =>
       $$ScheduleCategoriesTableTableManager(_db, _db.scheduleCategories);
   $$ScheduleItemsTableTableManager get scheduleItems =>

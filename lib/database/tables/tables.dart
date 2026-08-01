@@ -382,6 +382,10 @@ class FinancialPeriods extends Table {
   name: 'idx_financial_transactions_period_reimburse',
   columns: {#financialPeriodId, #isReimburse},
 )
+@TableIndex(
+  name: 'idx_financial_transactions_date_type_category',
+  columns: {#transactionDate, #type, #categoryId},
+)
 class FinancialTransactions extends Table {
   @override
   String get tableName => 'financial_transactions';
@@ -460,6 +464,48 @@ class ChatDrafts extends Table {
   List<String> get customConstraints => [
     "CHECK (selected_mode IN ('automatic', 'nutrition', 'expense', 'income', 'schedule'))",
   ];
+}
+
+class NetWorthInitializations extends Table {
+  @override
+  String get tableName => 'net_worth_initialization';
+
+  TextColumn get id =>
+      text().customConstraint("NOT NULL CHECK (id = 'local_net_worth')")();
+  IntColumn get initialAmount => integer().named('initial_amount')();
+  DateTimeColumn get initializationDate =>
+      dateTime().named('initialization_date')();
+  TextColumn get notes => text().nullable()();
+  TextColumn get currencyCode =>
+      text().named('currency_code').withDefault(const Constant('IDR'))();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => ["CHECK (currency_code = 'IDR')"];
+}
+
+@TableIndex(name: 'idx_net_worth_adjustments_date', columns: {#adjustmentDate})
+class NetWorthAdjustments extends Table {
+  @override
+  String get tableName => 'net_worth_adjustments';
+
+  TextColumn get id => text()();
+  TextColumn get name => text().withLength(min: 1, max: 200)();
+  IntColumn get amount => integer()();
+  DateTimeColumn get adjustmentDate => dateTime().named('adjustment_date')();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => ['CHECK (amount <> 0)'];
 }
 
 @TableIndex(name: 'idx_schedule_categories_active', columns: {#isActive, #name})
@@ -558,6 +604,9 @@ class ScheduleReminders extends Table {
   TextColumn get scheduleItemId => text()
       .named('schedule_item_id')
       .references(ScheduleItems, #id, onDelete: KeyAction.cascade)();
+  TextColumn get reminderType => text()
+      .named('reminder_type')
+      .withDefault(const Constant('minutes_before'))();
   IntColumn get offsetMinutes => integer().named('offset_minutes')();
   BoolColumn get isEnabled => boolean().named('is_enabled')();
   DateTimeColumn get createdAt => dateTime().named('created_at')();
@@ -565,6 +614,11 @@ class ScheduleReminders extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    "CHECK (reminder_type IN ('day_before', 'minutes_before'))",
+  ];
 }
 
 @TableIndex(

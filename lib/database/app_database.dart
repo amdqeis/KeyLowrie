@@ -29,6 +29,8 @@ part 'app_database.g.dart';
     FinancialTransactions,
     FinanceSettings,
     ChatDrafts,
+    NetWorthInitializations,
+    NetWorthAdjustments,
     ScheduleCategories,
     ScheduleItems,
     ScheduleReminders,
@@ -79,6 +81,25 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createIndex(idxScheduleRemindersItemEnabled);
         await migrator.createIndex(idxScheduleOccurrencesItemTime);
         await migrator.createIndex(idxScheduleOccurrencesSync);
+      }
+      if (from < 4) {
+        await migrator.createTable(netWorthInitializations);
+        await migrator.createTable(netWorthAdjustments);
+        if (from >= 3) {
+          await migrator.addColumn(
+            scheduleReminders,
+            scheduleReminders.reminderType,
+          );
+        }
+        await customStatement(
+          "UPDATE schedule_reminders SET reminder_type = "
+          "CASE WHEN offset_minutes = 1440 THEN 'day_before' ELSE 'minutes_before' END",
+        );
+        await migrator.createIndex(idxFinancialTransactionsDateTypeCategory);
+        await migrator.createIndex(idxNetWorthAdjustmentsDate);
+        if (from >= 3) {
+          await migrator.alterTable(TableMigration(scheduleReminders));
+        }
       }
     },
     beforeOpen: (details) async {

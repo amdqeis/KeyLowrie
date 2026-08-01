@@ -134,3 +134,14 @@
 - `DriftPendingRequestRepository` sekarang menargetkan pesan user melalui primary key `id == requestId` saat menandai preview atau kegagalan. Pesan asisten tidak lagi ikut berubah menjadi failed.
 - Regression test mencakup retry setelah pesan asisten terbentuk dan isolasi status failure antara pesan user/asisten.
 - Validasi: focused repository test 2/2 lulus dan `flutter analyze` bersih. Live Gemini dan physical-device flow tidak dijalankan.
+
+## 2026-08-01 — Net Worth, Analitik Keuangan, dan Dual Reminder
+
+- Implementasi dilakukan sekaligus end-to-end sesuai persetujuan, tetap offline-first, tanpa backend, serta tanpa Gemini untuk net worth maupun chart.
+- Migration Drift v3→v4 disetujui dan bersifat additive: dua tabel net worth, indeks analytics/adjustment, serta `reminder_type`. Migration test v1/v2/v3→v4 membuktikan nutrition, finance, chat, scheduler, dan reminder lama tetap utuh.
+- Net worth memakai singleton ID `local_net_worth`, integer IDR, SQL aggregate initial + income - expense + adjustment, empty state sebelum inisialisasi, edit dengan preview dampak, dan CRUD adjustment.
+- Analytics tersedia di `/finance/analytics` dengan filter periode/tipe, summary, top category, pie/bar, line trend harian/mingguan/bulanan, comparison bar, tooltip/touch, dan drill-down ke riwayat. `fl_chart 1.2.0` ditambahkan sebagai dependency presentasi.
+- Dual reminder memakai dua row per jadwal: `day_before` 1440 menit dan `minutes_before` 15/30 menit dengan toggle independen. All-day/deadline tanggal-only dijadwalkan pukul 09.00 lokal; task tanpa deadline menyimpan reminder disabled; reminder masa lalu dilewati dan UI menerima hasil rekonsiliasi.
+- Notification occurrence tetap menyimpan platform ID unik. Edit melakukan cancel lalu reschedule; delete/complete membatalkan seluruh occurrence; snooze 10 menit dipertahankan; action `open` membuka jadwal dan `reschedule` legacy tetap kompatibel.
+- Perubahan lokal pengguna pada `chat_screen.dart` dan banner upcoming scheduler dipertahankan. Codegen/snapshot/helper schema v4 selesai, `flutter analyze` bersih, dan full suite 163 test lulus.
+- Belum diverifikasi pada perangkat fisik: notification saat app ditutup, reboot, action OS, batas pending iOS, perubahan timezone perangkat, build/install APK, dan release behavior.

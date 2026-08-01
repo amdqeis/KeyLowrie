@@ -13,6 +13,7 @@ import 'package:keyspace/features/food_chat/data/gemini_dio_client.dart';
 import 'package:keyspace/features/food_chat/domain/gemini_contracts.dart';
 import 'package:keyspace/features/food_chat/domain/gemini_failover_service.dart';
 import 'package:keyspace/features/food_log/data/food_log_repository.dart';
+import 'package:keyspace/features/net_worth/data/net_worth_repository.dart';
 import 'package:keyspace/features/reminders/application/reminder_coordinator.dart';
 import 'package:keyspace/features/reminders/data/local_notification_scheduler.dart';
 import 'package:keyspace/features/reminders/data/reminder_repository.dart';
@@ -56,6 +57,10 @@ final foodLogRepositoryProvider = Provider<FoodLogRepository>(
 
 final financeRepositoryProvider = Provider<FinanceRepository>(
   (ref) => FinanceRepository(ref.watch(databaseProvider)),
+);
+
+final netWorthRepositoryProvider = Provider<DriftNetWorthRepository>(
+  (ref) => DriftNetWorthRepository(ref.watch(databaseProvider)),
 );
 
 final chatDraftRepositoryProvider = Provider<ChatDraftRepository>(

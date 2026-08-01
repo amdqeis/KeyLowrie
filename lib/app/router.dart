@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:keyspace/app/theme/keyspace_theme.dart';
 import 'package:keyspace/features/api_key_pool/presentation/api_key_pool_screen.dart';
 import 'package:keyspace/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:keyspace/features/finance/presentation/finance_analytics_screen.dart';
 import 'package:keyspace/features/finance/presentation/finance_dashboard_screen.dart';
 import 'package:keyspace/features/finance/presentation/finance_history_screen.dart';
 import 'package:keyspace/features/finance/presentation/finance_settings_screen.dart';
@@ -11,6 +12,7 @@ import 'package:keyspace/features/finance/presentation/finance_transaction_scree
 import 'package:keyspace/features/food_chat/presentation/chat_screen.dart';
 import 'package:keyspace/features/food_log/presentation/food_log_editor_screen.dart';
 import 'package:keyspace/features/history/presentation/history_screens.dart';
+import 'package:keyspace/features/net_worth/presentation/net_worth_screen.dart';
 import 'package:keyspace/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:keyspace/features/scheduler/domain/schedule_models.dart';
 import 'package:keyspace/features/scheduler/presentation/scheduler_screens.dart';
@@ -31,6 +33,8 @@ abstract final class AppRoutes {
   static const finance = '/finance';
   static const financeHistory = '/finance/history';
   static const financeTransaction = '/finance/transaction/:id';
+  static const financeAnalytics = '/finance/analytics';
+  static const financeNetWorth = '/finance/net-worth';
   static const settings = '/settings';
   static const apiKeys = '/settings/api-keys';
   static const reminders = '/settings/reminders';
@@ -57,6 +61,8 @@ abstract final class AppRoutes {
     finance,
     financeHistory,
     financeTransaction,
+    financeAnalytics,
+    financeNetWorth,
     settings,
     apiKeys,
     reminders,
@@ -147,7 +153,25 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.onboarding}) {
                 routes: [
                   GoRoute(
                     path: 'history',
-                    builder: (context, state) => const FinanceHistoryScreen(),
+                    builder: (context, state) => FinanceHistoryScreen(
+                      initialStartDate: DateTime.tryParse(
+                        state.uri.queryParameters['start'] ?? '',
+                      ),
+                      initialEndDate: DateTime.tryParse(
+                        state.uri.queryParameters['end'] ?? '',
+                      ),
+                      initialType: state.uri.queryParameters['type'],
+                      initialCategoryId:
+                          state.uri.queryParameters['categoryId'],
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'analytics',
+                    builder: (context, state) => const FinanceAnalyticsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'net-worth',
+                    builder: (context, state) => const NetWorthScreen(),
                   ),
                   GoRoute(
                     path: 'transaction/:id',

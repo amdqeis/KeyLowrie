@@ -1555,6 +1555,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _preview = null;
       _financialPreview = null;
       _financialConfidence = null;
+      _schedulePreview = null;
       _status = message;
       _requestId = null;
       _foodDraftId = null;

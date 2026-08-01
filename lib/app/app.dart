@@ -99,7 +99,11 @@ class KeySpaceApp extends ConsumerWidget {
       await ref.read(schedulerReminderCoordinatorProvider).snooze(id);
       return;
     }
-    appRouter.go(AppRoutes.schedulerEditPath(id));
+    if (action == 'reschedule') {
+      appRouter.go(AppRoutes.schedulerEditPath(id));
+    } else {
+      appRouter.go(AppRoutes.schedulerDetailPath(id));
+    }
   }
 
   ThemeMode _themeMode(String value) => switch (value) {

@@ -39,7 +39,12 @@ void main() {
     final reminders = await database.select(database.scheduleReminders).get();
     expect(saved?.title, 'Meeting');
     expect(saved?.startAtUtc?.toUtc(), DateTime.utc(2026, 7, 29, 4));
-    expect(reminders.single.offsetMinutes, 15);
+    expect(reminders, hasLength(2));
+    expect(reminders.map((row) => row.reminderType).toSet(), {
+      'day_before',
+      'minutes_before',
+    });
+    expect(reminders.every((row) => row.isEnabled), isTrue);
   });
 
   test('half-open conflict allows adjacent event', () async {
@@ -76,24 +81,20 @@ void main() {
     expect(conflicts.single.title, 'Meeting');
   });
 
-  test('task reminder requires a due date', () {
-    expect(
-      () => repository.saveDraft(
-        const ScheduleDraft(
-          itemType: ScheduleItemType.task,
-          title: 'Tanpa tanggal',
-          categoryId: 'schedule-pribadi',
-          categoryName: 'Pribadi',
-          timezone: 'Asia/Jakarta',
-        ),
-      ),
-      throwsA(
-        isA<ScheduleValidationException>().having(
-          (error) => error.reason,
-          'reason',
-          'task_reminder_without_due_date',
-        ),
+  test('task without due date stores both reminders disabled', () async {
+    final id = await repository.saveDraft(
+      const ScheduleDraft(
+        itemType: ScheduleItemType.task,
+        title: 'Tanpa tanggal',
+        categoryId: 'schedule-pribadi',
+        categoryName: 'Pribadi',
+        timezone: 'Asia/Jakarta',
       ),
     );
+    final rows = await (database.select(
+      database.scheduleReminders,
+    )..where((row) => row.scheduleItemId.equals(id))).get();
+    expect(rows, hasLength(2));
+    expect(rows.every((row) => !row.isEnabled), isTrue);
   });
 }
