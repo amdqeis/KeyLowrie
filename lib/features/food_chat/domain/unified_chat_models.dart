@@ -67,7 +67,7 @@ class UnifiedChatDraft {
     required this.financialItems,
     this.clarificationQuestion,
     this.nutrition,
-    this.schedule,
+    this.schedules = const [],
   });
 
   final ChatDomain detectedDomain;
@@ -76,7 +76,7 @@ class UnifiedChatDraft {
   final String? clarificationQuestion;
   final List<ParsedFinancialItem> financialItems;
   final ParsedFoodDraft? nutrition;
-  final ScheduleDraft? schedule;
+  final List<ScheduleDraft> schedules;
 }
 
 sealed class ParseChatResult {

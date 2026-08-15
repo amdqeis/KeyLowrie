@@ -898,6 +898,10 @@ Seluruh operasi lokal harus tetap tersedia tanpa internet.
 
 #### NFR-14 — Input Preservation
 Draft input tidak boleh hilang akibat timeout, failover, perpindahan layar, atau app pause normal.
+Jika request Gemini gagal atau dibatalkan, baris `chat_messages` untuk percobaan
+tersebut dihapus, tetapi teks tetap dipertahankan melalui `chat_drafts`.
+Retry dengan teks yang sama memakai identitas request dan tanggal catatan yang
+sama; perubahan teks memulai request baru dengan waktu lokal saat ini.
 
 #### NFR-15 — Idempotency Lokal
 Penyimpanan hasil AI harus menggunakan local request id agar retry UI tidak menghasilkan duplikasi tanpa peringatan.
@@ -1076,7 +1080,7 @@ Aturan: target untuk suatu tanggal adalah record terbaru dengan `effective_from_
 | session_id | TEXT | FK, indexed, cascade | Parent sesi. |
 | role | TEXT | not null | user/assistant/system_local. |
 | content_text | TEXT | not null | Teks yang ditampilkan. |
-| status | TEXT | indexed, not null | pending/sent/failed/complete. |
+| status | TEXT | indexed, not null | pending/sent/complete; `failed` hanya kompatibilitas data lama dan dibersihkan saat startup. |
 | food_log_id | TEXT | nullable, FK | Referensi hasil. |
 | local_request_id | TEXT | nullable, indexed | Korelasi request. |
 | error_category | TEXT | nullable | Kategori gagal tersanitasi. |
@@ -1352,12 +1356,13 @@ function parseFood(input):
     savePendingChatMessage(input, requestId)
 
     if offline:
-        markMessageFailed(OFFLINE)
-        return OfflineFailure(inputPreserved=true)
+        discardPendingChatMessage(requestId)
+        return OfflineFailure(inputPreservedInChatDraft=true)
 
     candidates = keyPool.getOrderedCandidates(startFrom=activeKeyId)
 
     if candidates.isEmpty:
+        discardPendingChatMessage(requestId)
         return AllKeysFailed(showAddKey=true)
 
     attempted = []
@@ -1396,14 +1401,18 @@ function parseFood(input):
             continue
 
         if category is REQUEST_INVALID:
+            discardPendingChatMessage(requestId)
             return RequestFailure(inputPreserved=true)
 
         if category is SAFETY_BLOCK:
+            discardPendingChatMessage(requestId)
             return ContentNeedsRevision(inputPreserved=true)
 
         if category is OFFLINE:
+            discardPendingChatMessage(requestId)
             return OfflineFailure(inputPreserved=true)
 
+    discardPendingChatMessage(requestId)
     return AllKeysFailed(
         attemptedKeys=attempted,
         inputPreserved=true,

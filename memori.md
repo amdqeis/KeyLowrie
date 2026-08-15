@@ -145,3 +145,10 @@
 - Notification occurrence tetap menyimpan platform ID unik. Edit melakukan cancel lalu reschedule; delete/complete membatalkan seluruh occurrence; snooze 10 menit dipertahankan; action `open` membuka jadwal dan `reschedule` legacy tetap kompatibel.
 - Perubahan lokal pengguna pada `chat_screen.dart` dan banner upcoming scheduler dipertahankan. Codegen/snapshot/helper schema v4 selesai, `flutter analyze` bersih, dan full suite 163 test lulus.
 - Belum diverifikasi pada perangkat fisik: notification saat app ditutup, reboot, action OS, batas pending iOS, perubahan timezone perangkat, build/install APK, dan release behavior.
+
+## 2026-08-02 — Pemulihan Android debug build
+
+- Build gagal pada `:app:compileFlutterBuildDebug` karena `.dart_tool/package_config.json` masih menunjuk ke `/tmp/keyspace-pub-cache` yang sudah terhapus. Error package `flutter_riverpod`, `go_router`, `pdf`, dan error turunannya bukan regresi source code.
+- `flutter pub get` dijalankan memakai pub cache pengguna yang persisten sehingga metadata dependency kembali menunjuk ke `/home/key/.pub-cache`.
+- `flutter build apk --debug` kemudian selesai bersih dalam 84,1 detik dan menghasilkan `build/app/outputs/flutter-apk/app-debug.apk` berukuran 218.150.168 byte dengan SHA-256 `79a9ef982e23f5409889a1de8c79166bc0b542afebc0395b567fb7d8704a62a9`.
+- Build masih memberi peringatan non-blocking bahwa plugin `flutter_timezone`, `home_widget`, dan `speech_to_text` belum bermigrasi ke Kotlin built-in. Tidak ada upgrade dependency dilakukan dalam perbaikan ini.

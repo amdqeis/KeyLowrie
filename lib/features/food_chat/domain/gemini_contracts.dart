@@ -142,7 +142,11 @@ abstract interface class PendingRequestRepository {
     required String input,
     required DateTime createdAt,
   });
-  Future<void> markFailed(String requestId, GeminiFailureCategory category);
+  Future<void> discardFailedAttempt(
+    String requestId,
+    GeminiFailureCategory category,
+  );
+  Future<void> purgeInterruptedAttempts();
   Future<void> markPreviewReady(String requestId, ParsedFoodDraft draft);
   Future<void> markUnifiedPreviewReady(
     String requestId,

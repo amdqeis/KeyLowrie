@@ -146,6 +146,7 @@ final geminiFailoverServiceProvider = Provider<GeminiFailoverService>((ref) {
 final bootstrapProvider = FutureProvider<void>((ref) async {
   final settings = ref.watch(settingsRepositoryProvider);
   await settings.initialize();
+  await ref.watch(pendingRequestRepositoryProvider).purgeInterruptedAttempts();
   await ref
       .watch(foodLogRepositoryProvider)
       .purgeExpiredDeletes(DateTime.now());

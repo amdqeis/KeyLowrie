@@ -148,12 +148,15 @@ class FakePendingRequestRepository implements PendingRequestRepository {
   final Map<String, UnifiedChatDraft> unifiedPreviews = {};
 
   @override
-  Future<void> markFailed(
+  Future<void> discardFailedAttempt(
     String requestId,
     GeminiFailureCategory category,
   ) async {
     failures[requestId] = category;
   }
+
+  @override
+  Future<void> purgeInterruptedAttempts() async {}
 
   @override
   Future<void> markPreviewReady(String requestId, ParsedFoodDraft draft) async {

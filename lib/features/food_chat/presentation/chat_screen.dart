@@ -51,14 +51,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _composerFocus = FocusNode();
   final _scroll = ScrollController();
   late final VoiceInputController _voice;
-  var _consumedAt = DateTime.now();
+  late DateTime _consumedAt;
   var _mealType = 'lainnya';
   String? _requestId;
+  String? _failedInput;
   String? _foodDraftId;
   String? _chatDraftId;
   ParsedFoodDraft? _preview;
   List<FinancialReviewItem>? _financialPreview;
-  ScheduleDraft? _schedulePreview;
+  List<ScheduleDraft> _schedulePreviews = const [];
   double? _financialConfidence;
   List<FinancialReviewCategory> _reviewCategories = const [];
   ChatInputMode _selectedMode = ChatInputMode.automatic;
@@ -84,11 +85,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    _consumedAt = _nowLocal();
     _voice = VoiceInputController(
       service: ref.read(speechRecognitionServiceProvider),
       onTranscript: _applyVoiceTranscript,
     )..addListener(_handleVoiceState);
-    _composer.addListener(_scheduleDraftSave);
+    _composer.addListener(_onComposerChanged);
     _scroll.addListener(_onScrollChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _restoreLatestDraft());
   }
@@ -97,6 +99,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void dispose() {
     _draftTimer?.cancel();
     _cancellation?.cancel();
+    _composer.removeListener(_onComposerChanged);
     _scroll.removeListener(_onScrollChanged);
     _voice
       ..removeListener(_handleVoiceState)
@@ -257,7 +260,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ...values.map(_bubble),
                   if (_preview != null) _previewCard(),
                   if (_financialPreview != null) _financialReviewCard(),
-                  if (_schedulePreview != null) _scheduleReviewCard(),
+                  if (_schedulePreviews.isNotEmpty) _scheduleReviewCard(),
                 ],
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -716,32 +719,82 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _scheduleReviewCard() {
-    final draft = _schedulePreview!;
-    final when = draft.allDay
-        ? draft.localStartDate ?? draft.dueDateLocal ?? 'Tanpa tanggal'
-        : (draft.startAtUtc ?? draft.dueAtUtc)?.toLocal().toString() ??
-              'Tanpa waktu';
+    final drafts = _schedulePreviews;
     return BrutalCard(
       color: const Color(0xFFCDEAC0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'REVIEW JADWAL — TINJAU DULU',
-            style: TextStyle(fontWeight: FontWeight.w900),
-          ),
-          const SizedBox(height: 12),
           Text(
-            draft.title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            drafts.length == 1
+                ? 'REVIEW JADWAL — TINJAU DULU'
+                : 'REVIEW ${drafts.length} JADWAL — TINJAU DULU',
+            style: const TextStyle(fontWeight: FontWeight.w900),
           ),
-          Text('${draft.itemType.name.toUpperCase()} · $when'),
-          Text('${draft.categoryName} · ${draft.priority.name.toUpperCase()}'),
-          if (draft.assumptions.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text('ASUMSI\n${draft.assumptions.join('\n')}'),
-          ],
           const SizedBox(height: 12),
+          ...drafts.indexed.map((entry) {
+            final index = entry.$1;
+            final draft = entry.$2;
+            final when = draft.allDay
+                ? draft.localStartDate ?? draft.dueDateLocal ?? 'Tanpa tanggal'
+                : (draft.startAtUtc ?? draft.dueAtUtc)?.toLocal().toString() ??
+                      'Tanpa waktu';
+            return Container(
+              key: ValueKey('schedule-review-$index'),
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  width: 3,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          draft.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        key: ValueKey('schedule-edit-$index'),
+                        onPressed: () =>
+                            context.push(AppRoutes.schedulerNew, extra: draft),
+                        icon: const Icon(Icons.edit, size: 16),
+                        label: const Text('EDIT'),
+                        style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text('${draft.itemType.name.toUpperCase()} · $when'),
+                  Text(
+                    '${draft.categoryName} · ${draft.priority.name.toUpperCase()}',
+                  ),
+                  if (draft.assumptions.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'Asumsi: ${draft.assumptions.join(', ')}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }),
           Row(
             children: [
               Expanded(
@@ -750,7 +803,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   icon: Icons.close,
                   secondary: true,
                   onPressed: () => setState(() {
-                    _schedulePreview = null;
+                    _schedulePreviews = const [];
                     _status = 'Review dibatalkan — draft tetap tersimpan';
                   }),
                 ),
@@ -758,20 +811,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: BrutalButton(
-                  label: 'EDIT',
-                  icon: Icons.edit,
-                  secondary: true,
-                  onPressed: () =>
-                      context.push(AppRoutes.schedulerNew, extra: draft),
+                  label: 'SIMPAN SEMUA',
+                  icon: Icons.save,
+                  onPressed: _requesting ? null : _saveSchedulePreview,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          BrutalButton(
-            label: 'SIMPAN',
-            icon: Icons.save,
-            onPressed: _requesting ? null : _saveSchedulePreview,
           ),
         ],
       ),
@@ -1026,6 +1071,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
+  void _onComposerChanged() {
+    _scheduleDraftSave();
+    final failedInput = _failedInput;
+    if (failedInput == null || _composer.text.trim() == failedInput) return;
+
+    setState(() {
+      _failedInput = null;
+      _requestId = null;
+      _foodDraftId = null;
+      _consumedAt = _nowLocal();
+      _status = null;
+      _statusKind = null;
+    });
+  }
+
   void _scheduleDraftSave() {
     _draftTimer?.cancel();
     _draftTimer = Timer(
@@ -1096,6 +1156,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final finance = ref.read(financeRepositoryProvider);
     final failover = ref.read(geminiFailoverServiceProvider);
     _requestId ??= ref.read(requestIdProvider)();
+    _failedInput = null;
     _cancellation = RequestCancellation();
     setState(() {
       _requesting = true;
@@ -1104,9 +1165,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _preview = null;
       _financialPreview = null;
       _financialConfidence = null;
-      _schedulePreview = null;
+      _schedulePreviews = const [];
     });
     _AllKeysFailedAction? failureAction;
+    var geminiReturned = false;
     try {
       _draftTimer?.cancel();
       await _persistChatDraftNow();
@@ -1126,9 +1188,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
           )
           .toList(growable: false);
+      final now = _nowLocal();
       final parseContext = ChatParseContext(
         mode: _selectedMode,
-        localDate: DateTime.now(),
+        localDate: now,
         timezone: timezone,
         currencyCode: financeSettings.currencyCode,
         activeCategories: reviewCategories
@@ -1145,7 +1208,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         scheduleCategories: scheduleCategories
             .map((category) => category.name)
             .toList(growable: false),
-        currentDateTime: DateTime.now(),
+        currentDateTime: now,
       );
       final result = await failover.parseChat(
         input,
@@ -1153,6 +1216,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         requestId: _requestId,
         cancellation: _cancellation,
       );
+      geminiReturned = true;
       if (!mounted) return;
       if (result is ParseChatSuccess) {
         final draft = result.draft;
@@ -1187,10 +1251,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             _statusKind = null;
           });
         } else if (draft.detectedDomain == ChatDomain.schedule &&
-            draft.schedule != null) {
+            draft.schedules.isNotEmpty) {
           setState(() {
-            _schedulePreview = draft.schedule;
-            _status = 'Jadwal siap — tinjau sebelum simpan';
+            _schedulePreviews = draft.schedules;
+            _status = draft.schedules.length == 1
+                ? 'Jadwal siap — tinjau sebelum simpan'
+                : '${draft.schedules.length} jadwal siap — tinjau sebelum simpan';
             _statusKind = null;
           });
         } else {
@@ -1220,6 +1286,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       } else if (result is ParseChatAllKeysFailed) {
         setState(() {
+          _failedInput = input;
           _status =
               'Semua API key belum dapat digunakan — input tetap tersimpan';
           _statusKind = ParseChatFailureKind.technicalError;
@@ -1227,11 +1294,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         failureAction = await _showAllKeysFailed();
       } else if (result is ParseChatOffline) {
         setState(() {
+          _failedInput = input;
           _status = 'Tidak ada koneksi internet — input tetap tersimpan';
           _statusKind = ParseChatFailureKind.technicalError;
         });
       } else if (result is ParseChatContentNeedsRevision) {
         setState(() {
+          _failedInput = input;
           _status =
               'Input diblokir oleh filter keamanan Gemini.\n'
               'Coba ubah kalimat atau gunakan catat manual.';
@@ -1239,25 +1308,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         });
       } else if (result is ParseChatCancelled) {
         setState(() {
+          _failedInput = input;
           _status = 'Request dibatalkan — input tetap tersimpan';
           _statusKind = null;
         });
       } else if (result is ParseChatRequestFailure) {
         setState(() {
+          _failedInput = input;
           _status = _statusMessageForRequestFailure(result);
           _statusKind = result.kind;
         });
       } else {
         setState(() {
+          _failedInput = input;
           _status = 'Hasil belum dapat diproses — input tetap tersimpan';
           _statusKind = ParseChatFailureKind.technicalError;
         });
       }
     } on Object catch (error, stackTrace) {
+      if (!geminiReturned && _requestId != null) {
+        try {
+          await ref
+              .read(pendingRequestRepositoryProvider)
+              .discardFailedAttempt(_requestId!, GeminiFailureCategory.unknown);
+        } on Object {
+          // Best-effort cleanup; the editable chat draft remains authoritative.
+        }
+      }
       debugPrint('Gemini unified request failed: ${error.runtimeType}');
       debugPrintStack(stackTrace: stackTrace);
       if (mounted) {
         setState(() {
+          _failedInput = input;
           _status = 'Terjadi kesalahan tak terduga — input tetap tersimpan';
           _statusKind = ParseChatFailureKind.technicalError;
         });
@@ -1451,23 +1533,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _saveSchedulePreview() async {
-    final draft = _schedulePreview;
-    if (_requesting || draft == null) return;
+    final drafts = _schedulePreviews;
+    if (_requesting || drafts.isEmpty) return;
     setState(() {
       _requesting = true;
-      _status = 'Menyimpan jadwal dan menyiapkan reminder…';
+      _status = drafts.length == 1
+          ? 'Menyimpan jadwal dan menyiapkan reminder…'
+          : 'Menyimpan ${drafts.length} jadwal dan menyiapkan reminder…';
     });
     try {
-      final id = await ref
-          .read(schedulerRepositoryProvider)
-          .saveDraft(
-            draft,
-            source: 'gemini',
-            originalUserText: _composer.text.trim(),
-          );
-      await ref.read(schedulerReminderCoordinatorProvider).reconcileItem(id);
+      final schedulerRepo = ref.read(schedulerRepositoryProvider);
+      final coordinator = ref.read(schedulerReminderCoordinatorProvider);
+      final originalText = _composer.text.trim();
+      for (final draft in drafts) {
+        final id = await schedulerRepo.saveDraft(
+          draft,
+          source: 'gemini',
+          originalUserText: originalText,
+        );
+        await coordinator.reconcileItem(id);
+      }
       if (!mounted) return;
-      await _clearCompletedInput('Jadwal tersimpan');
+      await _clearCompletedInput(
+        drafts.length == 1
+            ? 'Jadwal tersimpan'
+            : '${drafts.length} jadwal tersimpan',
+      );
     } on Object catch (error) {
       if (!mounted) return;
       setState(() {
@@ -1483,7 +1574,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() {
       _financialPreview = null;
       _financialConfidence = null;
-      _schedulePreview = null;
+      _schedulePreviews = const [];
       _status = 'Review dibatalkan — draft tetap tersimpan';
     });
   }
@@ -1535,7 +1626,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       context: context,
       initialDate: item.transactionDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: _nowLocal().add(const Duration(days: 365)),
     );
     if (date == null || !mounted) return;
     _updateFinancialItem(
@@ -1552,16 +1643,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (!mounted) return;
     _draftTimer?.cancel();
     setState(() {
+      _failedInput = null;
       _preview = null;
       _financialPreview = null;
       _financialConfidence = null;
-      _schedulePreview = null;
+      _schedulePreviews = const [];
       _status = message;
       _requestId = null;
       _foodDraftId = null;
       _chatDraftId = null;
       _selectedMode = ChatInputMode.automatic;
       _defaultReimburse = false;
+      _consumedAt = _nowLocal();
+      _statusKind = null;
       _composer.clear();
     });
   }
@@ -1624,17 +1718,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         (category) => category.name == 'Lainnya',
         orElse: () => eligible.first,
       );
+      final now = _nowLocal();
       setState(() {
         _selectedMode = mode;
         _reviewCategories = reviewCategories;
         _financialConfidence = null;
         _financialPreview = [
           FinancialReviewItem(
-            reviewId: 'manual-${DateTime.now().microsecondsSinceEpoch}',
+            reviewId: 'manual-${now.microsecondsSinceEpoch}',
             type: type,
             name: '',
             amount: 0,
-            transactionDate: DateTime.now(),
+            transactionDate: now,
             categoryId: fallback.id,
             categoryName: fallback.name,
             isReimburse:
@@ -1714,7 +1809,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       context: context,
       initialDate: _consumedAt,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: _nowLocal().add(const Duration(days: 365)),
     );
     if (date == null || !mounted) return;
     final time = await showTimePicker(
@@ -1737,6 +1832,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   String _time(DateTime value) =>
       '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+
+  DateTime _nowLocal() => ref.read(clockProvider).now().toLocal();
 
   void _selectMode(ChatInputMode mode) {
     setState(() => _selectedMode = mode);

@@ -16,6 +16,34 @@ void main() {
     currentDateTime: DateTime(2026, 7, 28, 11, 30),
   );
 
+  Map<String, dynamic> scheduleItem({
+    String title = 'Meeting marketing',
+    String startAt = '2026-07-29T11:00:00+07:00',
+    String? endAt = '2026-07-29T12:00:00+07:00',
+  }) {
+    return {
+      'intent': 'create_event',
+      'title': title,
+      'description': null,
+      'start_at': startAt,
+      'end_at': endAt,
+      'due_at': null,
+      'all_day': false,
+      'category': 'Pekerjaan',
+      'priority': 'medium',
+      'recurrence': {
+        'type': 'weekly',
+        'interval': 1,
+        'weekdays': [1, 3],
+        'end_at': null,
+      },
+      'reminders': [
+        {'offset_minutes': 15},
+      ],
+      'assumptions': <String>[],
+    };
+  }
+
   Map<String, dynamic> response({String? endAt = '2026-07-29T12:00:00+07:00'}) {
     return {
       'detected_domain': 'schedule',
@@ -23,32 +51,12 @@ void main() {
       'requires_clarification': false,
       'clarification_question': null,
       'items': [],
-      'schedule': {
-        'intent': 'create_event',
-        'title': 'Meeting marketing',
-        'description': null,
-        'start_at': '2026-07-29T11:00:00+07:00',
-        'end_at': endAt,
-        'due_at': null,
-        'all_day': false,
-        'category': 'Pekerjaan',
-        'priority': 'medium',
-        'recurrence': {
-          'type': 'weekly',
-          'interval': 1,
-          'weekdays': [1, 3],
-          'end_at': null,
-        },
-        'reminders': [
-          {'offset_minutes': 15},
-        ],
-        'assumptions': <String>[],
-      },
+      'schedules': [scheduleItem(endAt: endAt)],
     };
   }
 
   test('parses schedule structured output in UTC', () {
-    final draft = parser.parse(response(), context: context).schedule!;
+    final draft = parser.parse(response(), context: context).schedules.first;
 
     expect(draft.itemType, ScheduleItemType.event);
     expect(draft.startAtUtc, DateTime.utc(2026, 7, 29, 4));
@@ -63,10 +71,20 @@ void main() {
       // tetapi masih hari yang sama di WIB (UTC+7).
       // Sebelum fix, localDate dihitung dari UTC year/month/day (salah).
       // Setelah fix, localDate dihitung dari .toLocal() (benar).
-      final resp = response(endAt: '2026-07-29T02:00:00Z');
-      (resp['schedule'] as Map<String, dynamic>)['start_at'] =
-          '2026-07-29T00:30:00Z';
-      final draft = parser.parse(resp, context: context).schedule!;
+      final resp = {
+        'detected_domain': 'schedule',
+        'confidence': 0.95,
+        'requires_clarification': false,
+        'clarification_question': null,
+        'items': [],
+        'schedules': [
+          scheduleItem(
+            startAt: '2026-07-29T00:30:00Z',
+            endAt: '2026-07-29T02:00:00Z',
+          ),
+        ],
+      };
+      final draft = parser.parse(resp, context: context).schedules.first;
 
       final expectedStartUtc = DateTime.utc(2026, 7, 29, 0, 30);
       expect(draft.startAtUtc, expectedStartUtc);
@@ -88,7 +106,8 @@ void main() {
   test('adds explicit default-duration assumption', () {
     final draft = parser
         .parse(response(endAt: null), context: context)
-        .schedule!;
+        .schedules
+        .first;
 
     expect(
       draft.endAtUtc!.difference(draft.startAtUtc!),
@@ -97,9 +116,44 @@ void main() {
     expect(draft.assumptions.single, contains('60 menit'));
   });
 
+  test('parses multiple schedule events from one input', () {
+    final multiResponse = {
+      'detected_domain': 'schedule',
+      'confidence': 0.95,
+      'requires_clarification': false,
+      'clarification_question': null,
+      'items': [],
+      'schedules': [
+        scheduleItem(
+          title: 'Mandi',
+          startAt: '2026-07-29T05:00:00Z',
+          endAt: '2026-07-29T05:30:00Z',
+        ),
+        scheduleItem(
+          title: 'Makan',
+          startAt: '2026-07-29T05:30:00Z',
+          endAt: '2026-07-29T06:00:00Z',
+        ),
+      ],
+    };
+    final drafts = parser.parse(multiResponse, context: context).schedules;
+
+    expect(drafts.length, 2);
+    expect(drafts[0].title, 'Mandi');
+    expect(drafts[1].title, 'Makan');
+  });
+
   test('rejects event without determinable start', () {
-    final invalid = response();
-    (invalid['schedule'] as Map<String, dynamic>)['start_at'] = null;
+    final item = scheduleItem();
+    item['start_at'] = null; // override start to null
+    final invalid = {
+      'detected_domain': 'schedule',
+      'confidence': 0.95,
+      'requires_clarification': false,
+      'clarification_question': null,
+      'items': [],
+      'schedules': [item],
+    };
     expect(
       () => parser.parse(invalid, context: context),
       throwsA(

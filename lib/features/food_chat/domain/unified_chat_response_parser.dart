@@ -101,17 +101,23 @@ class UnifiedChatResponseParser {
           financialItems: items,
         );
       case ChatDomain.schedule:
-        final schedule = json['schedule'];
-        if (schedule is! Map<String, dynamic>) {
+        final rawSchedules = json['schedules'];
+        if (rawSchedules is! List || rawSchedules.isEmpty) {
           throw const UnifiedChatResponseException('schedule_invalid');
         }
+        final schedules = rawSchedules.map((item) {
+          if (item is! Map<String, dynamic>) {
+            throw const UnifiedChatResponseException('schedule_invalid');
+          }
+          return _schedule(item, context, confidence);
+        }).toList(growable: false);
         return UnifiedChatDraft(
           detectedDomain: domain,
           confidence: confidence,
           requiresClarification: false,
           clarificationQuestion: question,
           financialItems: const [],
-          schedule: _schedule(schedule, context, confidence),
+          schedules: schedules,
         );
       case ChatDomain.unknown:
         throw const UnifiedChatResponseException('unknown_invalid');

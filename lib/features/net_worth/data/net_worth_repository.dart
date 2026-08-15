@@ -198,7 +198,9 @@ SELECT
         .customSelect(
           '''
 SELECT
-  COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) AS transaction_change,
+  COALESCE(SUM(CASE WHEN type = 'income' THEN amount
+                    WHEN type = 'expense' AND is_reimburse = 0 THEN -amount
+                    ELSE 0 END), 0) AS transaction_change,
   COALESCE((SELECT SUM(amount) FROM net_worth_adjustments
     WHERE adjustment_date >= ? AND adjustment_date < ?), 0) AS adjustment_change
 FROM financial_transactions
@@ -228,7 +230,8 @@ SELECT
   COALESCE((SELECT SUM(amount) FROM financial_transactions
     WHERE type = 'income' AND transaction_date >= i.initialization_date), 0) AS total_income,
   COALESCE((SELECT SUM(amount) FROM financial_transactions
-    WHERE type = 'expense' AND transaction_date >= i.initialization_date), 0) AS total_expense,
+    WHERE type = 'expense' AND is_reimburse = 0
+    AND transaction_date >= i.initialization_date), 0) AS total_expense,
   COALESCE((SELECT SUM(amount) FROM net_worth_adjustments
     WHERE adjustment_date >= i.initialization_date), 0) AS total_adjustments,
   MAX(

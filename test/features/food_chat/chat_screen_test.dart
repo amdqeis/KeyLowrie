@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keyspace/app/bootstrap.dart';
 import 'package:keyspace/app/router.dart';
 import 'package:keyspace/core/errors/gemini_failure.dart';
 import 'package:keyspace/core/security/secret_store.dart';
+import 'package:keyspace/core/time/local_date.dart';
 import 'package:keyspace/database/app_database.dart';
 import 'package:keyspace/features/food_chat/data/chat_draft_repository.dart';
+import 'package:keyspace/features/food_chat/data/drift_pending_request_repository.dart';
 import 'package:keyspace/features/food_chat/domain/gemini_contracts.dart';
 import 'package:keyspace/features/food_chat/domain/gemini_failover_service.dart';
 import 'package:keyspace/features/food_chat/presentation/chat_screen.dart';
@@ -28,6 +31,7 @@ void main() {
       final secrets = InMemorySecretStore();
       await secrets.write('A', 'secret-A');
       await secrets.write('B', 'secret-B');
+      final pending = DriftPendingRequestRepository(database);
       final service = GeminiFailoverService(
         client: FakeGeminiClient([
           _failure(GeminiFailureCategory.invalidKey),
@@ -52,7 +56,7 @@ void main() {
           ],
           activeId: 'A',
         ),
-        pendingRequests: FakePendingRequestRepository(),
+        pendingRequests: pending,
         secretStore: secrets,
         networkStatus: const StaticNetworkStatus(true),
         clock: FixedClock(DateTime.utc(2026, 7, 22)),
@@ -120,6 +124,8 @@ void main() {
         (await ChatDraftRepository(database).latest())?.draftText,
         'nasi goreng dan telur',
       );
+      expect(await database.select(database.chatMessages).get(), isEmpty);
+      expect(await database.select(database.chatSessions).get(), isEmpty);
       expect(tester.takeException(), isNull);
 
       await tester.tap(
@@ -128,6 +134,91 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('KEY MANAGEMENT TARGET'), findsOneWidget);
       expect(tester.takeException(), isNull);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 1));
+      await tester.pump(const Duration(milliseconds: 1));
+    },
+  );
+
+  testWidgets(
+    'retry keeps selected date while changed text starts a new dated request',
+    (tester) async {
+      final database = AppDatabase(NativeDatabase.memory());
+      addTearDown(database.close);
+      await SettingsRepository(database).initialize();
+      final pending = FakePendingRequestRepository();
+      final clock = FixedClock(DateTime.utc(2026, 7, 20, 8));
+      final service = GeminiFailoverService(
+        client: FakeGeminiClient([]),
+        keyPool: FakeKeyPoolRepository(keys: const []),
+        pendingRequests: pending,
+        secretStore: InMemorySecretStore(),
+        networkStatus: const StaticNetworkStatus(false),
+        clock: clock,
+        createRequestId: () => 'service-request-unused',
+      );
+      var generatedIds = 0;
+      final router = GoRouter(
+        initialLocation: AppRoutes.chat,
+        routes: [
+          GoRoute(
+            path: AppRoutes.chat,
+            builder: (context, state) => const ChatScreen(),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            databaseProvider.overrideWithValue(database),
+            geminiFailoverServiceProvider.overrideWithValue(service),
+            clockProvider.overrideWithValue(clock),
+            requestIdProvider.overrideWithValue(
+              () => 'request-${++generatedIds}',
+            ),
+            localTimezoneProvider.overrideWith((_) async => 'Asia/Jakarta'),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final oldDate = localDateKey(clock.value);
+      await tester.enterText(find.byType(TextField).last, 'pesan gagal');
+      await tester.tap(find.byTooltip('Kirim'));
+      await tester.pumpAndSettle();
+      expect(pending.pending.map((item) => item.requestId), ['request-1']);
+      expect(find.textContaining(oldDate), findsOneWidget);
+
+      clock.value = DateTime.utc(2026, 7, 22, 8);
+      await tester.tap(find.byKey(const ValueKey('status-retry-btn')));
+      await tester.pumpAndSettle();
+      expect(pending.pending.map((item) => item.requestId), [
+        'request-1',
+        'request-1',
+      ]);
+      expect(find.textContaining(oldDate), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField).last, 'pesan baru');
+      await tester.pump();
+      final newDate = localDateKey(clock.value);
+      expect(find.textContaining(newDate), findsOneWidget);
+      expect(find.byKey(const ValueKey('status-retry-btn')), findsNothing);
+
+      await tester.tap(find.byTooltip('Kirim'));
+      await tester.pumpAndSettle();
+      expect(pending.pending.map((item) => item.requestId), [
+        'request-1',
+        'request-1',
+        'request-2',
+      ]);
+      expect(
+        (await ChatDraftRepository(database).latest())?.draftText,
+        'pesan baru',
+      );
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(milliseconds: 1));
@@ -387,6 +478,7 @@ void main() {
     addTearDown(database.close);
     await SettingsRepository(database).initialize();
     await _seedApiKeyMetadata(database);
+    final uiClock = FixedClock(DateTime.utc(2026, 7, 22, 8));
     final food = validFoodResponse();
     final service = await _unifiedService([
       GeminiCallSuccess(
@@ -418,6 +510,7 @@ void main() {
         overrides: [
           databaseProvider.overrideWithValue(database),
           geminiFailoverServiceProvider.overrideWithValue(service),
+          clockProvider.overrideWithValue(uiClock),
           localTimezoneProvider.overrideWith((_) async => 'Asia/Jakarta'),
         ],
         child: MaterialApp.router(routerConfig: router),
@@ -435,12 +528,14 @@ void main() {
     );
     expect(find.text('PREVIEW — TINJAU DULU'), findsOneWidget);
 
+    uiClock.value = DateTime.utc(2026, 7, 23, 8);
     await tester.tap(find.text('SIMPAN').last);
     await tester.pumpAndSettle();
     final logs = await database.select(database.foodLogs).get();
     expect(logs.single.status, 'confirmed');
     expect(logs.single.totalCaloriesKcal, 640);
     expect(await ChatDraftRepository(database).latest(), isNull);
+    expect(find.textContaining(localDateKey(uiClock.value)), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 1));

@@ -419,7 +419,8 @@ flowchart TD
 1. Pengguna menekan Kirim.
 2. Network call gagal karena offline.
 3. Sistem tidak mencoba setiap key.
-4. Pesan disimpan `failed` dengan kategori offline.
+4. Bubble percobaan gagal dihapus dari `chat_messages`; teks tetap tersedia di
+   `chat_drafts`.
 5. UI:
    - “Tidak ada koneksi internet. Input kamu tetap tersimpan.”
 6. Actions:
@@ -722,7 +723,8 @@ Request berikutnya dimulai dari D selama masih eligible.
 1. Sistem telah mencoba seluruh key eligible pada satu siklus.
 2. Tidak ada hasil sukses.
 3. State chat berubah menjadi `all_keys_failed`.
-4. Input user dan timestamp tetap ada.
+4. Input user tetap ada sebagai draft lokal, tetapi bubble dan timestamp
+   percobaan gagal tidak disimpan sebagai histori.
 5. Tampilkan bottom sheet/modal:
 
 **Title**
@@ -1157,8 +1159,8 @@ flowchart TD
 7. Database transaction.
 8. Dashboard dan reminder diperbarui.
 9. Jika berasal dari failed chat:
-   - assistant/system message mencatat bahwa entry diselesaikan manual;
-   - failed input tetap dapat dipertahankan atau ditandai resolved.
+   - original text diambil dari draft lokal sebagai notes;
+   - setelah entry manual tersimpan, draft dapat dihapus tanpa menyimpan bubble gagal.
 
 ---
 
@@ -1541,7 +1543,15 @@ Counter:
 
 **Given** seluruh key invalid/limited/error  
 **When** user mengirim input  
-**Then** input tetap tersimpan dan dialog menampilkan **Tambah API Key Baru**, Kelola, Coba Lagi, dan Catat Manual.
+**Then** input tetap tersimpan sebagai draft lokal, bubble gagal dihapus, dan dialog menampilkan **Tambah API Key Baru**, Kelola, Coba Lagi, dan Catat Manual.
+
+### UF-AC-04A — Pesan Baru Setelah Gagal
+
+**Given** request Gemini gagal dan tanggal catatan lama masih dipilih
+
+**When** user mengubah teks menjadi pesan baru
+
+**Then** sistem membuat request ID baru, membersihkan status error, dan mengatur tanggal ke waktu lokal saat ini; tombol **Coba Lagi** tanpa perubahan teks tetap mempertahankan tanggal pilihan sebelumnya.
 
 ### UF-AC-05 — Tambah Key dari All-Keys-Failed
 
@@ -1614,7 +1624,7 @@ Catat melalui Chat
   -> Jika gagal: key berikutnya
   -> Jika sukses: preview -> edit -> simpan
   -> Jika semua gagal: tambah key baru / kelola / retry / manual
-  -> Input tidak hilang
+  -> Input tidak hilang; bubble gagal tidak disimpan
 
 Gunakan Offline
   -> Dashboard/history/edit/manual tetap tersedia

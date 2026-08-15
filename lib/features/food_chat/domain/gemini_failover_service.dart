@@ -65,7 +65,7 @@ class GeminiFailoverService {
     );
 
     if (cancellation?.isCancelled ?? false) {
-      await _pendingRequests.markFailed(
+      await _pendingRequests.discardFailedAttempt(
         requestId,
         GeminiFailureCategory.cancelled,
       );
@@ -73,7 +73,7 @@ class GeminiFailoverService {
     }
 
     if (!await _networkStatus.isOnline) {
-      await _pendingRequests.markFailed(
+      await _pendingRequests.discardFailedAttempt(
         requestId,
         GeminiFailureCategory.offline,
       );
@@ -99,7 +99,7 @@ class GeminiFailoverService {
       if (result is GeminiCallFailure &&
           _isTransient(result.failure.category)) {
         if (!await _networkStatus.isOnline) {
-          await _pendingRequests.markFailed(
+          await _pendingRequests.discardFailedAttempt(
             requestId,
             GeminiFailureCategory.offline,
           );
@@ -107,7 +107,7 @@ class GeminiFailoverService {
         }
         await _delay(ProviderConfig.transientRetryBackoff + _jitter());
         if (cancellation?.isCancelled ?? false) {
-          await _pendingRequests.markFailed(
+          await _pendingRequests.discardFailedAttempt(
             requestId,
             GeminiFailureCategory.cancelled,
           );
@@ -154,7 +154,7 @@ class GeminiFailoverService {
           const GeminiFailure(category: GeminiFailureCategory.schemaMismatch),
           result.latency,
         );
-        await _pendingRequests.markFailed(
+        await _pendingRequests.discardFailedAttempt(
           requestId,
           GeminiFailureCategory.schemaMismatch,
         );
@@ -167,11 +167,11 @@ class GeminiFailoverService {
       final failureResult = result as GeminiCallFailure;
       final category = failureResult.failure.category;
       if (category == GeminiFailureCategory.offline) {
-        await _pendingRequests.markFailed(requestId, category);
+        await _pendingRequests.discardFailedAttempt(requestId, category);
         return OfflineFailure(requestId: requestId);
       }
       if (category == GeminiFailureCategory.cancelled) {
-        await _pendingRequests.markFailed(requestId, category);
+        await _pendingRequests.discardFailedAttempt(requestId, category);
         return CancelledFailure(requestId: requestId);
       }
       await _recordFailure(
@@ -188,7 +188,10 @@ class GeminiFailoverService {
       if (terminal != null) return terminal;
     }
 
-    await _pendingRequests.markFailed(requestId, GeminiFailureCategory.unknown);
+    await _pendingRequests.discardFailedAttempt(
+      requestId,
+      GeminiFailureCategory.unknown,
+    );
     return AllKeysFailed(
       attemptedKeys: List.unmodifiable(attempted),
       requestId: requestId,
@@ -210,7 +213,7 @@ class GeminiFailoverService {
     );
 
     if (cancellation?.isCancelled ?? false) {
-      await _pendingRequests.markFailed(
+      await _pendingRequests.discardFailedAttempt(
         requestId,
         GeminiFailureCategory.cancelled,
       );
@@ -218,7 +221,7 @@ class GeminiFailoverService {
     }
 
     if (!await _networkStatus.isOnline) {
-      await _pendingRequests.markFailed(
+      await _pendingRequests.discardFailedAttempt(
         requestId,
         GeminiFailureCategory.offline,
       );
@@ -245,7 +248,7 @@ class GeminiFailoverService {
       if (result is GeminiCallFailure &&
           _isTransient(result.failure.category)) {
         if (!await _networkStatus.isOnline) {
-          await _pendingRequests.markFailed(
+          await _pendingRequests.discardFailedAttempt(
             requestId,
             GeminiFailureCategory.offline,
           );
@@ -253,7 +256,7 @@ class GeminiFailoverService {
         }
         await _delay(ProviderConfig.transientRetryBackoff + _jitter());
         if (cancellation?.isCancelled ?? false) {
-          await _pendingRequests.markFailed(
+          await _pendingRequests.discardFailedAttempt(
             requestId,
             GeminiFailureCategory.cancelled,
           );
@@ -314,7 +317,7 @@ class GeminiFailoverService {
           const GeminiFailure(category: GeminiFailureCategory.schemaMismatch),
           result.latency,
         );
-        await _pendingRequests.markFailed(
+        await _pendingRequests.discardFailedAttempt(
           requestId,
           GeminiFailureCategory.schemaMismatch,
         );
@@ -331,11 +334,11 @@ class GeminiFailoverService {
       final failureResult = result as GeminiCallFailure;
       final category = failureResult.failure.category;
       if (category == GeminiFailureCategory.offline) {
-        await _pendingRequests.markFailed(requestId, category);
+        await _pendingRequests.discardFailedAttempt(requestId, category);
         return ParseChatOffline(requestId: requestId);
       }
       if (category == GeminiFailureCategory.cancelled) {
-        await _pendingRequests.markFailed(requestId, category);
+        await _pendingRequests.discardFailedAttempt(requestId, category);
         return ParseChatCancelled(requestId: requestId);
       }
       await _recordFailure(
@@ -352,7 +355,10 @@ class GeminiFailoverService {
       if (terminal != null) return terminal;
     }
 
-    await _pendingRequests.markFailed(requestId, GeminiFailureCategory.unknown);
+    await _pendingRequests.discardFailedAttempt(
+      requestId,
+      GeminiFailureCategory.unknown,
+    );
     return ParseChatAllKeysFailed(
       attemptedKeys: List.unmodifiable(attempted),
       requestId: requestId,
@@ -525,16 +531,28 @@ class GeminiFailoverService {
       case GeminiFailureCategory.modelNotFound:
       case GeminiFailureCategory.schemaMismatch:
       case GeminiFailureCategory.unknown:
-        await _pendingRequests.markFailed(requestId, failure.category);
+        await _pendingRequests.discardFailedAttempt(
+          requestId,
+          failure.category,
+        );
         return RequestFailure(failure.category, requestId: requestId);
       case GeminiFailureCategory.safetyBlock:
-        await _pendingRequests.markFailed(requestId, failure.category);
+        await _pendingRequests.discardFailedAttempt(
+          requestId,
+          failure.category,
+        );
         return ContentNeedsRevision(requestId: requestId);
       case GeminiFailureCategory.offline:
-        await _pendingRequests.markFailed(requestId, failure.category);
+        await _pendingRequests.discardFailedAttempt(
+          requestId,
+          failure.category,
+        );
         return OfflineFailure(requestId: requestId);
       case GeminiFailureCategory.cancelled:
-        await _pendingRequests.markFailed(requestId, failure.category);
+        await _pendingRequests.discardFailedAttempt(
+          requestId,
+          failure.category,
+        );
         return CancelledFailure(requestId: requestId);
       case GeminiFailureCategory.secretUnavailable:
         await _keyPool.markFailure(
@@ -591,16 +609,28 @@ class GeminiFailoverService {
       case GeminiFailureCategory.modelNotFound:
       case GeminiFailureCategory.schemaMismatch:
       case GeminiFailureCategory.unknown:
-        await _pendingRequests.markFailed(requestId, failure.category);
+        await _pendingRequests.discardFailedAttempt(
+          requestId,
+          failure.category,
+        );
         return ParseChatRequestFailure(failure.category, requestId: requestId);
       case GeminiFailureCategory.safetyBlock:
-        await _pendingRequests.markFailed(requestId, failure.category);
+        await _pendingRequests.discardFailedAttempt(
+          requestId,
+          failure.category,
+        );
         return ParseChatContentNeedsRevision(requestId: requestId);
       case GeminiFailureCategory.offline:
-        await _pendingRequests.markFailed(requestId, failure.category);
+        await _pendingRequests.discardFailedAttempt(
+          requestId,
+          failure.category,
+        );
         return ParseChatOffline(requestId: requestId);
       case GeminiFailureCategory.cancelled:
-        await _pendingRequests.markFailed(requestId, failure.category);
+        await _pendingRequests.discardFailedAttempt(
+          requestId,
+          failure.category,
+        );
         return ParseChatCancelled(requestId: requestId);
       case GeminiFailureCategory.secretUnavailable:
         await _keyPool.markFailure(

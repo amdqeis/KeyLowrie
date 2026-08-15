@@ -291,7 +291,11 @@ Map<String, dynamic> buildUnifiedGeminiRequest({
               'berasal dari pengguna. Jangan menyatakan estimasi nutrisi sebagai '
               'nilai pasti. Untuk jadwal jangan mengarang tanggal atau waktu; '
               'gunakan timezone dan current_datetime, serta minta klarifikasi bila '
-              'waktu tidak dapat ditentukan.$repairInstruction',
+              'waktu tidak dapat ditentukan. '
+              'PENTING untuk jadwal: jika input menyebut beberapa kegiatan dengan '
+              'rentang waktu masing-masing (misalnya \'jam 12-12:30 mandi, 12:30-13:00 makan\'), '
+              'buat SATU entri terpisah di array schedules untuk SETIAP kegiatan; '
+              'jangan gabungkan menjadi satu event.$repairInstruction',
         },
       ],
     },
@@ -384,68 +388,71 @@ const geminiUnifiedChatResponseSchema = <String, dynamic>{
         'general_note': {'type': 'string', 'nullable': true},
       },
     },
-    'schedule': {
-      'type': 'object',
+    'schedules': {
+      'type': 'array',
       'nullable': true,
-      'required': [
-        'intent',
-        'title',
-        'description',
-        'start_at',
-        'end_at',
-        'due_at',
-        'all_day',
-        'category',
-        'priority',
-        'recurrence',
-        'reminders',
-        'assumptions',
-      ],
-      'properties': {
-        'intent': {
-          'type': 'string',
-          'enum': ['create_event', 'create_task'],
-        },
-        'title': {'type': 'string'},
-        'description': {'type': 'string', 'nullable': true},
-        'start_at': {'type': 'string', 'nullable': true},
-        'end_at': {'type': 'string', 'nullable': true},
-        'due_at': {'type': 'string', 'nullable': true},
-        'all_day': {'type': 'boolean'},
-        'category': {'type': 'string'},
-        'priority': {
-          'type': 'string',
-          'enum': ['low', 'medium', 'high'],
-        },
-        'recurrence': {
-          'type': 'object',
-          'required': ['type', 'interval', 'weekdays', 'end_at'],
-          'properties': {
-            'type': {
-              'type': 'string',
-              'enum': ['none', 'daily', 'weekly', 'monthly'],
-            },
-            'interval': {'type': 'integer', 'minimum': 1},
-            'weekdays': {
-              'type': 'array',
-              'items': {'type': 'integer', 'minimum': 1, 'maximum': 7},
-            },
-            'end_at': {'type': 'string', 'nullable': true},
+      'items': {
+        'type': 'object',
+        'required': [
+          'intent',
+          'title',
+          'description',
+          'start_at',
+          'end_at',
+          'due_at',
+          'all_day',
+          'category',
+          'priority',
+          'recurrence',
+          'reminders',
+          'assumptions',
+        ],
+        'properties': {
+          'intent': {
+            'type': 'string',
+            'enum': ['create_event', 'create_task'],
           },
-        },
-        'reminders': {
-          'type': 'array',
-          'items': {
+          'title': {'type': 'string'},
+          'description': {'type': 'string', 'nullable': true},
+          'start_at': {'type': 'string', 'nullable': true},
+          'end_at': {'type': 'string', 'nullable': true},
+          'due_at': {'type': 'string', 'nullable': true},
+          'all_day': {'type': 'boolean'},
+          'category': {'type': 'string'},
+          'priority': {
+            'type': 'string',
+            'enum': ['low', 'medium', 'high'],
+          },
+          'recurrence': {
             'type': 'object',
-            'required': ['offset_minutes'],
+            'required': ['type', 'interval', 'weekdays', 'end_at'],
             'properties': {
-              'offset_minutes': {'type': 'integer', 'minimum': 0},
+              'type': {
+                'type': 'string',
+                'enum': ['none', 'daily', 'weekly', 'monthly'],
+              },
+              'interval': {'type': 'integer', 'minimum': 1},
+              'weekdays': {
+                'type': 'array',
+                'items': {'type': 'integer', 'minimum': 1, 'maximum': 7},
+              },
+              'end_at': {'type': 'string', 'nullable': true},
             },
           },
-        },
-        'assumptions': {
-          'type': 'array',
-          'items': {'type': 'string'},
+          'reminders': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'required': ['offset_minutes'],
+              'properties': {
+                'offset_minutes': {'type': 'integer', 'minimum': 0},
+              },
+            },
+          },
+          'assumptions': {
+            'type': 'array',
+            'items': {'type': 'string'},
+          },
         },
       },
     },

@@ -11,15 +11,49 @@ class DriftPendingRequestRepository implements PendingRequestRepository {
   final AppDatabase _database;
 
   @override
-  Future<void> markFailed(String requestId, GeminiFailureCategory category) {
-    return (_database.update(
-      _database.chatMessages,
-    )..where((message) => message.id.equals(requestId))).write(
-      ChatMessagesCompanion(
-        status: const Value('failed'),
-        errorCategory: Value(category.name),
-      ),
-    );
+  Future<void> discardFailedAttempt(
+    String requestId,
+    GeminiFailureCategory category,
+  ) {
+    return _database.transaction(() async {
+      final message = await (_database.select(
+        _database.chatMessages,
+      )..where((row) => row.id.equals(requestId))).getSingleOrNull();
+      if (message == null) return;
+
+      await (_database.delete(
+        _database.chatMessages,
+      )..where((row) => row.id.equals(requestId))).go();
+      await _deleteSessionIfEmpty(message.sessionId);
+    });
+  }
+
+  @override
+  Future<void> purgeInterruptedAttempts() {
+    return _database.transaction(() async {
+      final interrupted =
+          await (_database.select(_database.chatMessages)..where(
+                (row) =>
+                    row.role.equals('user') &
+                    (row.status.equals('failed') |
+                        row.status.equals('pending')),
+              ))
+              .get();
+      if (interrupted.isEmpty) return;
+
+      final sessionIds = interrupted
+          .map((message) => message.sessionId)
+          .toSet();
+      await (_database.delete(_database.chatMessages)..where(
+            (row) =>
+                row.role.equals('user') &
+                (row.status.equals('failed') | row.status.equals('pending')),
+          ))
+          .go();
+      for (final sessionId in sessionIds) {
+        await _deleteSessionIfEmpty(sessionId);
+      }
+    });
   }
 
   @override
@@ -89,7 +123,7 @@ class DriftPendingRequestRepository implements PendingRequestRepository {
               ChatDomain.income =>
                 '${draft.financialItems.length} pemasukan terdeteksi. Tinjau sebelum disimpan.',
               ChatDomain.schedule =>
-                '${draft.schedule?.itemType.name ?? 'Jadwal'} terdeteksi. Tinjau sebelum disimpan.',
+                '${draft.schedules.length} jadwal terdeteksi. Tinjau sebelum disimpan.',
               ChatDomain.unknown => 'Jenis input belum dikenali.',
             };
       await _database
@@ -159,4 +193,16 @@ class DriftPendingRequestRepository implements PendingRequestRepository {
       '${value.year.toString().padLeft(4, '0')}-'
       '${value.month.toString().padLeft(2, '0')}-'
       '${value.day.toString().padLeft(2, '0')}';
+
+  Future<void> _deleteSessionIfEmpty(String sessionId) async {
+    final remaining =
+        await (_database.select(_database.chatMessages)
+              ..where((row) => row.sessionId.equals(sessionId))
+              ..limit(1))
+            .getSingleOrNull();
+    if (remaining != null) return;
+    await (_database.delete(
+      _database.chatSessions,
+    )..where((row) => row.id.equals(sessionId))).go();
+  }
 }
