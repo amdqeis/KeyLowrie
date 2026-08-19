@@ -38,6 +38,37 @@ final upcomingSchedulesProvider = Provider<List<ScheduleItem>>((ref) {
   });
 });
 
+// ─── Overdue tasks provider ───────────────────────────────────────────────────
+
+/// Mengembalikan semua TASK berstatus pending yang deadline/waktu mulainya
+/// sudah terlewat (lebih kecil dari sekarang). Diperbarui setiap kali DB
+/// berubah karena bergantung pada [scheduleItemsProvider] (StreamProvider).
+final overdueTasksProvider = Provider<List<ScheduleItem>>((ref) {
+  final now = DateTime.now();
+  final items =
+      ref.watch(scheduleItemsProvider).value ?? const <ScheduleItem>[];
+  return items.where((item) {
+    if (item.status != 'pending') return false;
+    if (item.itemType != 'task') return false;
+    // Cari anchor waktu deadline / mulai
+    final anchor =
+        item.dueAtUtc?.toLocal() ??
+        item.startAtUtc?.toLocal() ??
+        _localDateToDateTime(item.dueDateLocal ?? item.localStartDate);
+    if (anchor == null) return false;
+    return anchor.isBefore(now);
+  }).toList()
+    ..sort((a, b) {
+      // Paling lama terlewat di atas
+      final aT = a.dueAtUtc ?? a.startAtUtc;
+      final bT = b.dueAtUtc ?? b.startAtUtc;
+      if (aT == null && bT == null) return 0;
+      if (aT == null) return 1;
+      if (bT == null) return -1;
+      return aT.compareTo(bT);
+    });
+});
+
 DateTime? _localDateToDateTime(String? dateKey) {
   if (dateKey == null) return null;
   return DateTime.tryParse(dateKey);
@@ -89,7 +120,7 @@ String _priorityLabel(String priority) => switch (priority.toLowerCase()) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-enum SchedulerViewMode { hourly, daily, weekly, tasks }
+enum SchedulerViewMode { hourly, daily, weekly, tasks, overdue }
 
 class SchedulerScreen extends ConsumerStatefulWidget {
   const SchedulerScreen({super.key});
@@ -105,6 +136,7 @@ class _SchedulerScreenState extends ConsumerState<SchedulerScreen> {
   @override
   Widget build(BuildContext context) {
     final items = ref.watch(scheduleItemsProvider);
+    final overdueCount = ref.watch(overdueTasksProvider).length;
     return Scaffold(
       appBar: AppBar(
         title: const Text('JADWAL'),
@@ -122,55 +154,73 @@ class _SchedulerScreenState extends ConsumerState<SchedulerScreen> {
         label: const Text('BUAT'),
       ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // ── Upcoming Reminders Banner ─────────────────────────────────
-            const _UpcomingBanner(),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: SegmentedButton<SchedulerViewMode>(
-                segments: const [
-                  ButtonSegment(
-                    value: SchedulerViewMode.hourly,
-                    label: Text('JAM'),
+            Column(
+              children: [
+                // ── Upcoming Reminders Banner ─────────────────────────────────
+                const _UpcomingBanner(),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: SegmentedButton<SchedulerViewMode>(
+                    segments: [
+                      const ButtonSegment(
+                        value: SchedulerViewMode.hourly,
+                        label: Text('JAM'),
+                      ),
+                      const ButtonSegment(
+                        value: SchedulerViewMode.daily,
+                        label: Text('HARI'),
+                      ),
+                      const ButtonSegment(
+                        value: SchedulerViewMode.weekly,
+                        label: Text('MINGGU'),
+                      ),
+                      const ButtonSegment(
+                        value: SchedulerViewMode.tasks,
+                        label: Text('TASK'),
+                      ),
+                      ButtonSegment(
+                        value: SchedulerViewMode.overdue,
+                        label: _OverdueBadge(
+                          count: overdueCount,
+                          selected: _mode == SchedulerViewMode.overdue,
+                        ),
+                      ),
+                    ],
+                    selected: {_mode},
+                    onSelectionChanged: (selection) =>
+                        setState(() => _mode = selection.first),
                   ),
-                  ButtonSegment(
-                    value: SchedulerViewMode.daily,
-                    label: Text('HARI'),
-                  ),
-                  ButtonSegment(
-                    value: SchedulerViewMode.weekly,
-                    label: Text('MINGGU'),
-                  ),
-                  ButtonSegment(
-                    value: SchedulerViewMode.tasks,
-                    label: Text('TASK'),
-                  ),
-                ],
-                selected: {_mode},
-                onSelectionChanged: (selection) =>
-                    setState(() => _mode = selection.first),
-              ),
-            ),
-            if (_mode != SchedulerViewMode.tasks)
-              _DateSelector(
-                value: _selectedDate,
-                weekly: _mode == SchedulerViewMode.weekly,
-                onChanged: (value) => setState(() => _selectedDate = value),
-              ),
-            Expanded(
-              child: items.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) =>
-                    Center(child: Text('Jadwal gagal dimuat: $error')),
-                data: (rows) => _ScheduleList(
-                  rows: _filter(rows),
-                  mode: _mode,
-                  selectedDate: _selectedDate,
                 ),
-              ),
+                if (_mode != SchedulerViewMode.tasks &&
+                    _mode != SchedulerViewMode.overdue)
+                  _DateSelector(
+                    value: _selectedDate,
+                    weekly: _mode == SchedulerViewMode.weekly,
+                    onChanged: (value) => setState(() => _selectedDate = value),
+                  ),
+                Expanded(
+                  child: _mode == SchedulerViewMode.overdue
+                      ? const _OverdueList()
+                      : items.when(
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (error, _) => Center(
+                            child: Text('Jadwal gagal dimuat: $error'),
+                          ),
+                          data: (rows) => _ScheduleList(
+                            rows: _filter(rows),
+                            mode: _mode,
+                            selectedDate: _selectedDate,
+                          ),
+                        ),
+                ),
+              ],
             ),
+            // ── Overdue notification watcher (invisible) ──────────────────
+            const _OverdueNotificationWatcher(),
           ],
         ),
       ),
@@ -204,6 +254,407 @@ class _SchedulerScreenState extends ConsumerState<SchedulerScreen> {
           !instant.toLocal().isBefore(startDay) &&
           instant.toLocal().isBefore(endDay);
     }).toList();
+  }
+}
+
+// ─── Overdue badge widget ─────────────────────────────────────────────────────
+
+/// Label untuk tab TERLEWAT dengan badge merah jika ada task terlewat.
+class _OverdueBadge extends StatelessWidget {
+  const _OverdueBadge({required this.count, required this.selected});
+  final int count;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('TERLEWAT'),
+        if (count > 0) ...[
+          const SizedBox(width: 5),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+            decoration: BoxDecoration(
+              color: selected
+                  ? const Color(0xFFE4572E)
+                  : const Color(0xFFE4572E).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(99),
+            ),
+            child: Text(
+              '$count',
+              style: GoogleFonts.ibmPlexMono(
+                fontSize: 9,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// ─── Overdue task list ────────────────────────────────────────────────────────
+
+/// List semua task yang sudah terlewat deadline-nya dan belum selesai.
+class _OverdueList extends ConsumerWidget {
+  const _OverdueList();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final overdue = ref.watch(overdueTasksProvider);
+    final ink = Theme.of(context).colorScheme.onSurface;
+
+    if (overdue.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.check_circle_outline,
+                size: 48,
+                color: const Color(0xFF3BB273).withValues(alpha: 0.7),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Tidak ada task terlewat!',
+                style: GoogleFonts.spaceGrotesk(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Semua task kamu sudah selesai atau belum jatuh tempo.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 13,
+                  color: ink.withValues(alpha: 0.55),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Header banner ─────────────────────────────────────────────────
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFE5DE),
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFFE4572E).withValues(alpha: 0.35),
+                width: 1.5,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                size: 16,
+                color: Color(0xFFE4572E),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${overdue.length} TASK TERLEWAT DEADLINE',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.8,
+                  color: const Color(0xFFB83010),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // ── List ──────────────────────────────────────────────────────────
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+            itemCount: overdue.length,
+            itemBuilder: (context, index) {
+              final item = overdue[index];
+              return _OverdueCard(
+                row: item,
+                onToggleComplete: (val) async {
+                  await ref
+                      .read(schedulerRepositoryProvider)
+                      .setCompleted(item.id, val);
+                  await ref
+                      .read(schedulerReminderCoordinatorProvider)
+                      .reconcileItem(item.id);
+                },
+                onTap: () =>
+                    context.push(AppRoutes.schedulerDetailPath(item.id)),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Overdue card ─────────────────────────────────────────────────────────────
+
+class _OverdueCard extends StatelessWidget {
+  const _OverdueCard({
+    required this.row,
+    required this.onToggleComplete,
+    required this.onTap,
+  });
+
+  final ScheduleItem row;
+  final ValueChanged<bool> onToggleComplete;
+  final VoidCallback onTap;
+
+  String _overdueLabel(DateTime anchor) {
+    final diff = DateTime.now().difference(anchor);
+    if (diff.inDays >= 1) return '${diff.inDays}h terlewat';
+    if (diff.inHours >= 1) return '${diff.inHours}j terlewat';
+    return '${diff.inMinutes}m terlewat';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = Theme.of(context).colorScheme.onSurface;
+    final anchor = (row.dueAtUtc ?? row.startAtUtc)?.toLocal();
+    final overdueSince = anchor != null ? _overdueLabel(anchor) : null;
+
+    // Date string
+    final dateStr = () {
+      final local = row.dueDateLocal ?? row.localStartDate;
+      if (local != null) {
+        final d = DateTime.tryParse(local);
+        if (d != null) return _formatShortDate(d);
+      }
+      if (anchor != null) return _formatShortDate(anchor);
+      return null;
+    }();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFE5DE),
+              border: Border.all(
+                color: const Color(0xFFE4572E),
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFE4572E).withValues(alpha: 0.12),
+                  blurRadius: 6,
+                  offset: const Offset(2, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // ── Overdue time column ────────────────────────────────
+                SizedBox(
+                  width: 56,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.timer_off_outlined,
+                        size: 22,
+                        color: Color(0xFFE4572E),
+                      ),
+                      if (overdueSince != null) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          overdueSince,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.ibmPlexMono(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFFB83010),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // ── Divider ────────────────────────────────────────────
+                Container(
+                  width: 2,
+                  height: 52,
+                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                  color: const Color(0xFFE4572E).withValues(alpha: 0.3),
+                ),
+                // ── Content ────────────────────────────────────────────
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE4572E),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              'TERLEWAT',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          Transform.scale(
+                            scale: 0.85,
+                            child: Checkbox(
+                              value: false,
+                              activeColor: const Color(0xFFE4572E),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              onChanged: (v) => onToggleComplete(v ?? false),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        row.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: ink,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          if (dateStr != null)
+                            _InfoPill(
+                              icon: Icons.calendar_month_outlined,
+                              label: dateStr,
+                              ink: ink,
+                              color: const Color(0xFFE4572E),
+                            ),
+                          _InfoPill(
+                            icon: Icons.flag_outlined,
+                            label: _priorityLabel(row.priority),
+                            color: _priorityColor(row.priority),
+                            ink: ink,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // ── Arrow ──────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Icon(
+                    Icons.chevron_right,
+                    color: const Color(0xFFE4572E).withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Overdue notification watcher ─────────────────────────────────────────────
+
+/// Widget invisible yang mendeteksi perubahan task terlewat dan mengirim
+/// notifikasi OS segera (bukan scheduled) menggunakan flutter_local_notifications.
+class _OverdueNotificationWatcher extends ConsumerStatefulWidget {
+  const _OverdueNotificationWatcher();
+
+  @override
+  ConsumerState<_OverdueNotificationWatcher> createState() =>
+      _OverdueNotificationWatcherState();
+}
+
+class _OverdueNotificationWatcherState
+    extends ConsumerState<_OverdueNotificationWatcher> {
+  // Set ID task yang sudah pernah dinotifikasi dalam sesi ini
+  final _notifiedIds = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    // Isi _notifiedIds dengan task terlewat yang sudah ada saat pertama load
+    // agar tidak spam notif saat app baru dibuka.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final current = ref.read(overdueTasksProvider);
+      _notifiedIds.addAll(current.map((item) => item.id));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // listen perubahan overdueTasksProvider
+    ref.listen<List<ScheduleItem>>(overdueTasksProvider, (previous, next) {
+      // Task yang baru masuk ke daftar terlewat (belum pernah dinotif)
+      final newOverdue = next.where(
+        (item) => !_notifiedIds.contains(item.id),
+      );
+      for (final item in newOverdue) {
+        _notifiedIds.add(item.id);
+        _sendOverdueNotification(item);
+      }
+      // Jika task sudah selesai / dihapus, hapus dari set agar bisa dinotif lagi
+      // jika entah bagaimana muncul lagi sebagai pending.
+      if (previous != null) {
+        final currentIds = next.map((item) => item.id).toSet();
+        _notifiedIds.removeWhere((id) => !currentIds.contains(id));
+      }
+    });
+    // Widget ini tidak menampilkan UI apapun
+    return const SizedBox.shrink();
+  }
+
+  Future<void> _sendOverdueNotification(ScheduleItem item) async {
+    final service = ref.read(scheduleNotificationServiceProvider);
+    await service.initialize();
+    await service.showNow(
+      id: item.id.hashCode.abs() % 0x7fffffff,
+      title: '⏰ Task Terlewat: ${item.title}',
+      body: 'Task ini sudah melewati deadline dan belum diselesaikan.',
+      payload: item.id,
+    );
   }
 }
 

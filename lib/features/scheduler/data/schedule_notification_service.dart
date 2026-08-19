@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show Color;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -18,6 +19,13 @@ abstract interface class ScheduleNotificationService {
     required DateTime scheduledAtUtc,
     required String payload,
     required bool isTask,
+  });
+  /// Kirim notifikasi segera (immediate) tanpa scheduling.
+  Future<void> showNow({
+    required int id,
+    required String title,
+    required String body,
+    required String payload,
   });
   Future<void> cancel(int id);
 }
@@ -152,4 +160,34 @@ class LocalScheduleNotificationService implements ScheduleNotificationService {
 
   @override
   Future<void> cancel(int id) => _plugin.cancel(id: id);
+
+  @override
+  Future<void> showNow({
+    required int id,
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    await initialize();
+    await _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: NotificationDetails(
+        android: const AndroidNotificationDetails(
+          'keyspace_overdue_alerts',
+          'Task Terlewat',
+          channelDescription:
+              'Notifikasi segera ketika task melewati deadline.',
+          importance: Importance.high,
+          priority: Priority.high,
+          color: Color(0xFFE4572E),
+        ),
+        iOS: const DarwinNotificationDetails(
+          categoryIdentifier: 'keyspace_schedule_task',
+        ),
+      ),
+      payload: payload,
+    );
+  }
 }
