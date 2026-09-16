@@ -34,16 +34,19 @@ class FinancePdfBuilder {
           pw.SizedBox(height: 16),
           _buildSummaryTable(data),
           pw.SizedBox(height: 20),
-          _buildCategorySection(
+          ..._buildCategorySection(
             'BREAKDOWN PENGELUARAN',
             data.expenseCategories,
           ),
           if (data.incomeCategories.isNotEmpty) ...[
             pw.SizedBox(height: 16),
-            _buildCategorySection('BREAKDOWN PEMASUKAN', data.incomeCategories),
+            ..._buildCategorySection(
+              'BREAKDOWN PEMASUKAN',
+              data.incomeCategories,
+            ),
           ],
           pw.SizedBox(height: 20),
-          _buildTransactionsSection(data),
+          ..._buildTransactionsSection(data),
         ],
       ),
     );
@@ -171,46 +174,40 @@ class FinancePdfBuilder {
     );
   }
 
-  pw.Widget _buildCategorySection(
+  List<pw.Widget> _buildCategorySection(
     String title,
     List<FinanceCategoryRow> categories,
   ) {
     if (categories.isEmpty) {
-      return pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text(
-            title,
-            style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
-          ),
-          pw.SizedBox(height: 4),
-          pw.Text(
-            'Tidak ada data.',
-            style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
-          ),
-        ],
-      );
-    }
-
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
+      return [
         pw.Text(
           title,
           style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
         ),
-        pw.SizedBox(height: 6),
-        pw.Table(
-          columnWidths: {
-            0: const pw.FlexColumnWidth(3),
-            1: const pw.FlexColumnWidth(1),
-            2: const pw.FlexColumnWidth(2),
-          },
-          border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
-          children: [_catHeaderRow(), ...categories.map(_catRow)],
+        pw.SizedBox(height: 4),
+        pw.Text(
+          'Tidak ada data.',
+          style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
         ),
-      ],
-    );
+      ];
+    }
+
+    return [
+      pw.Text(
+        title,
+        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+      ),
+      pw.SizedBox(height: 6),
+      pw.Table(
+        columnWidths: {
+          0: const pw.FlexColumnWidth(3),
+          1: const pw.FlexColumnWidth(1),
+          2: const pw.FlexColumnWidth(2),
+        },
+        border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+        children: [_catHeaderRow(), ...categories.map(_catRow)],
+      ),
+    ];
   }
 
   pw.TableRow _catHeaderRow() {
@@ -235,77 +232,73 @@ class FinancePdfBuilder {
     );
   }
 
-  pw.Widget _buildTransactionsSection(FinanceReportData data) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
+  List<pw.Widget> _buildTransactionsSection(FinanceReportData data) {
+    return [
+      pw.Text(
+        'DAFTAR TRANSAKSI',
+        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+      ),
+      pw.SizedBox(height: 6),
+      if (data.transactions.isEmpty)
         pw.Text(
-          'DAFTAR TRANSAKSI',
-          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
-        ),
-        pw.SizedBox(height: 6),
-        if (data.transactions.isEmpty)
-          pw.Text(
-            'Tidak ada transaksi pada rentang ini.',
-            style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
-          )
-        else
-          pw.TableHelper.fromTextArray(
-            headers: [
-              'Tanggal',
-              'Jenis',
-              'Nama',
-              'Kategori',
-              'Reimburse',
-              'Nominal',
-            ],
-            data: data.transactions.map((tx) {
-              final typeLabel = tx.type == 'expense'
-                  ? 'Pengeluaran'
-                  : 'Pemasukan';
-              final reimburseLabel = tx.type == 'expense'
-                  ? (tx.isReimburse ? 'Ya' : 'Tidak')
-                  : '-';
-              return [
-                _fmtDate(tx.date),
-                typeLabel,
-                tx.name,
-                tx.categoryName,
-                reimburseLabel,
-                '${tx.type == 'expense' ? '-' : '+'}${_fmtIdr(tx.amount)}',
-              ];
-            }).toList(),
-            columnWidths: {
-              0: const pw.FixedColumnWidth(58),
-              1: const pw.FixedColumnWidth(62),
-              2: const pw.FlexColumnWidth(3),
-              3: const pw.FlexColumnWidth(2),
-              4: const pw.FixedColumnWidth(48),
-              5: const pw.FixedColumnWidth(80),
-            },
-            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
-            headerStyle: pw.TextStyle(
-              fontSize: 8,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.black,
-            ),
-            cellStyle: const pw.TextStyle(fontSize: 8),
-            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-            cellDecoration: (_, _, _) =>
-                const pw.BoxDecoration(color: PdfColors.white),
-            headerAlignment: pw.Alignment.centerLeft,
-            cellAlignment: pw.Alignment.centerLeft,
-            headerPadding: const pw.EdgeInsets.symmetric(
-              horizontal: 4,
-              vertical: 3,
-            ),
-            cellPadding: const pw.EdgeInsets.symmetric(
-              horizontal: 4,
-              vertical: 3,
-            ),
+          'Tidak ada transaksi pada rentang ini.',
+          style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+        )
+      else
+        pw.TableHelper.fromTextArray(
+          headers: [
+            'Tanggal',
+            'Jenis',
+            'Nama',
+            'Kategori',
+            'Reimburse',
+            'Nominal',
+          ],
+          data: data.transactions.map((tx) {
+            final typeLabel =
+                tx.type == 'expense' ? 'Pengeluaran' : 'Pemasukan';
+            final reimburseLabel = tx.type == 'expense'
+                ? (tx.isReimburse ? 'Ya' : 'Tidak')
+                : '-';
+            return [
+              _fmtDate(tx.date),
+              typeLabel,
+              tx.name,
+              tx.categoryName,
+              reimburseLabel,
+              '${tx.type == 'expense' ? '-' : '+'}${_fmtIdr(tx.amount)}',
+            ];
+          }).toList(),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(58),
+            1: const pw.FixedColumnWidth(62),
+            2: const pw.FlexColumnWidth(3),
+            3: const pw.FlexColumnWidth(2),
+            4: const pw.FixedColumnWidth(48),
+            5: const pw.FixedColumnWidth(80),
+          },
+          border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+          headerStyle: pw.TextStyle(
+            fontSize: 8,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColors.black,
           ),
-      ],
-    );
+          cellStyle: const pw.TextStyle(fontSize: 8),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          cellDecoration: (_, _, _) =>
+              const pw.BoxDecoration(color: PdfColors.white),
+          headerAlignment: pw.Alignment.centerLeft,
+          cellAlignment: pw.Alignment.centerLeft,
+          headerPadding: const pw.EdgeInsets.symmetric(
+            horizontal: 4,
+            vertical: 3,
+          ),
+          cellPadding: const pw.EdgeInsets.symmetric(
+            horizontal: 4,
+            vertical: 3,
+          ),
+        ),
+    ];
   }
 
   pw.Widget _buildFooter(pw.Context ctx) {

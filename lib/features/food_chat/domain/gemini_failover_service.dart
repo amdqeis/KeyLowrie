@@ -311,24 +311,38 @@ class GeminiFailoverService {
             requestId: requestId,
           );
         }
+
+        // Jika input ambigu (bukan schema error teknis), hentikan dan beri tahu user.
+        if (parseOutcome.isAmbiguous) {
+          await _recordFailure(
+            key.id,
+            requestId,
+            const GeminiFailure(
+              category: GeminiFailureCategory.schemaMismatch,
+            ),
+            result.latency,
+          );
+          await _pendingRequests.discardFailedAttempt(
+            requestId,
+            GeminiFailureCategory.schemaMismatch,
+          );
+          return ParseChatRequestFailure(
+            GeminiFailureCategory.schemaMismatch,
+            requestId: requestId,
+            kind: ParseChatFailureKind.ambiguousInput,
+            detail: parseOutcome.detail,
+          );
+        }
+
+        // Schema mismatch teknis: catat kegagalan lalu lanjut ke key berikutnya
+        // (bukan langsung return) — key lain mungkin berhasil.
         await _recordFailure(
           key.id,
           requestId,
           const GeminiFailure(category: GeminiFailureCategory.schemaMismatch),
           result.latency,
         );
-        await _pendingRequests.discardFailedAttempt(
-          requestId,
-          GeminiFailureCategory.schemaMismatch,
-        );
-        return ParseChatRequestFailure(
-          GeminiFailureCategory.schemaMismatch,
-          requestId: requestId,
-          kind: parseOutcome.isAmbiguous
-              ? ParseChatFailureKind.ambiguousInput
-              : ParseChatFailureKind.technicalError,
-          detail: parseOutcome.detail,
-        );
+        continue;
       }
 
       final failureResult = result as GeminiCallFailure;
@@ -367,7 +381,7 @@ class GeminiFailoverService {
 
   Future<List<ApiKeyCandidate>> _orderedCandidates() async {
     final keys = await _keyPool.enabledKeysByPriority();
-    keys.sort((a, b) => a.priorityOrder.compareTo(b.priorityOrder));
+    // enabledKeysByPriority() sudah terurut ASC priorityOrder — tidak perlu sort ulang.
     if (keys.isEmpty) return keys;
     final activeId = await _keyPool.activeKeyId();
     final activeIndex = keys.indexWhere((key) => key.id == activeId);
@@ -456,8 +470,6 @@ class GeminiFailoverService {
 
   /// Reason yang mengindikasikan input ambigu dari pengguna,
   /// bukan schema error teknis dari Gemini.
-  /// Catatan: explicit_mode_mismatch dan fallback_category_missing TIDAK
-  /// termasuk di sini karena masih bisa diperbaiki dengan repair attempt.
   static bool _isAmbiguousReason(String reason) {
     // Domain benar-benar tidak dikenali: Gemini mengembalikan 'unknown'
     // baik dengan maupun tanpa clarification_question.
@@ -465,7 +477,16 @@ class GeminiFailoverService {
         reason == 'unknown_invalid' ||
         // Tidak ada item keuangan sama sekali setelah domain terdeteksi —
         // kemungkinan input tidak menyebut nominal apapun.
-        reason == 'financial_items_empty';
+        reason == 'financial_items_empty' ||
+        // Domain yang terdeteksi tidak sesuai mode yang dikunci pengguna —
+        // input mungkin tidak relevan dengan mode aktif saat ini.
+        reason == 'explicit_mode_mismatch' ||
+        // Nominal tidak valid atau null — Gemini bingung dengan format input
+        // (mis: angka bulat tanpa satuan pada nama makanan/minuman).
+        reason == 'amount_invalid' ||
+        // nutrition_summary null padahal domain nutrition — terjadi saat input
+        // mengandung nama makanan + angka bulat tanpa satuan nutrisi yang jelas.
+        reason == 'nutrition_summary_invalid';
   }
 
   Future<void> _recordFailure(

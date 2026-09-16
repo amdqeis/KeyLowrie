@@ -43,6 +43,13 @@ abstract interface class GeminiClient {
     required bool repairAttempt,
     CancellationSignal? cancellation,
   });
+
+  /// Lightweight key verification using models.get (0 RPD cost).
+  /// Returns [GeminiCallSuccess] if the key is valid and has model access.
+  Future<GeminiCallResult> verifyKey({
+    required String secret,
+    CancellationSignal? cancellation,
+  });
 }
 
 abstract interface class NetworkStatus {

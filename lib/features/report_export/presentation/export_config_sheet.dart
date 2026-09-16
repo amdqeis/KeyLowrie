@@ -5,6 +5,7 @@ import 'package:keyspace/features/finance/presentation/finance_providers.dart';
 import 'package:keyspace/features/report_export/domain/report_date_range.dart';
 import 'package:keyspace/features/report_export/domain/report_models.dart';
 import 'package:keyspace/features/report_export/presentation/export_providers.dart';
+import 'package:keyspace/shared/providers/infrastructure_providers.dart';
 import 'package:keyspace/shared/widgets/brutal_widgets.dart';
 
 /// Menampilkan bottom sheet untuk mengonfigurasi dan men-export laporan PDF.
@@ -391,34 +392,32 @@ class _ExportConfigSheetState extends ConsumerState<_ExportConfigSheet> {
               'Tidak ada data pada rentang yang dipilih, atau preview dibatalkan.',
         );
       }
-    } on Object catch (e) {
+    } on Object catch (e, st) {
       if (!mounted) return;
-      setState(() => _errorMessage = 'Gagal membuat PDF. Coba lagi.');
-      debugPrint('Export error: $e');
+      debugPrint('Export error: $e\n$st');
+      setState(() => _errorMessage = 'Error: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  /// Resolve periode aktif dari database jika preset = activePeriod
+  /// Resolve periode aktif dari database jika preset = activePeriod.
+  /// Menggunakan [FinanceRepository.getOrCreatePeriod] secara async agar
+  /// selalu mendapatkan periode yang benar, bahkan saat stream belum emit.
   Future<ReportDateRange> _resolveActivePeriodRange(
     ReportDateRange fallback,
   ) async {
     if (_preset != ReportRangePreset.activePeriod) return fallback;
     try {
-      final periods = ref.read(financePeriodsProvider).value;
-      if (periods == null || periods.isEmpty) return fallback;
-      // Periode aktif = periode yang mengandung tanggal hari ini
-      final now = DateTime.now();
-      final active = periods.firstWhere(
-        (p) => !now.isBefore(p.startDate) && !now.isAfter(p.endDate),
-        orElse: () => periods.first,
-      );
-      return ReportDateRange.fromPeriod(active);
-    } on Object {
+      final repo = ref.read(financeRepositoryProvider);
+      final period = await repo.getOrCreatePeriod(DateTime.now());
+      return ReportDateRange.fromPeriod(period);
+    } on Object catch (e) {
+      debugPrint('Gagal resolve periode aktif: $e');
       return fallback;
     }
   }
+
 
   String _fmtDate(DateTime d) {
     const months = [

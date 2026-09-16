@@ -191,15 +191,23 @@ class UnifiedChatResponseParser {
     if (reminderValues is! List) {
       throw const UnifiedChatResponseException('reminders_invalid');
     }
+    // Whitelist-nya {15, 30, 1440}. Gemini kadang mengembalikan 0 atau nilai
+    // lain yang tidak ada di whitelist — daripada lempar exception yang memicu
+    // cascade schemaMismatch + AllKeysFailed, clamp ke nilai terdekat yang valid.
+    const validOffsets = [15, 30, 1440];
     final reminderOffsets = reminderValues
+        .whereType<Map<String, dynamic>>()
         .map((entry) {
-          if (entry is! Map<String, dynamic> ||
-              entry['offset_minutes'] is! int ||
-              !const {15, 30, 1440}.contains(entry['offset_minutes'])) {
-            throw const UnifiedChatResponseException('reminder_offset_invalid');
-          }
-          return entry['offset_minutes'] as int;
+          final raw = entry['offset_minutes'];
+          if (raw is! int) return null;
+          if (validOffsets.contains(raw)) return raw;
+          // Clamp ke nilai terdekat
+          return validOffsets.reduce(
+            (a, b) => (raw - a).abs() <= (raw - b).abs() ? a : b,
+          );
         })
+        .whereType<int>()
+        .toSet() // deduplicate jika beberapa raw values mapped ke nilai sama
         .toList(growable: false);
     final priority = switch (value['priority']) {
       'low' => SchedulePriority.low,
@@ -293,10 +301,14 @@ class UnifiedChatResponseParser {
       throw const UnifiedChatResponseException('reimburse_provider_forbidden');
     }
     final name = _requiredText(value['name'], 'item_name');
-    final amount = value['amount'];
-    if (amount is! int || amount <= 0) {
+    // Gemini kadang mengembalikan amount sebagai double (mis: 147000.0) terutama
+    // jika input menggunakan format ribuan Indonesia "147.000". Terima num lalu
+    // truncate ke int — aman untuk nominal mata uang (tidak ada desimal berarti).
+    final rawAmount = value['amount'];
+    if (rawAmount is! num || rawAmount <= 0 || rawAmount.isInfinite || rawAmount.isNaN) {
       throw const UnifiedChatResponseException('amount_invalid');
     }
+    final amount = rawAmount.truncate();
     // Currency bersifat opsional dari respons Gemini; default ke context.
     // Bug sebelumnya: kondisi || selalu true — diperbaiki menjadi &&.
     final rawCurrency =
@@ -312,6 +324,7 @@ class UnifiedChatResponseParser {
     );
     final requestedCategory = _requiredText(value['category'], 'category');
     final category = _resolveCategory(requestedCategory, domain, context);
+    final notes = _optionalText(value['notes']);
     return ParsedFinancialItem(
       name: name,
       amount: amount,
@@ -319,6 +332,7 @@ class UnifiedChatResponseParser {
       transactionDate: transactionDate,
       categoryId: category.id,
       categoryName: category.name,
+      notes: notes,
     );
   }
 

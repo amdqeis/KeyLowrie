@@ -125,6 +125,15 @@ class _ResultClient implements GeminiClient {
     calls++;
     return result;
   }
+
+  @override
+  Future<GeminiCallResult> verifyKey({
+    required String secret,
+    CancellationSignal? cancellation,
+  }) async {
+    calls++;
+    return result;
+  }
 }
 
 class _PendingClient implements GeminiClient {
@@ -144,6 +153,12 @@ class _PendingClient implements GeminiClient {
     required String input,
     required ChatParseContext context,
     required bool repairAttempt,
+    CancellationSignal? cancellation,
+  }) => completer.future;
+
+  @override
+  Future<GeminiCallResult> verifyKey({
+    required String secret,
     CancellationSignal? cancellation,
   }) => completer.future;
 }

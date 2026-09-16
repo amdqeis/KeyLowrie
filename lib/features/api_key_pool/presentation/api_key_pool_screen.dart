@@ -20,6 +20,7 @@ class ApiKeyPoolScreen extends ConsumerStatefulWidget {
 
 class _ApiKeyPoolScreenState extends ConsumerState<ApiKeyPoolScreen> {
   String? _testingKeyId;
+  bool _testingAll = false;
   RequestCancellation? _testCancellation;
 
   @override
@@ -35,9 +36,27 @@ class _ApiKeyPoolScreenState extends ConsumerState<ApiKeyPoolScreen> {
     final ink = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('API KEY POOL')),
+      appBar: AppBar(
+        title: const Text('API KEY POOL'),
+        actions: [
+          if (_testingAll)
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            )
+          else
+            IconButton(
+              tooltip: 'Tes semua API key',
+              onPressed: _testingKeyId == null ? () => _testAllKeys(keys) : null,
+              icon: const Icon(Icons.playlist_add_check),
+            ),
+        ],
+      ),
       // ── Brutal FAB ──────────────────────────────────────────────
-      floatingActionButton: _testingKeyId != null
+      floatingActionButton: _isTesting
           ? null
           : Padding(
               padding: const EdgeInsets.only(right: 4, bottom: 4),
@@ -95,7 +114,7 @@ class _ApiKeyPoolScreenState extends ConsumerState<ApiKeyPoolScreen> {
                     action: BrutalButton(
                       label: 'TAMBAH API KEY',
                       icon: Icons.key,
-                      onPressed: _testingKeyId == null ? _add : null,
+                      onPressed: !_isTesting ? _add : null,
                     ),
                   ),
                 ],
@@ -208,21 +227,21 @@ class _ApiKeyPoolScreenState extends ConsumerState<ApiKeyPoolScreen> {
                                     ? 'MENGUJI'
                                     : 'TES',
                                 loading: _testingKeyId == key.id,
-                                onPressed: _testingKeyId == null
+                                onPressed: !_isTesting
                                     ? () => _testById(key.id)
                                     : null,
                               ),
                               _ActionBtn(
                                 icon: Icons.edit_outlined,
                                 label: 'EDIT',
-                                onPressed: _testingKeyId == null
+                                onPressed: !_isTesting
                                     ? () => _edit(key)
                                     : null,
                               ),
                               const Spacer(),
                               IconButton(
                                 tooltip: 'Hapus API Key',
-                                onPressed: _testingKeyId == null
+                                onPressed: !_isTesting
                                     ? () => _delete(key)
                                     : null,
                                 icon: Icon(
@@ -380,8 +399,59 @@ class _ApiKeyPoolScreenState extends ConsumerState<ApiKeyPoolScreen> {
     await repository.delete(key.id);
   }
 
+  bool get _isTesting => _testingKeyId != null || _testingAll;
+
+  Future<void> _testAllKeys(AsyncValue<List<ApiKeyMetadataData>> keysAsync) async {
+    final keysList = keysAsync.value;
+    if (keysList == null || keysList.isEmpty || _isTesting) return;
+    final service = ref.read(apiKeyTestServiceProvider);
+    final cancellation = RequestCancellation();
+    setState(() {
+      _testingAll = true;
+      _testCancellation = cancellation;
+    });
+    var successCount = 0;
+    var failCount = 0;
+    try {
+      final ids = keysList.map((k) => k.id).toList();
+      await for (final (keyId, result) in service.testAll(
+        ids,
+        cancellation: cancellation,
+      )) {
+        if (!mounted) return;
+        if (result.isSuccess) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+        // Show per-key progress by temporarily setting _testingKeyId.
+        setState(() => _testingKeyId = keyId);
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+        if (mounted) setState(() => _testingKeyId = null);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Selesai: $successCount sehat, $failCount gagal'),
+        ),
+      );
+    } on Object catch (error, stackTrace) {
+      debugPrint('Test all keys failed: ${error.runtimeType}');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) _error('Pengujian batch gagal.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _testingAll = false;
+          _testingKeyId = null;
+          _testCancellation = null;
+        });
+      }
+    }
+  }
+
   Future<void> _testById(String id) async {
-    if (_testingKeyId != null) return;
+    if (_isTesting) return;
     final service = ref.read(apiKeyTestServiceProvider);
     final cancellation = RequestCancellation();
     setState(() {
@@ -455,32 +525,38 @@ class _ApiKeyPoolScreenState extends ConsumerState<ApiKeyPoolScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: Text(title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: aliasController,
-                decoration: const InputDecoration(labelText: 'Alias'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: secretController,
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration: InputDecoration(
-                  labelText: replacement
-                      ? 'Key baru (kosong = tidak berubah)'
-                      : 'API key',
+          // Wrap in SingleChildScrollView so the dialog scrolls when the
+          // soft keyboard appears instead of overflowing (red warning).
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: aliasController,
+                  decoration: const InputDecoration(labelText: 'Alias'),
+                  scrollPadding: const EdgeInsets.only(bottom: 120),
                 ),
-              ),
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Tes key sekarang'),
-                value: test,
-                onChanged: (value) => setState(() => test = value ?? true),
-              ),
-            ],
+                const SizedBox(height: 12),
+                TextField(
+                  controller: secretController,
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  scrollPadding: const EdgeInsets.only(bottom: 120),
+                  decoration: InputDecoration(
+                    labelText: replacement
+                        ? 'Key baru (kosong = tidak berubah)'
+                        : 'API key',
+                  ),
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Tes key sekarang'),
+                  value: test,
+                  onChanged: (value) => setState(() => test = value ?? true),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(

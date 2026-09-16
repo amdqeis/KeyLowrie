@@ -70,6 +70,18 @@ class FakeGeminiClient implements GeminiClient {
     if (_results.isEmpty) throw StateError('Fake result queue is empty');
     return _results.removeAt(0);
   }
+
+  @override
+  Future<GeminiCallResult> verifyKey({
+    required String secret,
+    CancellationSignal? cancellation,
+  }) async {
+    calls.add(
+      ClientCall(secret: secret, input: '', repairAttempt: false),
+    );
+    if (_results.isEmpty) throw StateError('Fake result queue is empty');
+    return _results.removeAt(0);
+  }
 }
 
 class FailureUpdate {

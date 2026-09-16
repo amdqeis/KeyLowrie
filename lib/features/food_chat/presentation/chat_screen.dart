@@ -70,6 +70,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// null = normal/info, ambiguousInput = oranye, technicalError = merah.
   ParseChatFailureKind? _statusKind;
   bool _requesting = false;
+  bool _micLocked = false;
+  /// Flag: jari diangkat sebelum _voice.start() selesai — stop segera setelah start.
+  bool _pendingMicStop = false;
   Timer? _draftTimer;
   RequestCancellation? _cancellation;
 
@@ -995,16 +998,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     Semantics(
                       label: _voiceSemanticLabel,
                       button: true,
-                      child: IconButton(
-                        tooltip: 'Mulai input suara',
-                        onPressed: _requesting || _voice.isActive
-                            ? null
-                            : _startVoice,
-                        icon: Icon(
-                          _voice.status == VoiceInputStatus.completed
-                              ? Icons.mic_none
-                              : Icons.mic,
-                        ),
+                      child: _MicHoldButton(
+                        isListening: _voice.status == VoiceInputStatus.listening,
+                        isCompleted: _voice.status == VoiceInputStatus.completed,
+                        isLocked: _micLocked,
+                        isDisabled: _requesting,
+                        onPointerDown: _onMicPointerDown,
+                        onPointerMove: _onMicPointerMove,
+                        onPointerUp: _onMicPointerUp,
+                        onLockTap: _onMicLockStop,
                       ),
                     ),
                     if (_requesting)
@@ -1024,28 +1026,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
             ),
           ),
-          if (_voice.isActive) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _voice.status == VoiceInputStatus.listening
-                        ? _stopVoice
-                        : null,
-                    icon: const Icon(Icons.stop_circle_outlined),
-                    label: const Text('STOP SUARA'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: _cancelVoice,
-                    icon: const Icon(Icons.close),
-                    label: const Text('BATAL'),
-                  ),
-                ),
-              ],
+          // ── Status panel saat merekam ─────────────────────────────────
+          if (_micLocked) ...[
+            const SizedBox(height: 6),
+            _MicLockedBar(
+              onStop: _onMicLockStop,
+              onCancel: _cancelVoice,
+            ),
+          ] else if (_voice.isActive) ...[
+            const SizedBox(height: 6),
+            _MicHoldingHint(
+              onCancel: _cancelVoice,
             ),
           ],
           if (_voice.status == VoiceInputStatus.denied)
@@ -1397,6 +1388,58 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() => _status = 'Membatalkan request…');
   }
 
+  // ── Hold-to-record mic ──────────────────────────────────────────────────
+
+  /// Swipe up threshold (dp) to trigger lock mode.
+  static const _micLockThreshold = 50.0;
+
+  /// Posisi pointer saat onPointerDown — untuk hitung swipe delta manual.
+  Offset? _micHoldOrigin;
+
+  Future<void> _onMicPointerDown(PointerDownEvent event) async {
+    if (_requesting || _voice.isActive) return;
+    _micHoldOrigin = event.localPosition;
+    _pendingMicStop = false;
+    await _startVoice();
+    // Jika jari sudah diangkat sebelum start() selesai, langsung stop
+    if (_pendingMicStop && !_micLocked) {
+      _pendingMicStop = false;
+      await _stopVoice();
+    }
+  }
+
+  void _onMicPointerMove(PointerMoveEvent event) {
+    // Deteksi swipe ke atas dari posisi awal hold
+    if (_micLocked) return;
+    final origin = _micHoldOrigin;
+    if (origin == null) return;
+    if (!_voice.isActive) return;
+    final dy = event.localPosition.dy - origin.dy;
+    if (dy < -_micLockThreshold) {
+      // Lock mic: tetap rekam walau jari diangkat
+      setState(() => _micLocked = true);
+      _micHoldOrigin = null;
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  Future<void> _onMicPointerUp(PointerUpEvent event) async {
+    _micHoldOrigin = null;
+    // Kalau locked, jangan stop — tunggu tap manual
+    if (_micLocked) return;
+    if (!_voice.isActive) {
+      // start() belum selesai — tandai pending stop
+      _pendingMicStop = true;
+      return;
+    }
+    await _stopVoice();
+  }
+
+  Future<void> _onMicLockStop() async {
+    setState(() => _micLocked = false);
+    await _stopVoice();
+  }
+
   Future<void> _startVoice() async {
     if (_requesting || _voice.isActive) return;
     final settings = await ref.read(settingsRepositoryProvider).getSettings();
@@ -1433,6 +1476,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _stopVoice() => _voice.stop();
 
   Future<void> _cancelVoice() async {
+    setState(() => _micLocked = false);
     await _voice.cancel();
     if (!mounted) return;
     setState(
@@ -1858,3 +1902,442 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 }
 
 enum _AllKeysFailedAction { addKey, manageKeys, retry, manual }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mic Hold Button — animasi pulse ripple + scale ala WhatsApp voice note
+// _____________________________________________________________________________
+
+class _MicHoldButton extends StatefulWidget {
+  const _MicHoldButton({
+    required this.isListening,
+    required this.isCompleted,
+    required this.isLocked,
+    required this.isDisabled,
+    required this.onPointerDown,
+    required this.onPointerMove,
+    required this.onPointerUp,
+    required this.onLockTap,
+  });
+
+  final bool isListening;
+  final bool isCompleted;
+  final bool isLocked;
+  final bool isDisabled;
+  final Future<void> Function(PointerDownEvent) onPointerDown;
+  final void Function(PointerMoveEvent) onPointerMove;
+  final Future<void> Function(PointerUpEvent) onPointerUp;
+  final Future<void> Function() onLockTap;
+
+  @override
+  State<_MicHoldButton> createState() => _MicHoldButtonState();
+}
+
+class _MicHoldButtonState extends State<_MicHoldButton>
+    with TickerProviderStateMixin {
+  late final AnimationController _pulseCtrl;
+  late final AnimationController _scaleCtrl;
+  late final Animation<double> _pulseAnim;
+  late final Animation<double> _scaleAnim;
+  late final Animation<double> _pulseOpacity;
+  bool _isPressing = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Pulse ripple — melebar keluar saat listening
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _pulseAnim = Tween<double>(begin: 1.0, end: 2.2).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeOut),
+    );
+    _pulseOpacity = Tween<double>(begin: 0.5, end: 0.0).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeOut),
+    );
+
+    // Scale button — membesar saat listening
+    _scaleCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+      value: 1.0,
+    );
+    _scaleAnim = Tween<double>(begin: 1.0, end: 1.35).animate(
+      CurvedAnimation(parent: _scaleCtrl, curve: Curves.easeOutBack),
+    );
+
+    _syncAnimations();
+  }
+
+  @override
+  void didUpdateWidget(_MicHoldButton old) {
+    super.didUpdateWidget(old);
+    if (old.isListening != widget.isListening ||
+        old.isLocked != widget.isLocked) {
+      _syncAnimations();
+    }
+    // Reset state tekan saat listening/lock/disabled mulai
+    if (_isPressing &&
+        (widget.isListening || widget.isLocked || widget.isDisabled)) {
+      _isPressing = false;
+    }
+  }
+
+  void _syncAnimations() {
+    final active = widget.isListening || widget.isLocked;
+    if (active) {
+      _pulseCtrl.repeat();
+      _scaleCtrl.forward();
+    } else {
+      _pulseCtrl.stop();
+      _pulseCtrl.reset();
+      _scaleCtrl.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseCtrl.dispose();
+    _scaleCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final active = widget.isListening || widget.isLocked;
+    final color = active ? cs.error : cs.onSurfaceVariant;
+
+    // Mode locked — tap untuk stop
+    if (widget.isLocked) {
+      return AnimatedBuilder(
+        animation: Listenable.merge([_pulseAnim, _pulseOpacity, _scaleAnim]),
+        builder: (_, _) => SizedBox(
+          width: 48,
+          height: 48,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Ripple ring
+              Transform.scale(
+                scale: _pulseAnim.value,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color.withValues(alpha: _pulseOpacity.value),
+                  ),
+                ),
+              ),
+              // Button
+              Transform.scale(
+                scale: _scaleAnim.value,
+                child: GestureDetector(
+                  onTap: widget.onLockTap,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                    ),
+                    child: Icon(
+                      Icons.lock,
+                      size: 18,
+                      color: cs.onError,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Mode normal — hold untuk rekam
+    final preparing = _isPressing && !widget.isListening;
+    final activeColor = preparing ? const Color(0xFFFFA726) : color;
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([_pulseAnim, _pulseOpacity, _scaleAnim]),
+      builder: (_, _) => SizedBox(
+        width: 48,
+        height: 48,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Ripple ring — tampil saat listening
+            if (widget.isListening)
+              Transform.scale(
+                scale: _pulseAnim.value,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color.withValues(alpha: _pulseOpacity.value),
+                  ),
+                ),
+              ),
+            // Preparing ring — tampil saat ditekan tapi belum listening
+            AnimatedOpacity(
+              opacity: preparing ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 120),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                width: preparing ? 46.0 : 30.0,
+                height: preparing ? 46.0 : 30.0,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFFFA726),
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+            // Button
+            Listener(
+              onPointerDown: widget.isDisabled
+                  ? null
+                  : (e) {
+                      setState(() => _isPressing = true);
+                      HapticFeedback.lightImpact();
+                      widget.onPointerDown(e);
+                    },
+              onPointerMove: widget.isDisabled ? null : widget.onPointerMove,
+              onPointerUp: widget.isDisabled
+                  ? null
+                  : (e) {
+                      setState(() => _isPressing = false);
+                      widget.onPointerUp(e);
+                    },
+              onPointerCancel: (_) => setState(() => _isPressing = false),
+              child: Tooltip(
+                message: widget.isListening
+                    ? 'Lepas untuk stop'
+                    : preparing
+                        ? 'Memulai rekaman…'
+                        : 'Tahan untuk rekam suara',
+                child: AnimatedScale(
+                  scale: preparing ? 0.86 : 1.0,
+                  duration: const Duration(milliseconds: 80),
+                  child: Transform.scale(
+                    scale: _scaleAnim.value,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: 36,
+                      height: 36,
+                      decoration: widget.isListening
+                          ? BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: color,
+                            )
+                          : preparing
+                              ? BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFFFFA726)
+                                      .withValues(alpha: 0.18),
+                                )
+                              : null,
+                      child: Icon(
+                        preparing ? Icons.mic : Icons.mic_none,
+                        color: widget.isListening ? cs.onError : activeColor,
+                        size: widget.isListening ? 20 : 22,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Status bar saat mic TERKUNCI (lock mode)
+// _____________________________________________________________________________
+
+class _MicLockedBar extends StatelessWidget {
+  const _MicLockedBar({required this.onStop, required this.onCancel});
+
+  final Future<void> Function() onStop;
+  final Future<void> Function() onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: cs.errorContainer.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.error.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          // Indikator merekam
+          _PulsingDot(color: cs.error),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Merekam… terkunci',
+              style: TextStyle(
+                color: cs.error,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          // Tombol batal
+          GestureDetector(
+            onTap: onCancel,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                'BATAL',
+                style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          // Tombol stop
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: cs.error,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+            onPressed: onStop,
+            icon: const Icon(Icons.stop, size: 14),
+            label: const Text('STOP'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hint bar saat hold biasa (belum terkunci)
+// _____________________________________________________________________________
+
+class _MicHoldingHint extends StatelessWidget {
+  const _MicHoldingHint({required this.onCancel});
+
+  final Future<void> Function() onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          _PulsingDot(color: cs.error),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Sedang merekam…',
+                  style: TextStyle(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.arrow_upward, size: 11, color: cs.onSurfaceVariant),
+                    const SizedBox(width: 2),
+                    Text(
+                      'Geser atas untuk kunci',
+                      style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: onCancel,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                'BATAL',
+                style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Titik merah berkedip (indikator recording)
+// _____________________________________________________________________________
+
+class _PulsingDot extends StatefulWidget {
+  const _PulsingDot({required this.color});
+  final Color color;
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..repeat(reverse: true);
+    _anim = Tween<double>(begin: 0.3, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, _) => Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: widget.color.withValues(alpha: _anim.value),
+        ),
+      ),
+    );
+  }
+}

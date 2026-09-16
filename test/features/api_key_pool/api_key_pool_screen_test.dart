@@ -145,6 +145,12 @@ class _ImmediateClient implements GeminiClient {
     required bool repairAttempt,
     CancellationSignal? cancellation,
   }) async => result;
+
+  @override
+  Future<GeminiCallResult> verifyKey({
+    required String secret,
+    CancellationSignal? cancellation,
+  }) async => result;
 }
 
 class _DeferredClient implements GeminiClient {
@@ -175,6 +181,21 @@ class _DeferredClient implements GeminiClient {
     required String input,
     required ChatParseContext context,
     required bool repairAttempt,
+    CancellationSignal? cancellation,
+  }) {
+    calls++;
+    cancellation?.onCancel(() {
+      cancelled = true;
+      if (!_completer.isCompleted) {
+        _completer.complete(_failure(GeminiFailureCategory.cancelled));
+      }
+    });
+    return _completer.future;
+  }
+
+  @override
+  Future<GeminiCallResult> verifyKey({
+    required String secret,
     CancellationSignal? cancellation,
   }) {
     calls++;

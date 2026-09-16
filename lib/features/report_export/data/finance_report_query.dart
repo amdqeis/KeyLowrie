@@ -12,7 +12,7 @@ class FinanceReportQuery {
 
   /// Mengambil semua data yang diperlukan untuk laporan keuangan.
   Future<FinanceReportData> fetch(ReportDateRange range) async {
-    final settings = await _fetchSettings();
+    final currencyCode = await _fetchCurrencyCode();
     final periodName = range.periodName ?? range.formattedRange;
 
     // Budget: hanya tersedia jika rentang cocok dengan tepat satu periode
@@ -60,7 +60,7 @@ class FinanceReportQuery {
       rangeStart: range.start,
       rangeEnd: range.end,
       generatedAt: DateTime.now(),
-      currencyCode: settings.currencyCode,
+      currencyCode: currencyCode,
       budgetAmount: budget,
       totalExpense: totalExpense,
       totalIncome: totalIncome,
@@ -87,35 +87,40 @@ class FinanceReportQuery {
     );
   }
 
-  Future<FinanceSetting> _fetchSettings() {
-    return (_db.select(
+  Future<String> _fetchCurrencyCode() async {
+    final settings = await (_db.select(
       _db.financeSettings,
-    )..where((row) => row.id.equals(1))).getSingle();
+    )..where((row) => row.id.equals(1))).getSingleOrNull();
+    return settings?.currencyCode ?? 'IDR';
   }
 
   Future<int> _fetchBudgetForRange(ReportDateRange range) async {
-    // Coba ambil satu periode yang persis cocok dengan rentang
+    // Cari periode yang start_date dan end_date tepat cocok dengan rentang.
+    // Gunakan batas hari (midnight s.d. sebelum tengah malam berikutnya) agar
+    // perbandingan UTC tidak bergantung pada jam spesifik yang tersimpan.
+    final startBegin = range.start;
+    final startEnd = range.start.add(const Duration(days: 1));
+    final endBegin = range.end;
+    final endEnd = range.end.add(const Duration(days: 1));
+
     final period =
         await (_db.select(_db.financialPeriods)..where(
               (row) =>
-                  row.startDate.equals(range.start) &
-                  row.endDate.equals(range.end),
+                  row.startDate.isBiggerOrEqualValue(startBegin) &
+                  row.startDate.isSmallerThanValue(startEnd) &
+                  row.endDate.isBiggerOrEqualValue(endBegin) &
+                  row.endDate.isSmallerThanValue(endEnd),
             ))
             .getSingleOrNull();
     return period?.budgetAmount ?? 0;
   }
 
   Future<List<_TxRow>> _fetchTransactions(ReportDateRange range) async {
-    // Normalisasi batas: start = awal hari, end = akhir hari (23:59:59 UTC)
+    // Gunakan batas eksklusif hari berikutnya (< nextDay) alih-alih <= 23:59:59
+    // agar semua transaksi pada hari terakhir ikut terambil terlepas dari
+    // timezone offset yang tersimpan di database.
     final startUtc = range.start.toUtc();
-    final endUtc = DateTime(
-      range.end.year,
-      range.end.month,
-      range.end.day,
-      23,
-      59,
-      59,
-    ).toUtc();
+    final endUtc = range.end.add(const Duration(days: 1)).toUtc();
 
     final transactions = _db.financialTransactions;
     final categories = _db.financialCategories;
@@ -129,7 +134,7 @@ class FinanceReportQuery {
           ])
           ..where(
             transactions.transactionDate.isBiggerOrEqualValue(startUtc) &
-                transactions.transactionDate.isSmallerOrEqualValue(endUtc),
+                transactions.transactionDate.isSmallerThanValue(endUtc),
           )
           ..orderBy([
             OrderingTerm.desc(transactions.transactionDate),

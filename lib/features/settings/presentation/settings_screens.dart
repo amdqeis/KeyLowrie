@@ -19,21 +19,18 @@ class SettingsScreen extends ConsumerWidget {
         data: (value) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            BrutalCard(
-              color: const Color(0xFFFFD60A),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'KEYSPACE INTERNAL MVP',
-                    style: TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                  Text('Model AI: ${value.geminiModel}'),
-                  const Text('Data utama: SQLite lokal'),
-                ],
+            // ── Model Gemini ──────────────────────────────────
+            Text(
+              'MODEL AI',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.2,
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
+            _GeminiModelPicker(currentModel: value.geminiModel),
+            const SizedBox(height: 18),
+            // ── Tema ─────────────────────────────────────────
             DropdownButtonFormField<String>(
               initialValue: value.themeMode,
               decoration: const InputDecoration(labelText: 'Tema'),
@@ -89,6 +86,188 @@ class SettingsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) =>
             const Center(child: Text('Pengaturan belum dapat dibuka.')),
+      ),
+    );
+  }
+}
+
+/// Widget model picker — daftar semua model Gemini yang tersedia, bisa di-tap.
+class _GeminiModelPicker extends ConsumerWidget {
+  const _GeminiModelPicker({required this.currentModel});
+  final String currentModel;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final models = ProviderConfig.availableModels;
+    return Column(
+      children: [
+        for (final m in models)
+          _ModelTile(
+            modelId: m.id,
+            label: m.label,
+            note: m.note,
+            isActive: m.id == currentModel,
+            isRecommended: m.id == ProviderConfig.model,
+            onTap: () async {
+              if (m.id == currentModel) return;
+              await ref
+                  .read(settingsRepositoryProvider)
+                  .updateGeminiModel(m.id);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Model diubah ke ${m.label}'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class _ModelTile extends StatelessWidget {
+  const _ModelTile({
+    required this.modelId,
+    required this.label,
+    required this.note,
+    required this.isActive,
+    required this.isRecommended,
+    required this.onTap,
+  });
+
+  final String modelId;
+  final String label;
+  final String note;
+  final bool isActive;
+  final bool isRecommended;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isActive
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant,
+              width: isActive ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(4),
+            color: isActive
+                ? colorScheme.primary.withAlpha(20)
+                : colorScheme.surface,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              // Radio indicator
+              Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isActive
+                        ? colorScheme.primary
+                        : colorScheme.outline,
+                    width: 2,
+                  ),
+                ),
+                child: isActive
+                    ? Center(
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              // Label + note
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          label,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: isActive
+                                ? FontWeight.w900
+                                : FontWeight.w600,
+                          ),
+                        ),
+                        if (isRecommended) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD60A),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              '⭐ Rekomendasi',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (isActive && !isRecommended) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Aktif',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                color: colorScheme.onPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      note,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

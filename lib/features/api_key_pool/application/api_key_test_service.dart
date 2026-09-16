@@ -51,13 +51,10 @@ class ApiKeyTestService {
       );
     }
 
+    // Use verifyKey (models.get) instead of parseFood (generateContent)
+    // to validate the key without consuming RPD or tokens.
     final result = await _client
-        .parseFood(
-          secret: secret,
-          input: '1 telur rebus',
-          repairAttempt: false,
-          cancellation: signal,
-        )
+        .verifyKey(secret: secret, cancellation: signal)
         .timeout(
           _timeout,
           onTimeout: () {
@@ -84,6 +81,19 @@ class ApiKeyTestService {
       );
     }
     return _finish(id, failure);
+  }
+
+  /// Tests all keys sequentially using models.get (0 RPD cost).
+  /// Yields each result as it completes for live UI updates.
+  Stream<(String keyId, ApiKeyTestResult result)> testAll(
+    List<String> keyIds, {
+    RequestCancellation? cancellation,
+  }) async* {
+    for (final id in keyIds) {
+      if (cancellation?.isCancelled ?? false) return;
+      final result = await test(id, cancellation: cancellation);
+      yield (id, result);
+    }
   }
 
   Future<ApiKeyTestResult> _finish(

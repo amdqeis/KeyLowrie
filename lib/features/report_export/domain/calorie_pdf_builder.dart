@@ -35,9 +35,9 @@ class CaloriePdfBuilder {
           pw.SizedBox(height: 16),
           _buildSummary(data),
           pw.SizedBox(height: 20),
-          _buildDailySummaryTable(data),
+          ..._buildDailySummaryTable(data),
           pw.SizedBox(height: 20),
-          _buildFoodItemsTable(data),
+          ..._buildFoodItemsTable(data),
           pw.SizedBox(height: 16),
           _buildDisclaimer(),
         ],
@@ -178,148 +178,146 @@ class CaloriePdfBuilder {
     );
   }
 
-  pw.Widget _buildDailySummaryTable(CalorieReportData data) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
+  List<pw.Widget> _buildDailySummaryTable(CalorieReportData data) {
+    return [
+      pw.Text(
+        'RINGKASAN HARIAN',
+        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+      ),
+      pw.SizedBox(height: 6),
+      if (data.dailySummaries.isEmpty)
         pw.Text(
-          'RINGKASAN HARIAN',
-          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
-        ),
-        pw.SizedBox(height: 6),
-        if (data.dailySummaries.isEmpty)
-          pw.Text(
-            'Tidak ada data pada rentang ini.',
-            style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
-          )
-        else
-          pw.TableHelper.fromTextArray(
-            headers: [
-              'Tanggal',
-              'Kalori',
-              'Target',
-              'Selisih',
-              'Protein',
-              'Karbo',
-              'Lemak',
-            ],
-            data: data.dailySummaries.map((d) {
-              final diff = d.difference;
-              final diffStr = diff != null
-                  ? '${diff >= 0 ? '+' : ''}${diff.round()}'
-                  : 'N/A';
-              return [
-                _fmtDate(d.date),
-                '${d.totalCalories.round()}',
-                d.targetCalories != null ? '${d.targetCalories}' : 'N/A',
-                diffStr,
-                d.proteinG != null
-                    ? '${d.proteinG!.toStringAsFixed(1)}g'
-                    : 'N/A',
-                d.carbsG != null ? '${d.carbsG!.toStringAsFixed(1)}g' : 'N/A',
-                d.fatG != null ? '${d.fatG!.toStringAsFixed(1)}g' : 'N/A',
-              ];
-            }).toList(),
-            columnWidths: {
-              0: const pw.FixedColumnWidth(60),
-              1: const pw.FixedColumnWidth(42),
-              2: const pw.FixedColumnWidth(42),
-              3: const pw.FixedColumnWidth(42),
-              4: const pw.FixedColumnWidth(42),
-              5: const pw.FixedColumnWidth(42),
-              6: const pw.FixedColumnWidth(42),
-            },
-            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
-            headerStyle: pw.TextStyle(
-              fontSize: 8,
-              fontWeight: pw.FontWeight.bold,
-            ),
-            cellStyle: const pw.TextStyle(fontSize: 8),
-            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-            cellDecoration: (_, _, _) =>
-                const pw.BoxDecoration(color: PdfColors.white),
-            headerPadding: const pw.EdgeInsets.symmetric(
-              horizontal: 3,
-              vertical: 3,
-            ),
-            cellPadding: const pw.EdgeInsets.symmetric(
-              horizontal: 3,
-              vertical: 3,
-            ),
+          'Tidak ada data pada rentang ini.',
+          style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+        )
+      else
+        pw.TableHelper.fromTextArray(
+          headers: [
+            'Tanggal',
+            'Kalori',
+            'Target',
+            'Selisih',
+            'Protein',
+            'Karbo',
+            'Lemak',
+          ],
+          data: data.dailySummaries.map((d) {
+            final diff = d.difference;
+            final diffStr = diff != null
+                ? '${diff >= 0 ? '+' : ''}${diff.round()}'
+                : 'N/A';
+            return [
+              _fmtDate(d.date),
+              '${d.totalCalories.round()}',
+              d.targetCalories != null ? '${d.targetCalories}' : 'N/A',
+              diffStr,
+              d.proteinG != null
+                  ? '${d.proteinG!.toStringAsFixed(1)}g'
+                  : 'N/A',
+              d.carbsG != null
+                  ? '${d.carbsG!.toStringAsFixed(1)}g'
+                  : 'N/A',
+              d.fatG != null ? '${d.fatG!.toStringAsFixed(1)}g' : 'N/A',
+            ];
+          }).toList(),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(60),
+            1: const pw.FixedColumnWidth(42),
+            2: const pw.FixedColumnWidth(42),
+            3: const pw.FixedColumnWidth(42),
+            4: const pw.FixedColumnWidth(42),
+            5: const pw.FixedColumnWidth(42),
+            6: const pw.FixedColumnWidth(42),
+          },
+          border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+          headerStyle: pw.TextStyle(
+            fontSize: 8,
+            fontWeight: pw.FontWeight.bold,
           ),
-      ],
-    );
+          cellStyle: const pw.TextStyle(fontSize: 8),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          cellDecoration: (_, _, _) =>
+              const pw.BoxDecoration(color: PdfColors.white),
+          headerPadding: const pw.EdgeInsets.symmetric(
+            horizontal: 3,
+            vertical: 3,
+          ),
+          cellPadding: const pw.EdgeInsets.symmetric(
+            horizontal: 3,
+            vertical: 3,
+          ),
+        ),
+    ];
   }
 
-  pw.Widget _buildFoodItemsTable(CalorieReportData data) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
+  List<pw.Widget> _buildFoodItemsTable(CalorieReportData data) {
+    return [
+      pw.Text(
+        'DAFTAR MAKANAN',
+        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+      ),
+      pw.SizedBox(height: 6),
+      if (data.foodItems.isEmpty)
         pw.Text(
-          'DAFTAR MAKANAN',
-          style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
-        ),
-        pw.SizedBox(height: 6),
-        if (data.foodItems.isEmpty)
-          pw.Text(
-            'Tidak ada catatan makanan.',
-            style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
-          )
-        else
-          pw.TableHelper.fromTextArray(
-            headers: [
-              'Tanggal',
-              'Nama Makanan',
-              'Porsi',
-              'Kalori',
-              'Protein',
-              'Karbo',
-              'Lemak',
-            ],
-            data: data.foodItems.map((item) {
-              return [
-                _fmtDate(item.date),
-                item.foodName,
-                item.portionText,
-                '${item.caloriesKcal.round()}',
-                item.proteinG != null
-                    ? '${item.proteinG!.toStringAsFixed(1)}g'
-                    : 'N/A',
-                item.carbsG != null
-                    ? '${item.carbsG!.toStringAsFixed(1)}g'
-                    : 'N/A',
-                item.fatG != null ? '${item.fatG!.toStringAsFixed(1)}g' : 'N/A',
-              ];
-            }).toList(),
-            columnWidths: {
-              0: const pw.FixedColumnWidth(58),
-              1: const pw.FlexColumnWidth(3),
-              2: const pw.FlexColumnWidth(2),
-              3: const pw.FixedColumnWidth(40),
-              4: const pw.FixedColumnWidth(40),
-              5: const pw.FixedColumnWidth(40),
-              6: const pw.FixedColumnWidth(40),
-            },
-            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
-            headerStyle: pw.TextStyle(
-              fontSize: 8,
-              fontWeight: pw.FontWeight.bold,
-            ),
-            cellStyle: const pw.TextStyle(fontSize: 8),
-            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-            cellDecoration: (_, _, _) =>
-                const pw.BoxDecoration(color: PdfColors.white),
-            headerPadding: const pw.EdgeInsets.symmetric(
-              horizontal: 3,
-              vertical: 3,
-            ),
-            cellPadding: const pw.EdgeInsets.symmetric(
-              horizontal: 3,
-              vertical: 3,
-            ),
+          'Tidak ada catatan makanan.',
+          style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+        )
+      else
+        pw.TableHelper.fromTextArray(
+          headers: [
+            'Tanggal',
+            'Nama Makanan',
+            'Porsi',
+            'Kalori',
+            'Protein',
+            'Karbo',
+            'Lemak',
+          ],
+          data: data.foodItems.map((item) {
+            return [
+              _fmtDate(item.date),
+              item.foodName,
+              item.portionText,
+              '${item.caloriesKcal.round()}',
+              item.proteinG != null
+                  ? '${item.proteinG!.toStringAsFixed(1)}g'
+                  : 'N/A',
+              item.carbsG != null
+                  ? '${item.carbsG!.toStringAsFixed(1)}g'
+                  : 'N/A',
+              item.fatG != null
+                  ? '${item.fatG!.toStringAsFixed(1)}g'
+                  : 'N/A',
+            ];
+          }).toList(),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(58),
+            1: const pw.FlexColumnWidth(3),
+            2: const pw.FlexColumnWidth(2),
+            3: const pw.FixedColumnWidth(40),
+            4: const pw.FixedColumnWidth(40),
+            5: const pw.FixedColumnWidth(40),
+            6: const pw.FixedColumnWidth(40),
+          },
+          border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+          headerStyle: pw.TextStyle(
+            fontSize: 8,
+            fontWeight: pw.FontWeight.bold,
           ),
-      ],
-    );
+          cellStyle: const pw.TextStyle(fontSize: 8),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          cellDecoration: (_, _, _) =>
+              const pw.BoxDecoration(color: PdfColors.white),
+          headerPadding: const pw.EdgeInsets.symmetric(
+            horizontal: 3,
+            vertical: 3,
+          ),
+          cellPadding: const pw.EdgeInsets.symmetric(
+            horizontal: 3,
+            vertical: 3,
+          ),
+        ),
+    ];
   }
 
   pw.Widget _buildDisclaimer() {

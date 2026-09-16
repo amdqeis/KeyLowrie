@@ -41,6 +41,7 @@ class FinancialReviewItem {
       categoryId: parsed.categoryId,
       categoryName: parsed.categoryName,
       isReimburse: type == FinancialTransactionType.expense && isReimburse,
+      notes: parsed.notes,
     );
   }
 

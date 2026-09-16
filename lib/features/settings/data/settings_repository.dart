@@ -127,6 +127,17 @@ class SettingsRepository {
     );
   }
 
+  Future<void> updateGeminiModel(String modelId) {
+    return (database.update(
+      database.appSettings,
+    )..where((row) => row.id.equals(1))).write(
+      AppSettingsCompanion(
+        geminiModel: Value(modelId),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+  }
+
   String? _cleanOptional(String? value) {
     final cleaned = value?.trim();
     return cleaned == null || cleaned.isEmpty ? null : cleaned;

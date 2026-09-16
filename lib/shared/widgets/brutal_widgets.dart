@@ -474,28 +474,28 @@ class _CalorieProgressBarState extends State<CalorieProgressBar>
                       ),
                     ),
                     // Fill
-                    FractionallySizedBox(
-                      widthFactor: _progress.value,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isOver
-                              ? KeySpaceColors.error
-                              : KeySpaceColors.signalYellow,
-                          borderRadius: BorderRadius.circular(2),
+                    Positioned.fill(
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: _progress.value,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isOver
+                                ? KeySpaceColors.error
+                                : KeySpaceColors.signalYellow,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          margin: const EdgeInsets.all(3),
                         ),
-                        margin: const EdgeInsets.all(3),
                       ),
                     ),
                     // Segment lines overlay
                     if (target != null)
                       ...List.generate(4, (i) {
                         final fraction = (i + 1) / 5;
-                        return Positioned(
-                          left: null,
-                          right: null,
-                          top: 3,
-                          bottom: 3,
+                        return Positioned.fill(
                           child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
                             widthFactor: fraction,
                             child: Align(
                               alignment: Alignment.centerRight,

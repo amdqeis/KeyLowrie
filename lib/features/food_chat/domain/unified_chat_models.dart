@@ -49,6 +49,7 @@ class ParsedFinancialItem {
     required this.transactionDate,
     required this.categoryId,
     required this.categoryName,
+    this.notes,
   });
 
   final String name;
@@ -57,6 +58,7 @@ class ParsedFinancialItem {
   final DateTime transactionDate;
   final String categoryId;
   final String categoryName;
+  final String? notes;
 }
 
 class UnifiedChatDraft {

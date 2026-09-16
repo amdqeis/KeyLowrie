@@ -8,19 +8,24 @@ import 'package:keyspace/features/food_chat/domain/gemini_contracts.dart';
 import 'package:keyspace/features/food_chat/domain/unified_chat_models.dart';
 
 class GeminiDioClient implements GeminiClient {
-  GeminiDioClient({Dio? dio, GeminiErrorClassifier? classifier})
-    : _dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              baseUrl: ProviderConfig.endpoint,
-              connectTimeout: ProviderConfig.connectTimeout,
-              receiveTimeout: ProviderConfig.receiveTimeout,
-              contentType: Headers.jsonContentType,
-            ),
-          ),
-      _classifier = classifier ?? const GeminiErrorClassifier();
+  GeminiDioClient({
+    Dio? dio,
+    GeminiErrorClassifier? classifier,
+    String? model,
+  }) : _model = model ?? ProviderConfig.model,
+       _dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               baseUrl: ProviderConfig.endpoint,
+               connectTimeout: ProviderConfig.connectTimeout,
+               receiveTimeout: ProviderConfig.receiveTimeout,
+               contentType: Headers.jsonContentType,
+             ),
+           ),
+       _classifier = classifier ?? const GeminiErrorClassifier();
 
+  final String _model;
   final Dio _dio;
   final GeminiErrorClassifier _classifier;
 
@@ -36,7 +41,7 @@ class GeminiDioClient implements GeminiClient {
     cancellation?.onCancel(() => cancelToken.cancel('cancelled_by_user'));
     try {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/${ProviderConfig.apiVersion}/models/${ProviderConfig.model}:generateContent',
+        '/${ProviderConfig.apiVersion}/models/$_model:generateContent',
         data: _request(input, repairAttempt: repairAttempt),
         options: Options(headers: {'x-goog-api-key': secret}),
         cancelToken: cancelToken,
@@ -89,7 +94,7 @@ class GeminiDioClient implements GeminiClient {
     cancellation?.onCancel(() => cancelToken.cancel('cancelled_by_user'));
     try {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/${ProviderConfig.apiVersion}/models/${ProviderConfig.model}:generateContent',
+        '/${ProviderConfig.apiVersion}/models/$_model:generateContent',
         data: buildUnifiedGeminiRequest(
           input: input,
           context: context,
@@ -122,6 +127,34 @@ class GeminiDioClient implements GeminiClient {
         failure: const GeminiFailure(
           category: GeminiFailureCategory.schemaMismatch,
         ),
+        latency: stopwatch.elapsed,
+      );
+    } on Object catch (error) {
+      stopwatch.stop();
+      return GeminiCallFailure(
+        failure: _classifier.classify(error),
+        latency: stopwatch.elapsed,
+      );
+    }
+  }
+
+  @override
+  Future<GeminiCallResult> verifyKey({
+    required String secret,
+    CancellationSignal? cancellation,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    final cancelToken = CancelToken();
+    cancellation?.onCancel(() => cancelToken.cancel('cancelled_by_user'));
+    try {
+      await _dio.get<Map<String, dynamic>>(
+        '/${ProviderConfig.apiVersion}/models/$_model',
+        options: Options(headers: {'x-goog-api-key': secret}),
+        cancelToken: cancelToken,
+      );
+      stopwatch.stop();
+      return GeminiCallSuccess(
+        data: const {},
         latency: stopwatch.elapsed,
       );
     } on Object catch (error) {
@@ -264,7 +297,10 @@ Map<String, dynamic> buildUnifiedGeminiRequest({
       ? ' Respons sebelumnya tidak valid. Perbaiki seluruh field dan kembalikan JSON saja.'
       : '';
   final modeInstruction = context.mode.name == 'automatic'
-      ? 'Deteksi domain nutrition, expense, income, schedule, atau unknown.'
+      ? 'Deteksi domain: nutrition, expense, income, schedule, atau unknown. '
+          'Gunakan unknown HANYA jika tidak ada sinyal apapun dari input '
+          '(contoh: angka kosong tanpa nama item). Input dengan nama makanan, '
+          'nama item+harga, atau nama kegiatan TIDAK boleh unknown.'
       : 'Domain dikunci ke ${context.mode.name}; jangan klasifikasikan ke domain lain.';
   return {
     'systemInstruction': {
@@ -280,10 +316,23 @@ Map<String, dynamic> buildUnifiedGeminiRequest({
               '(1) Jika ada nama makanan + satuan berat/volume/porsi → domain nutrition, '
               'gunakan local_date sebagai transaction_date. '
               '(2) Jika ada nama item + nominal uang (angka, atau format \'X ribu/juta\') '
-              '→ domain expense, gunakan local_date sebagai transaction_date. '
-              '(3) Hanya set requires_clarification=true jika domain BENAR-BENAR tidak '
+              '→ domain expense. '
+              'ATURAN DISAMBIGUASI HARGA vs NUTRISI: Jika ada nama makanan/minuman '
+              '(mis: air putih, kopi, nasi) + angka bulat TANPA satuan berat/volume '
+              '(gram, ml, liter, porsi, dll) → WAJIB default ke expense (bukan nutrition). '
+              'Contoh: \'air putih 2000\' → expense Rp 2.000; '
+              '\'nasi goreng 15000\' → expense Rp 15.000; '
+              '\'kopi susu 1 gelas\' → nutrition (ada satuan porsi). '
+              '(3) INCOME DETECTION: Jika input mengandung kata kunci pemasukan seperti '
+              '\'gaji\', \'honor\', \'honorarium\', \'bayaran\', \'upah\', \'transfer masuk\', '
+              '\'pendapatan\', \'penghasilan\', \'dapat uang\', \'terima uang\', \'dibayar\', '
+              '\'bonus\', \'insentif\', \'komisi\', \'tunjangan\', \'asdos\', \'asisten dosen\' '
+              '→ WAJIB domain income (bukan expense). '
+              'Contoh: \'gaji asdos 20000\' → income Rp 20.000; \'honor mengajar 500rb\' → income. '
+              '(4) Hanya set requires_clarification=true jika domain BENAR-BENAR tidak '
               'dapat ditentukan dari konteks (contoh: \'5000\' saja tanpa nama item). '
-              'Normalisasi 150 ribu → 150000, 1,5 juta → 1500000, 2 jt → 2000000. '
+              'Normalisasi 150 ribu → 150000, 1,5 juta → 1500000, 2 jt → 2000000, '
+              '147.000 → 147000 (titik sebagai pemisah ribuan, bukan desimal). '
               'Ubah tanggal relatif seperti kemarin berdasarkan local_date. '
               'Jangan mengarang nominal uang. '
               'Kategori keuangan wajib dari active_categories; jika tidak cocok '
@@ -295,7 +344,9 @@ Map<String, dynamic> buildUnifiedGeminiRequest({
               'PENTING untuk jadwal: jika input menyebut beberapa kegiatan dengan '
               'rentang waktu masing-masing (misalnya \'jam 12-12:30 mandi, 12:30-13:00 makan\'), '
               'buat SATU entri terpisah di array schedules untuk SETIAP kegiatan; '
-              'jangan gabungkan menjadi satu event.$repairInstruction',
+              'jangan gabungkan menjadi satu event. '
+              'Untuk reminders: jika tidak ada reminder yang diminta, kembalikan '
+              'array kosong []. JANGAN gunakan offset_minutes=0.$repairInstruction',
         },
       ],
     },
@@ -352,7 +403,7 @@ const geminiUnifiedChatResponseSchema = <String, dynamic>{
         'required': ['name'],
         'properties': {
           'name': {'type': 'string'},
-          'amount': {'type': 'integer', 'nullable': true, 'minimum': 1},
+          'amount': {'type': 'number', 'nullable': true, 'minimum': 1},
           'currency': {'type': 'string', 'nullable': true},
           'transaction_date': {'type': 'string', 'nullable': true},
           'category': {'type': 'string', 'nullable': true},
@@ -372,6 +423,7 @@ const geminiUnifiedChatResponseSchema = <String, dynamic>{
             'maximum': 1,
           },
           'assumption_note': {'type': 'string', 'nullable': true},
+          'notes': {'type': 'string', 'nullable': true},
         },
       },
     },
@@ -445,6 +497,9 @@ const geminiUnifiedChatResponseSchema = <String, dynamic>{
               'type': 'object',
               'required': ['offset_minutes'],
               'properties': {
+                // Gemini API v1beta tidak mendukung 'enum' pada integer di responseSchema
+                // (akan menyebabkan HTTP 400). Validasi nilai dilakukan di parser
+                // dengan clamp ke {15, 30, 1440}.
                 'offset_minutes': {'type': 'integer', 'minimum': 0},
               },
             },

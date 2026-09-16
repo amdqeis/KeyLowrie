@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:keyspace/app/bootstrap.dart';
+import 'package:keyspace/app/provider_config.dart';
 import 'package:keyspace/core/network/connectivity_network_status.dart';
 import 'package:keyspace/database/app_database.dart';
 import 'package:keyspace/features/api_key_pool/application/api_key_test_service.dart';
@@ -33,7 +34,15 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   return database;
 });
 
-final geminiClientProvider = Provider<GeminiClient>((ref) => GeminiDioClient());
+final geminiClientProvider = Provider<GeminiClient>((ref) {
+  // Watch model yang dipilih user dari settings (reactive — rebuild jika ganti model)
+  final settings = ref.watch(settingsStreamProvider);
+  final selectedModel = switch (settings) {
+    AsyncData(:final value) => value.geminiModel,
+    _ => ProviderConfig.model,
+  };
+  return GeminiDioClient(model: selectedModel);
+});
 
 final keyPoolRepositoryProvider = Provider<KeyPoolRepository>(
   (ref) => DriftKeyPoolRepository(ref.watch(databaseProvider)),
