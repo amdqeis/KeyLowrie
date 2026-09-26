@@ -9,6 +9,8 @@ import 'package:keyspace/features/finance/presentation/finance_dashboard_screen.
 import 'package:keyspace/features/finance/presentation/finance_history_screen.dart';
 import 'package:keyspace/features/finance/presentation/finance_settings_screen.dart';
 import 'package:keyspace/features/finance/presentation/finance_transaction_screen.dart';
+import 'package:keyspace/features/finance/presentation/create_installment_screen.dart';
+import 'package:keyspace/features/finance/presentation/installment_detail_screen.dart';
 import 'package:keyspace/features/food_chat/presentation/chat_screen.dart';
 import 'package:keyspace/features/food_log/presentation/food_log_editor_screen.dart';
 import 'package:keyspace/features/history/presentation/history_screens.dart';
@@ -35,6 +37,8 @@ abstract final class AppRoutes {
   static const financeTransaction = '/finance/transaction/:id';
   static const financeAnalytics = '/finance/analytics';
   static const financeNetWorth = '/finance/net-worth';
+  static const financeCreateInstallment = '/finance/installment/new';
+  static const financeInstallmentDetail = '/finance/installment/:id';
   static const settings = '/settings';
   static const apiKeys = '/settings/api-keys';
   static const reminders = '/settings/reminders';
@@ -43,6 +47,8 @@ abstract final class AppRoutes {
   static const financeSettings = '/settings/finance';
 
   static String financeTransactionPath(String id) => '/finance/transaction/$id';
+  static String financeInstallmentDetailPath(String id) =>
+      '/finance/installment/$id';
   static String schedulerDetailPath(String id) => '/scheduler/$id';
   static String schedulerEditPath(String id) => '/scheduler/$id/edit';
 
@@ -63,6 +69,8 @@ abstract final class AppRoutes {
     financeTransaction,
     financeAnalytics,
     financeNetWorth,
+    financeCreateInstallment,
+    financeInstallmentDetail,
     settings,
     apiKeys,
     reminders,
@@ -176,6 +184,17 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.onboarding}) {
                   GoRoute(
                     path: 'transaction/:id',
                     builder: (context, state) => FinanceTransactionScreen(
+                      id: state.pathParameters['id']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'installment/new',
+                    builder: (context, state) =>
+                        const CreateInstallmentScreen(),
+                  ),
+                  GoRoute(
+                    path: 'installment/:id',
+                    builder: (context, state) => InstallmentDetailScreen(
                       id: state.pathParameters['id']!,
                     ),
                   ),

@@ -24,6 +24,11 @@ class FinancialReviewItem {
     required this.categoryName,
     required this.isReimburse,
     this.notes,
+    this.isInstallment = false,
+    this.installmentType = InstallmentType.evenSplit,
+    this.totalInstallments = 12,
+    this.installmentMonthlyAmount,
+    this.dayOfMonth = 1,
   });
 
   factory FinancialReviewItem.fromParsed({
@@ -55,6 +60,21 @@ class FinancialReviewItem {
   final String? notes;
   final bool isReimburse;
 
+  /// Apakah item ini merupakan cicilan (installment plan).
+  final bool isInstallment;
+
+  /// Tipe cicilan: bagi rata atau tetap per bulan.
+  final InstallmentType installmentType;
+
+  /// Jumlah bulan cicilan (untuk evenSplit).
+  final int totalInstallments;
+
+  /// Cicilan per bulan (untuk fixedMonthly). Null = belum diisi.
+  final int? installmentMonthlyAmount;
+
+  /// Tanggal jatuh tempo setiap bulan (1-28).
+  final int dayOfMonth;
+
   FinancialReviewItem copyWith({
     FinancialTransactionType? type,
     String? name,
@@ -64,8 +84,16 @@ class FinancialReviewItem {
     String? categoryName,
     String? notes,
     bool? isReimburse,
+    bool? isInstallment,
+    InstallmentType? installmentType,
+    int? totalInstallments,
+    int? installmentMonthlyAmount,
+    int? dayOfMonth,
   }) {
     final nextType = type ?? this.type;
+    final nextIsInstallment = nextType == FinancialTransactionType.expense
+        ? isInstallment ?? this.isInstallment
+        : false;
     return FinancialReviewItem(
       reviewId: reviewId,
       type: nextType,
@@ -78,6 +106,12 @@ class FinancialReviewItem {
       isReimburse: nextType == FinancialTransactionType.expense
           ? isReimburse ?? this.isReimburse
           : false,
+      isInstallment: nextIsInstallment,
+      installmentType: installmentType ?? this.installmentType,
+      totalInstallments: totalInstallments ?? this.totalInstallments,
+      installmentMonthlyAmount:
+          installmentMonthlyAmount ?? this.installmentMonthlyAmount,
+      dayOfMonth: dayOfMonth ?? this.dayOfMonth,
     );
   }
 
@@ -101,6 +135,7 @@ class FinancialReviewItem {
       categoryId: category.id,
       categoryName: category.name,
       isReimburse: false,
+      isInstallment: false,
     );
   }
 
@@ -113,6 +148,28 @@ class FinancialReviewItem {
       categoryId: categoryId,
       notes: notes,
       isReimburse: isReimburse,
+    );
+  }
+
+  /// Konversi ke InstallmentPlanInput untuk item yang ditandai cicilan.
+  InstallmentPlanInput toInstallmentInput() {
+    assert(isInstallment, 'Item harus ditandai cicilan');
+    return InstallmentPlanInput(
+      name: name,
+      totalAmount: amount,
+      installmentType: installmentType,
+      dayOfMonth: dayOfMonth,
+      categoryId: categoryId,
+      startDate: transactionDate,
+      totalInstallments:
+          installmentType == InstallmentType.evenSplit
+              ? totalInstallments
+              : null,
+      monthlyAmount:
+          installmentType == InstallmentType.fixedMonthly
+              ? installmentMonthlyAmount
+              : null,
+      notes: notes,
     );
   }
 }

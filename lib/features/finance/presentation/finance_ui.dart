@@ -135,7 +135,8 @@ class FinanceTransactionTile extends StatelessWidget {
       ),
       subtitle: Text(
         '${transaction.categoryName} • ${formatFinanceDate(transaction.transactionDate)}'
-        '${transaction.isReimburse ? ' • REIMBURSE' : ''}',
+        '${transaction.isReimburse ? ' • REIMBURSE' : ''}'
+        '${transaction.isInstallment ? ' • CICILAN #${transaction.installmentNumber}' : ''}',
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -191,7 +192,8 @@ class FinanceTransactionTile extends StatelessWidget {
           ),
           Text(
             '${transaction.categoryName} • ${formatFinanceDate(transaction.transactionDate)}'
-            '${transaction.isReimburse ? ' • REIMBURSE' : ''}',
+            '${transaction.isReimburse ? ' • REIMBURSE' : ''}'
+            '${transaction.isInstallment ? ' • CICILAN #${transaction.installmentNumber}' : ''}',
           ),
           if (onDelete != null)
             Align(

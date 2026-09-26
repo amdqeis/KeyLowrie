@@ -22,6 +22,7 @@ import 'package:keyspace/features/reminders/domain/reminder_scheduler.dart';
 import 'package:keyspace/features/scheduler/application/scheduler_reminder_coordinator.dart';
 import 'package:keyspace/features/scheduler/data/schedule_notification_service.dart';
 import 'package:keyspace/features/scheduler/data/scheduler_repository.dart';
+import 'package:keyspace/features/settings/data/backup_restore_service.dart';
 import 'package:keyspace/features/settings/data/settings_repository.dart';
 import 'package:keyspace/features/targets/data/target_repository.dart';
 import 'package:keyspace/features/voice_input/data/plugin_speech_recognition_service.dart';
@@ -197,4 +198,8 @@ final reminderCoordinatorProvider = Provider<ReminderCoordinator>(
 
 final reminderStreamProvider = StreamProvider(
   (ref) => ref.watch(reminderRepositoryProvider).watch(),
+);
+
+final backupRestoreServiceProvider = Provider<BackupRestoreService>(
+  (_) => BackupRestoreService(),
 );

@@ -204,6 +204,93 @@ class _FinanceDashboardBody extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           _SectionHeader(
+            title: 'CICILAN AKTIF',
+            action: 'BUAT BARU',
+            onPressed: () =>
+                context.push(AppRoutes.financeCreateInstallment),
+          ),
+          const SizedBox(height: 10),
+          ref.watch(activeInstallmentPlansProvider).when(
+            data: (plans) => plans.isEmpty
+                ? BrutalCard(
+                    color: const Color(0xFFF5F5F5),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'BELUM ADA CICILAN',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Buat cicilan untuk pengeluaran yang diangsur.',
+                        ),
+                        const SizedBox(height: 10),
+                        BrutalButton(
+                          label: 'BUAT CICILAN',
+                          icon: Icons.add_card,
+                          onPressed: () => context.push(
+                            AppRoutes.financeCreateInstallment,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Column(
+                    children: plans
+                        .map(
+                          (plan) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: GestureDetector(
+                              onTap: () => context.push(
+                                AppRoutes
+                                    .financeInstallmentDetailPath(plan.id),
+                              ),
+                              child: BrutalCard(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            plan.name.toUpperCase(),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${plan.generatedCount}/${plan.totalInstallments} — ${formatIdr(plan.monthlyAmount)}/bln',
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 50,
+                                      height: 50,
+                                      child: CircularProgressIndicator(
+                                        value: plan.totalInstallments > 0
+                                            ? plan.generatedCount /
+                                                plan.totalInstallments
+                                            : 0,
+                                        strokeWidth: 6,
+                                        backgroundColor: Colors.grey[300],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+            loading: () => const LinearProgressIndicator(),
+            error: (_, _) => const SizedBox.shrink(),
+          ),
+          const SizedBox(height: 24),
+          _SectionHeader(
             title: 'TRANSAKSI TERBARU',
             action: 'LIHAT SEMUA',
             onPressed: () => context.push(AppRoutes.financeHistory),

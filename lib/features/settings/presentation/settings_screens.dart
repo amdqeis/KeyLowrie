@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:keyspace/app/provider_config.dart';
 import 'package:keyspace/app/router.dart';
+import 'package:keyspace/features/settings/data/backup_restore_service.dart';
 import 'package:keyspace/features/targets/domain/target_calculator.dart';
 import 'package:keyspace/shared/providers/infrastructure_providers.dart';
 import 'package:keyspace/shared/widgets/brutal_widgets.dart';
+
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -555,8 +557,16 @@ class _ReminderSettingsScreenState
   }
 }
 
-class PrivacyDataScreen extends StatelessWidget {
+class PrivacyDataScreen extends ConsumerStatefulWidget {
   const PrivacyDataScreen({super.key});
+
+  @override
+  ConsumerState<PrivacyDataScreen> createState() => _PrivacyDataScreenState();
+}
+
+class _PrivacyDataScreenState extends ConsumerState<PrivacyDataScreen> {
+  bool _backingUp = false;
+  bool _restoring = false;
 
   @override
   Widget build(BuildContext context) {
@@ -564,43 +574,220 @@ class PrivacyDataScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('PRIVASI & DATA')),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: const [
-          BrutalCard(
+        children: [
+          // ── Privasi ────────────────────────────────────────────────────────
+          const BrutalCard(
             color: Color(0xFFFFD60A),
             child: Text(
               'TANPA BACKEND • TANPA LOGIN',
               style: TextStyle(fontWeight: FontWeight.w900),
             ),
           ),
-          SizedBox(height: 14),
-          BrutalCard(
+          const SizedBox(height: 14),
+          const BrutalCard(
             child: Text(
               'Food Log, transaksi keuangan, profil, target, chat, dan settings disimpan di SQLite pada perangkat.',
             ),
           ),
-          SizedBox(height: 14),
-          BrutalCard(
+          const SizedBox(height: 14),
+          const BrutalCard(
             child: Text(
               'API key disimpan terpisah di secure storage platform. Secret tidak masuk database, log, diagnostics, atau fixture.',
             ),
           ),
-          SizedBox(height: 14),
-          BrutalCard(
+          const SizedBox(height: 14),
+          const BrutalCard(
             child: Text(
               'Saat Anda menekan Kirim di Chat, hanya teks input dan konteks minimum parsing yang dikirim langsung ke Gemini. Histori transaksi, profil BMR/TDEE, dan nominal budget tidak dikirim.',
             ),
           ),
-          SizedBox(height: 14),
-          BrutalCard(
+          const SizedBox(height: 14),
+          const BrutalCard(
             child: Text(
-              'Estimasi nutrisi dapat tidak akurat dan bukan pengganti saran profesional. Backup/restore dan hapus semua data hadir pada Fase 1.1.',
+              'Estimasi nutrisi dapat tidak akurat dan bukan pengganti saran profesional.',
+            ),
+          ),
+          const SizedBox(height: 28),
+          // ── Backup & Restore ───────────────────────────────────────────────
+          Text(
+            'BACKUP & RESTORE',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const BrutalCard(
+            color: Color(0xFFB7E4C7),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'APA YANG DIBACKUP',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 6),
+                Text(
+                  '✓ Food log & riwayat nutrisi\n'
+                  '✓ Transaksi keuangan & cicilan\n'
+                  '✓ Jadwal & reminder\n'
+                  '✓ Chat history\n'
+                  '✓ Settings & profil\n'
+                  '✗ API Key (tersimpan di secure storage, tidak masuk backup)\n\n'
+                  'Format: .zip (juga menerima .sqlite backup lama)',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrutalButton(
+            key: const ValueKey('btn-backup'),
+            label: _backingUp ? 'MENYIAPKAN BACKUP…' : 'BACKUP SEKARANG',
+            icon: Icons.upload_file,
+            onPressed: _backingUp || _restoring ? null : _doBackup,
+          ),
+          const SizedBox(height: 10),
+          BrutalButton(
+            key: const ValueKey('btn-restore'),
+            label: _restoring ? 'MEMPROSES RESTORE…' : 'RESTORE DARI FILE',
+            icon: Icons.download_for_offline_outlined,
+            secondary: true,
+            onPressed: _backingUp || _restoring ? null : _doRestore,
+          ),
+          const SizedBox(height: 14),
+          const BrutalCard(
+            color: Color(0xFFFFE5B4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, size: 16),
+                    SizedBox(width: 8),
+                    Text(
+                      'PERHATIAN RESTORE',
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Restore akan mengganti SEMUA data aktif dengan data dari file backup. '
+                  'Proses ini tidak bisa dibatalkan. App akan restart otomatis setelah restore selesai.\n\n'
+                  'Diterima: file .zip (backup baru) atau .sqlite (backup lama).',
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+
+  Future<void> _doBackup() async {
+    setState(() => _backingUp = true);
+    try {
+      final service = ref.read(backupRestoreServiceProvider);
+      final result = await service.backup();
+      if (!mounted) return;
+      switch (result) {
+        case BackupSuccess():
+          _showSnack('Backup berhasil dibagikan.', success: true);
+        case BackupRestoreCancelled():
+          break; // user cancel — tidak perlu notifikasi
+        case BackupRestoreFailure(:final message):
+          _showSnack(message, success: false);
+        case RestoreSuccess():
+          break; // unreachable dari backup
+      }
+    } finally {
+      if (mounted) setState(() => _backingUp = false);
+    }
+  }
+
+  Future<void> _doRestore() async {
+    // Konfirmasi sebelum restore.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('KONFIRMASI RESTORE'),
+        content: const Text(
+          'Seluruh data aktif akan diganti dengan data dari file backup yang kamu pilih. '
+          'Tindakan ini tidak bisa dibatalkan.\n\nLanjutkan?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('BATAL'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('LANJUTKAN'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _restoring = true);
+    try {
+      final service = ref.read(backupRestoreServiceProvider);
+      final result = await service.restore();
+      if (!mounted) return;
+      switch (result) {
+        case RestoreSuccess():
+          await _showRestartDialog();
+        case BackupRestoreCancelled():
+          break;
+        case BackupRestoreFailure(:final message):
+          _showSnack(message, success: false);
+        case BackupSuccess():
+          break; // unreachable dari restore
+      }
+    } finally {
+      if (mounted) setState(() => _restoring = false);
+    }
+  }
+
+  Future<void> _showRestartDialog() async {
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('RESTORE BERHASIL'),
+        content: const Text(
+          'Data berhasil dipulihkan. Tutup dan buka kembali app untuk menggunakan data yang sudah di-restore.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OKE'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnack(String message, {required bool success}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: success ? const Color(0xFF2E7D32) : null,
+      ),
+    );
+  }
 }
+
 
 class _SettingsTile extends StatelessWidget {
   const _SettingsTile({

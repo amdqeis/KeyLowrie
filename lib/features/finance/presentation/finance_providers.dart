@@ -4,7 +4,9 @@ import 'package:keyspace/features/finance/domain/finance_models.dart';
 import 'package:keyspace/shared/providers/infrastructure_providers.dart';
 
 final activeFinancePeriodProvider = FutureProvider<FinancialPeriod>((ref) {
-  return ref.watch(financeRepositoryProvider).getOrCreatePeriod(DateTime.now());
+  return ref
+      .watch(financeRepositoryProvider)
+      .getOrCreatePeriodAndGenerateInstallments(DateTime.now());
 });
 
 final financePeriodsProvider = StreamProvider<List<FinancialPeriod>>((ref) {
@@ -59,4 +61,31 @@ final financeAnalyticsProvider =
       filter,
     ) {
       return ref.watch(financeRepositoryProvider).getAnalytics(filter);
+    });
+
+final activeInstallmentPlansProvider =
+    StreamProvider<List<InstallmentPlanRecord>>((ref) {
+      return ref
+          .watch(financeRepositoryProvider)
+          .watchInstallmentPlans(status: InstallmentPlanStatus.active);
+    });
+
+final allInstallmentPlansProvider =
+    StreamProvider<List<InstallmentPlanRecord>>((ref) {
+      return ref.watch(financeRepositoryProvider).watchInstallmentPlans();
+    });
+
+final installmentPlanDetailProvider =
+    StreamProvider.family<InstallmentPlanRecord?, String>((ref, id) {
+      return ref.watch(financeRepositoryProvider).watchInstallmentPlan(id);
+    });
+
+final installmentTransactionsProvider =
+    StreamProvider.family<List<FinanceTransactionRecord>, String>((
+      ref,
+      planId,
+    ) {
+      return ref
+          .watch(financeRepositoryProvider)
+          .watchInstallmentTransactions(planId);
     });

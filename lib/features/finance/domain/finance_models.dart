@@ -11,6 +11,34 @@ extension FinancialTransactionTypeStorage on FinancialTransactionType {
       );
 }
 
+enum InstallmentType { evenSplit, fixedMonthly }
+
+extension InstallmentTypeStorage on InstallmentType {
+  String get storageValue => switch (this) {
+    InstallmentType.evenSplit => 'even_split',
+    InstallmentType.fixedMonthly => 'fixed_monthly',
+  };
+
+  static InstallmentType parse(String value) => switch (value) {
+    'even_split' => InstallmentType.evenSplit,
+    'fixed_monthly' => InstallmentType.fixedMonthly,
+    _ => throw FormatException('installment_type_invalid:$value'),
+  };
+}
+
+enum InstallmentPlanStatus { active, completed, cancelled }
+
+extension InstallmentPlanStatusStorage on InstallmentPlanStatus {
+  String get storageValue => name;
+
+  static InstallmentPlanStatus parse(String value) =>
+      InstallmentPlanStatus.values.firstWhere(
+        (s) => s.name == value,
+        orElse: () =>
+            throw FormatException('installment_plan_status_invalid:$value'),
+      );
+}
+
 class FinanceTransactionInput {
   const FinanceTransactionInput({
     required this.type,
@@ -98,6 +126,8 @@ class FinanceTransactionRecord {
     required this.createdAt,
     required this.updatedAt,
     this.notes,
+    this.installmentPlanId,
+    this.installmentNumber,
   });
 
   final String id;
@@ -111,8 +141,12 @@ class FinanceTransactionRecord {
   final String? notes;
   final bool isReimburse;
   final String periodId;
+  final String? installmentPlanId;
+  final int? installmentNumber;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  bool get isInstallment => installmentPlanId != null;
 }
 
 enum FinanceAnalyticsType { all, expense, income }
@@ -213,4 +247,72 @@ class FinanceAnalyticsData {
   final List<CategoryFinanceSummary> expensesByCategory;
   final List<CategoryFinanceSummary> incomeByCategory;
   final List<FinanceTrendPoint> trend;
+}
+
+class InstallmentPlanInput {
+  const InstallmentPlanInput({
+    required this.name,
+    required this.totalAmount,
+    required this.installmentType,
+    required this.dayOfMonth,
+    required this.categoryId,
+    required this.startDate,
+    this.totalInstallments,
+    this.monthlyAmount,
+    this.notes,
+  });
+
+  final String name;
+  final int totalAmount;
+  final InstallmentType installmentType;
+  final int dayOfMonth;
+  final String categoryId;
+  final DateTime startDate;
+  /// Required for `evenSplit`. Ignored for `fixedMonthly`.
+  final int? totalInstallments;
+  /// Required for `fixedMonthly`. Ignored for `evenSplit`.
+  final int? monthlyAmount;
+  final String? notes;
+}
+
+class InstallmentPlanRecord {
+  const InstallmentPlanRecord({
+    required this.id,
+    required this.name,
+    required this.totalAmount,
+    required this.installmentType,
+    required this.totalInstallments,
+    required this.monthlyAmount,
+    required this.startDate,
+    required this.dayOfMonth,
+    required this.categoryId,
+    required this.categoryName,
+    required this.generatedCount,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+    this.notes,
+  });
+
+  final String id;
+  final String name;
+  final int totalAmount;
+  final InstallmentType installmentType;
+  final int totalInstallments;
+  final int monthlyAmount;
+  final DateTime startDate;
+  final int dayOfMonth;
+  final String categoryId;
+  final String categoryName;
+  final String? notes;
+  final int generatedCount;
+  final InstallmentPlanStatus status;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  int get remainingInstallments => totalInstallments - generatedCount;
+  int get paidAmount => generatedCount * monthlyAmount;
+  int get remainingAmount => totalAmount - paidAmount;
+  bool get isCompleted => status == InstallmentPlanStatus.completed;
+  bool get isActive => status == InstallmentPlanStatus.active;
 }

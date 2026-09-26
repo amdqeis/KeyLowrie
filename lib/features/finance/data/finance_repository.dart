@@ -374,6 +374,8 @@ class FinanceRepository {
               notes: transaction.notes,
               isReimburse: transaction.isReimburse,
               periodId: transaction.financialPeriodId,
+              installmentPlanId: transaction.installmentPlanId,
+              installmentNumber: transaction.installmentNumber,
               createdAt: transaction.createdAt,
               updatedAt: transaction.updatedAt,
             );
@@ -419,6 +421,8 @@ class FinanceRepository {
               notes: transaction.notes,
               isReimburse: transaction.isReimburse,
               periodId: transaction.financialPeriodId,
+              installmentPlanId: transaction.installmentPlanId,
+              installmentNumber: transaction.installmentNumber,
               createdAt: transaction.createdAt,
               updatedAt: transaction.updatedAt,
             );
@@ -707,6 +711,16 @@ ORDER BY bucket_date ASC
         .getSingle();
   }
 
+  Future<FinancialPeriod> getOrCreatePeriodAndGenerateInstallments(
+    DateTime transactionDate,
+  ) {
+    return database.transaction(() async {
+      final period = await _getOrCreatePeriod(transactionDate);
+      await _generatePendingInstallments();
+      return period;
+    });
+  }
+
   Future<FinancialCategory> _validateInput(
     FinanceTransactionInput input, {
     String? allowInactiveCategoryId,
@@ -782,6 +796,8 @@ GROUP BY p.id, p.budget_amount
       notes: transaction.notes,
       isReimburse: transaction.isReimburse,
       periodId: transaction.financialPeriodId,
+      installmentPlanId: transaction.installmentPlanId,
+      installmentNumber: transaction.installmentNumber,
       createdAt: transaction.createdAt,
       updatedAt: transaction.updatedAt,
     );
@@ -790,5 +806,319 @@ GROUP BY p.id, p.budget_amount
   String? _cleanOptional(String? value) {
     final cleaned = value?.trim();
     return cleaned == null || cleaned.isEmpty ? null : cleaned;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Installment Plan Methods
+  // ---------------------------------------------------------------------------
+
+  Future<String> createInstallmentPlan(InstallmentPlanInput input) {
+    return database.transaction(() async {
+      final cleanedName = input.name.trim();
+      if (cleanedName.isEmpty) {
+        throw const FormatException('installment_name_empty');
+      }
+      if (input.totalAmount <= 0) {
+        throw const FormatException('installment_total_amount_invalid');
+      }
+      if (input.dayOfMonth < 1 || input.dayOfMonth > 28) {
+        throw RangeError.range(input.dayOfMonth, 1, 28, 'dayOfMonth');
+      }
+
+      final category = await (database.select(
+        database.financialCategories,
+      )..where((row) => row.id.equals(input.categoryId))).getSingleOrNull();
+      if (category == null || category.type != 'expense') {
+        throw const FormatException('installment_category_invalid');
+      }
+      if (!category.isActive) {
+        throw const FormatException('installment_category_inactive');
+      }
+
+      int totalInstallments;
+      int monthlyAmount;
+
+      switch (input.installmentType) {
+        case InstallmentType.evenSplit:
+          if (input.totalInstallments == null || input.totalInstallments! < 2) {
+            throw const FormatException('installment_count_invalid');
+          }
+          totalInstallments = input.totalInstallments!;
+          monthlyAmount = input.totalAmount ~/ totalInstallments;
+        case InstallmentType.fixedMonthly:
+          if (input.monthlyAmount == null || input.monthlyAmount! <= 0) {
+            throw const FormatException('installment_monthly_amount_invalid');
+          }
+          if (input.monthlyAmount! >= input.totalAmount) {
+            throw const FormatException('installment_monthly_exceeds_total');
+          }
+          monthlyAmount = input.monthlyAmount!;
+          totalInstallments =
+              (input.totalAmount / monthlyAmount).ceil();
+      }
+
+      final planId = _uuid.v4();
+      final now = _now().toUtc();
+      final startDate = FinancialPeriodResolver.normalize(input.startDate);
+
+      await database
+          .into(database.installmentPlans)
+          .insert(
+            InstallmentPlansCompanion.insert(
+              id: planId,
+              name: cleanedName,
+              totalAmount: input.totalAmount,
+              installmentType: input.installmentType.storageValue,
+              totalInstallments: totalInstallments,
+              monthlyAmount: monthlyAmount,
+              startDate: startDate,
+              dayOfMonth: input.dayOfMonth,
+              categoryId: input.categoryId,
+              notes: Value(_cleanOptional(input.notes)),
+              generatedCount: const Value(1),
+              status: InstallmentPlanStatus.active.storageValue,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+
+      // Create first installment transaction
+      final firstAmount = _installmentAmount(
+        installmentNumber: 1,
+        totalInstallments: totalInstallments,
+        monthlyAmount: monthlyAmount,
+        totalAmount: input.totalAmount,
+      );
+      final period = await _getOrCreatePeriod(startDate);
+      final txId = _uuid.v4();
+      await database
+          .into(database.financialTransactions)
+          .insert(
+            FinancialTransactionsCompanion.insert(
+              id: txId,
+              type: 'expense',
+              name: '$cleanedName (1/$totalInstallments)',
+              amount: firstAmount,
+              currencyCode: const Value('IDR'),
+              transactionDate: startDate,
+              categoryId: input.categoryId,
+              notes: Value(_cleanOptional(input.notes)),
+              isReimburse: const Value(false),
+              financialPeriodId: period.id,
+              installmentPlanId: Value(planId),
+              installmentNumber: const Value(1),
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+
+      if (totalInstallments == 1) {
+        await (database.update(
+          database.installmentPlans,
+        )..where((row) => row.id.equals(planId))).write(
+          InstallmentPlansCompanion(
+            status: Value(InstallmentPlanStatus.completed.storageValue),
+            updatedAt: Value(now),
+          ),
+        );
+      }
+
+      return planId;
+    });
+  }
+
+  Stream<List<InstallmentPlanRecord>> watchInstallmentPlans({
+    InstallmentPlanStatus? status,
+  }) {
+    final plans = database.installmentPlans;
+    final categories = database.financialCategories;
+    final query = database.select(plans).join([
+      innerJoin(categories, categories.id.equalsExp(plans.categoryId)),
+    ]);
+    if (status != null) {
+      query.where(plans.status.equals(status.storageValue));
+    }
+    query.orderBy([OrderingTerm.desc(plans.createdAt)]);
+    return query.watch().map(
+      (rows) => rows
+          .map((row) => _mapInstallmentPlanRow(row))
+          .toList(growable: false),
+    );
+  }
+
+  Stream<InstallmentPlanRecord?> watchInstallmentPlan(String id) {
+    final plans = database.installmentPlans;
+    final categories = database.financialCategories;
+    final query = database.select(plans).join([
+      innerJoin(categories, categories.id.equalsExp(plans.categoryId)),
+    ])..where(plans.id.equals(id));
+    return query.watchSingleOrNull().map(
+      (row) => row == null ? null : _mapInstallmentPlanRow(row),
+    );
+  }
+
+  Stream<List<FinanceTransactionRecord>> watchInstallmentTransactions(
+    String planId,
+  ) {
+    final transactions = database.financialTransactions;
+    final categories = database.financialCategories;
+    final query = database.select(transactions).join([
+      innerJoin(categories, categories.id.equalsExp(transactions.categoryId)),
+    ])
+      ..where(transactions.installmentPlanId.equals(planId))
+      ..orderBy([OrderingTerm.asc(transactions.installmentNumber)]);
+    return query.watch().map(
+      (rows) => rows
+          .map((row) => _mapTransactionRow(row))
+          .toList(growable: false),
+    );
+  }
+
+  Future<void> cancelInstallmentPlan(String id) async {
+    final plan = await (database.select(
+      database.installmentPlans,
+    )..where((row) => row.id.equals(id))).getSingleOrNull();
+    if (plan == null) throw StateError('installment_plan_not_found');
+    if (plan.status != InstallmentPlanStatus.active.storageValue) {
+      throw StateError('installment_plan_not_active');
+    }
+    await (database.update(
+      database.installmentPlans,
+    )..where((row) => row.id.equals(id))).write(
+      InstallmentPlansCompanion(
+        status: Value(InstallmentPlanStatus.cancelled.storageValue),
+        updatedAt: Value(_now().toUtc()),
+      ),
+    );
+  }
+
+  /// Generates pending installment transactions for all active plans
+  /// whose next due date has passed. Called automatically when resolving
+  /// the active period.
+  Future<void> generatePendingInstallments() {
+    return database.transaction(() => _generatePendingInstallments());
+  }
+
+  Future<void> _generatePendingInstallments() async {
+    final activePlans = await (database.select(
+      database.installmentPlans,
+    )..where(
+      (row) =>
+          row.status.equals(InstallmentPlanStatus.active.storageValue) &
+          row.generatedCount.isSmallerThan(row.totalInstallments),
+    )).get();
+
+    if (activePlans.isEmpty) return;
+
+    final today = FinancialPeriodResolver.normalize(_now());
+    final now = _now().toUtc();
+
+    for (final plan in activePlans) {
+      var count = plan.generatedCount;
+      // Generate all missed installments up to today
+      while (count < plan.totalInstallments) {
+        final nextDate = _nextInstallmentDate(
+          startDate: plan.startDate,
+          dayOfMonth: plan.dayOfMonth,
+          installmentNumber: count + 1,
+        );
+        if (nextDate.isAfter(today)) break;
+
+        count++;
+        final amount = _installmentAmount(
+          installmentNumber: count,
+          totalInstallments: plan.totalInstallments,
+          monthlyAmount: plan.monthlyAmount,
+          totalAmount: plan.totalAmount,
+        );
+        final period = await _getOrCreatePeriod(nextDate);
+        await database
+            .into(database.financialTransactions)
+            .insert(
+              FinancialTransactionsCompanion.insert(
+                id: _uuid.v4(),
+                type: 'expense',
+                name: '${plan.name} ($count/${plan.totalInstallments})',
+                amount: amount,
+                currencyCode: const Value('IDR'),
+                transactionDate: nextDate,
+                categoryId: plan.categoryId,
+                notes: Value(plan.notes),
+                isReimburse: const Value(false),
+                financialPeriodId: period.id,
+                installmentPlanId: Value(plan.id),
+                installmentNumber: Value(count),
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+      }
+
+      final newStatus = count >= plan.totalInstallments
+          ? InstallmentPlanStatus.completed.storageValue
+          : InstallmentPlanStatus.active.storageValue;
+      await (database.update(
+        database.installmentPlans,
+      )..where((row) => row.id.equals(plan.id))).write(
+        InstallmentPlansCompanion(
+          generatedCount: Value(count),
+          status: Value(newStatus),
+          updatedAt: Value(now),
+        ),
+      );
+    }
+  }
+
+  /// Calculates the date of installment N (1-indexed) from the plan start.
+  DateTime _nextInstallmentDate({
+    required DateTime startDate,
+    required int dayOfMonth,
+    required int installmentNumber,
+  }) {
+    // installment 1 = startDate (month 0 offset)
+    // installment 2 = start + 1 month, etc.
+    final monthOffset = installmentNumber - 1;
+    return DateTime(
+      startDate.year,
+      startDate.month + monthOffset,
+      dayOfMonth,
+    );
+  }
+
+  /// Calculates the amount for a specific installment number.
+  /// The last installment absorbs any remainder from integer division.
+  int _installmentAmount({
+    required int installmentNumber,
+    required int totalInstallments,
+    required int monthlyAmount,
+    required int totalAmount,
+  }) {
+    if (installmentNumber == totalInstallments) {
+      // Last installment absorbs remainder
+      return totalAmount - (monthlyAmount * (totalInstallments - 1));
+    }
+    return monthlyAmount;
+  }
+
+  InstallmentPlanRecord _mapInstallmentPlanRow(TypedResult row) {
+    final plan = row.readTable(database.installmentPlans);
+    final category = row.readTable(database.financialCategories);
+    return InstallmentPlanRecord(
+      id: plan.id,
+      name: plan.name,
+      totalAmount: plan.totalAmount,
+      installmentType: InstallmentTypeStorage.parse(plan.installmentType),
+      totalInstallments: plan.totalInstallments,
+      monthlyAmount: plan.monthlyAmount,
+      startDate: plan.startDate,
+      dayOfMonth: plan.dayOfMonth,
+      categoryId: plan.categoryId,
+      categoryName: category.name,
+      notes: plan.notes,
+      generatedCount: plan.generatedCount,
+      status: InstallmentPlanStatusStorage.parse(plan.status),
+      createdAt: plan.createdAt,
+      updatedAt: plan.updatedAt,
+    );
   }
 }

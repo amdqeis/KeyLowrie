@@ -13,6 +13,7 @@ import 'package:keyspace/core/network/request_cancellation.dart';
 import 'package:keyspace/core/time/local_date.dart';
 import 'package:keyspace/database/app_database.dart';
 import 'package:keyspace/features/finance/domain/finance_models.dart';
+import 'package:keyspace/features/finance/presentation/finance_ui.dart';
 import 'package:keyspace/features/food_chat/domain/chat_input_models.dart';
 import 'package:keyspace/features/food_chat/domain/financial_review_models.dart';
 import 'package:keyspace/features/food_chat/domain/food_parse_models.dart';
@@ -690,6 +691,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                       ),
                     ),
+                  if (item.type == FinancialTransactionType.expense)
+                    Material(
+                      color: Colors.transparent,
+                      child: SwitchListTile.adaptive(
+                        key: ValueKey('review-installment-${item.reviewId}'),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Cicilan'),
+                        subtitle: const Text('Buat rencana cicilan otomatis'),
+                        value: item.isInstallment,
+                        onChanged: (value) => _updateFinancialItem(
+                          item.reviewId,
+                          (current) => current.copyWith(isInstallment: value),
+                        ),
+                      ),
+                    ),
+                  if (item.isInstallment) ..._buildInstallmentFields(item),
                 ],
               ),
             );
@@ -1555,16 +1572,68 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _saveFinancialPreview() async {
     final items = _financialPreview;
     if (_requesting || items == null || items.isEmpty) return;
+
+    // Validasi cicilan sebelum menyimpan.
+    for (final item in items) {
+      if (!item.isInstallment) continue;
+      if (item.amount <= 0) {
+        setState(
+          () => _status = 'Total harga cicilan "${item.name}" harus > 0',
+        );
+        return;
+      }
+      if (item.installmentType == InstallmentType.evenSplit &&
+          item.totalInstallments < 2) {
+        setState(
+          () => _status = 'Cicilan "${item.name}" minimal 2 bulan',
+        );
+        return;
+      }
+      if (item.installmentType == InstallmentType.fixedMonthly) {
+        final monthly = item.installmentMonthlyAmount;
+        if (monthly == null || monthly <= 0 || monthly >= item.amount) {
+          setState(
+            () => _status =
+                'Cicilan per bulan "${item.name}" harus > 0 dan < total harga',
+          );
+          return;
+        }
+      }
+    }
+
+    final regularItems =
+        items.where((item) => !item.isInstallment).toList(growable: false);
+    final installmentItems =
+        items.where((item) => item.isInstallment).toList(growable: false);
+
     setState(() {
       _requesting = true;
       _status = 'Menyimpan transaksi secara atomic…';
     });
     try {
-      await ref
-          .read(financeRepositoryProvider)
-          .saveBatch(items.map((item) => item.toInput()).toList());
+      final repo = ref.read(financeRepositoryProvider);
+
+      // Simpan transaksi biasa.
+      if (regularItems.isNotEmpty) {
+        await repo.saveBatch(
+          regularItems.map((item) => item.toInput()).toList(),
+        );
+      }
+
+      // Buat installment plan untuk item cicilan.
+      for (final item in installmentItems) {
+        await repo.createInstallmentPlan(item.toInstallmentInput());
+      }
+
       if (!mounted) return;
-      await _clearCompletedInput('${items.length} transaksi tersimpan');
+      final parts = <String>[];
+      if (regularItems.isNotEmpty) {
+        parts.add('${regularItems.length} transaksi');
+      }
+      if (installmentItems.isNotEmpty) {
+        parts.add('${installmentItems.length} cicilan');
+      }
+      await _clearCompletedInput('${parts.join(' + ')} tersimpan');
     } on Object catch (error) {
       if (!mounted) return;
       setState(
@@ -1878,6 +1947,132 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
 
   DateTime _nowLocal() => ref.read(clockProvider).now().toLocal();
+
+  /// Builds the installment plan detail fields shown when isInstallment is true.
+  List<Widget> _buildInstallmentFields(FinancialReviewItem item) {
+    final perMonth = item.installmentType == InstallmentType.evenSplit &&
+            item.totalInstallments >= 2 &&
+            item.amount > 0
+        ? item.amount ~/ item.totalInstallments
+        : item.installmentMonthlyAmount;
+
+    return [
+      const SizedBox(height: 8),
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F5E9),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.onSurface,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'DETAIL CICILAN',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+            ),
+            const SizedBox(height: 8),
+            SegmentedButton<InstallmentType>(
+              segments: const [
+                ButtonSegment(
+                  value: InstallmentType.evenSplit,
+                  label: Text('Bagi Rata'),
+                  icon: Icon(Icons.horizontal_split, size: 16),
+                ),
+                ButtonSegment(
+                  value: InstallmentType.fixedMonthly,
+                  label: Text('Tetap/Bln'),
+                  icon: Icon(Icons.attach_money, size: 16),
+                ),
+              ],
+              selected: {item.installmentType},
+              onSelectionChanged: (value) => _updateFinancialItem(
+                item.reviewId,
+                (current) => current.copyWith(installmentType: value.first),
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (item.installmentType == InstallmentType.evenSplit)
+              TextFormField(
+                key: ValueKey(
+                  'review-installcount-${item.reviewId}',
+                ),
+                initialValue: item.totalInstallments.toString(),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: 'Jumlah bulan cicilan',
+                  hintText: 'Contoh: 12',
+                ),
+                onChanged: (value) => _updateFinancialItem(
+                  item.reviewId,
+                  (current) => current.copyWith(
+                    totalInstallments: int.tryParse(value) ?? 12,
+                  ),
+                ),
+              )
+            else
+              TextFormField(
+                key: ValueKey(
+                  'review-installmonthly-${item.reviewId}',
+                ),
+                initialValue: item.installmentMonthlyAmount?.toString() ?? '',
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: 'Cicilan per bulan',
+                  prefixText: 'Rp ',
+                  hintText: 'Contoh: 500000',
+                ),
+                onChanged: (value) => _updateFinancialItem(
+                  item.reviewId,
+                  (current) => current.copyWith(
+                    installmentMonthlyAmount: int.tryParse(value) ?? 0,
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              key: ValueKey('review-dueday-${item.reviewId}'),
+              isExpanded: true,
+              initialValue: item.dayOfMonth,
+              decoration: const InputDecoration(
+                labelText: 'Jatuh tempo setiap tanggal',
+              ),
+              items: List.generate(
+                28,
+                (index) => DropdownMenuItem(
+                  value: index + 1,
+                  child: Text('Tanggal ${index + 1}'),
+                ),
+              ),
+              onChanged: (value) {
+                if (value != null) {
+                  _updateFinancialItem(
+                    item.reviewId,
+                    (current) => current.copyWith(dayOfMonth: value),
+                  );
+                }
+              },
+            ),
+            if (perMonth != null && perMonth > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Estimasi: ${formatIdr(perMonth)}/bulan',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ];
+  }
 
   void _selectMode(ChatInputMode mode) {
     setState(() => _selectedMode = mode);

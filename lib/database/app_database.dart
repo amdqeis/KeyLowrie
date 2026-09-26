@@ -26,6 +26,7 @@ part 'app_database.g.dart';
     NotificationEvents,
     FinancialCategories,
     FinancialPeriods,
+    InstallmentPlans,
     FinancialTransactions,
     FinanceSettings,
     ChatDrafts,
@@ -100,6 +101,19 @@ class AppDatabase extends _$AppDatabase {
         if (from >= 3) {
           await migrator.alterTable(TableMigration(scheduleReminders));
         }
+      }
+      if (from < 5) {
+        await migrator.createTable(installmentPlans);
+        await migrator.createIndex(idxInstallmentPlansStatus);
+        await migrator.addColumn(
+          financialTransactions,
+          financialTransactions.installmentPlanId,
+        );
+        await migrator.addColumn(
+          financialTransactions,
+          financialTransactions.installmentNumber,
+        );
+        await migrator.createIndex(idxFinancialTransactionsPlan);
       }
     },
     beforeOpen: (details) async {

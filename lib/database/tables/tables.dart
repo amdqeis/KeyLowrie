@@ -373,6 +373,46 @@ class FinancialPeriods extends Table {
   ];
 }
 
+@TableIndex(name: 'idx_installment_plans_status', columns: {#status})
+class InstallmentPlans extends Table {
+  @override
+  String get tableName => 'installment_plans';
+
+  TextColumn get id => text()();
+  TextColumn get name => text().withLength(min: 1, max: 200)();
+  IntColumn get totalAmount => integer().named('total_amount')();
+  TextColumn get installmentType => text().named('installment_type')();
+  IntColumn get totalInstallments => integer().named('total_installments')();
+  IntColumn get monthlyAmount => integer().named('monthly_amount')();
+  DateTimeColumn get startDate => dateTime().named('start_date')();
+  IntColumn get dayOfMonth => integer().named('day_of_month')();
+  TextColumn get categoryId => text()
+      .named('category_id')
+      .references(FinancialCategories, #id, onDelete: KeyAction.restrict)();
+  TextColumn get notes => text().nullable()();
+  IntColumn get generatedCount => integer()
+      .named('generated_count')
+      .withDefault(const Constant(0))();
+  TextColumn get status => text()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    "CHECK (installment_type IN ('even_split', 'fixed_monthly'))",
+    'CHECK (total_installments >= 2)',
+    'CHECK (monthly_amount > 0)',
+    'CHECK (total_amount > 0)',
+    'CHECK (day_of_month BETWEEN 1 AND 28)',
+    "CHECK (status IN ('active', 'completed', 'cancelled'))",
+    'CHECK (generated_count >= 0)',
+    'CHECK (generated_count <= total_installments)',
+  ];
+}
+
 @TableIndex(
   name: 'idx_financial_transactions_period_type_date',
   columns: {#financialPeriodId, #type, #transactionDate},
@@ -385,6 +425,10 @@ class FinancialPeriods extends Table {
 @TableIndex(
   name: 'idx_financial_transactions_date_type_category',
   columns: {#transactionDate, #type, #categoryId},
+)
+@TableIndex(
+  name: 'idx_financial_transactions_plan',
+  columns: {#installmentPlanId},
 )
 class FinancialTransactions extends Table {
   @override
@@ -406,6 +450,12 @@ class FinancialTransactions extends Table {
   TextColumn get financialPeriodId => text()
       .named('financial_period_id')
       .references(FinancialPeriods, #id, onDelete: KeyAction.restrict)();
+  TextColumn get installmentPlanId => text()
+      .named('installment_plan_id')
+      .nullable()
+      .references(InstallmentPlans, #id, onDelete: KeyAction.setNull)();
+  IntColumn get installmentNumber =>
+      integer().named('installment_number').nullable()();
   DateTimeColumn get createdAt => dateTime().named('created_at')();
   DateTimeColumn get updatedAt => dateTime().named('updated_at')();
 

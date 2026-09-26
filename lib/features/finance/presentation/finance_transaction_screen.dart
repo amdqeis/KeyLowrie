@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:keyspace/app/router.dart';
 import 'package:keyspace/database/app_database.dart';
 import 'package:keyspace/features/finance/domain/finance_models.dart';
 import 'package:keyspace/features/finance/presentation/finance_providers.dart';
@@ -128,6 +129,43 @@ class _FinanceTransactionScreenState
               ],
             ),
           ),
+          if (transaction.isInstallment) ...[
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => context.push(
+                AppRoutes.financeInstallmentDetailPath(
+                  transaction.installmentPlanId!,
+                ),
+              ),
+              child: BrutalCard(
+                color: const Color(0xFFB7E4C7),
+                child: Row(
+                  children: [
+                    const Icon(Icons.credit_card),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'CICILAN KE-${transaction.installmentNumber}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Ketuk untuk melihat detail cicilan →',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           DropdownButtonFormField<FinancialTransactionType>(
             key: ValueKey('transaction-type-${_type.name}'),
